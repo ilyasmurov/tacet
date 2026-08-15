@@ -3,3 +3,5 @@ dist/
 svg/
 *.tsbuildinfo
 .DS_Store
+meta/
+gallery.html

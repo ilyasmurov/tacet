@@ -2,7 +2,7 @@
 // Данные и движок встраиваются внутрь, поэтому файл открывается как есть.
 
 import { writeFileSync } from "node:fs";
-import { ICONS } from "../packages/core/src/data.ts";
+import { ICONS, META } from "../packages/core/dist/index.js";
 import { INSTRUMENT_NAMES, SERVICE_NAMES } from "./groups.ts";
 
 const names = Object.keys(ICONS);
@@ -73,7 +73,7 @@ const html = `<title>Tacet — набор иконок</title>
   в геометрии. Отсюда анимация самоотрисовки, четыре плотности разрезов и акцентная деталь — из одного источника.</p>
 
   <div class="bar">
-    <input id="q" placeholder="Поиск по имени" autocomplete="off">
+    <input id="q" placeholder="Поиск: «удалить», «success», «баян»" autocomplete="off">
     <span class="chips" id="sizes"></span>
     <span class="chips" id="variants"></span>
     <span class="chips"><button id="theme">Тёмная</button></span>
@@ -86,6 +86,7 @@ const html = `<title>Tacet — набор иконок</title>
 
 <script>
 const ICONS = ${JSON.stringify(ICONS)};
+const META = ${JSON.stringify(META)};
 const GROUPS = ${JSON.stringify(groups)};
 const STROKE_AT_24 = 1.5, EXP = 0.45;
 let size = 24, variant = "D", query = "";
@@ -160,7 +161,13 @@ function render(){
   out.textContent="";
   let shown=0;
   for(const group of GROUPS){
-    const list=group.names.filter(n=>n.includes(query));
+    // Ищем и по имени, и по синонимам: «удалить» находит trash, «success» —
+    // check-circle. Без этого набор из 320 глифов не прочешешь.
+    const list=group.names.filter(n=>{
+      if(n.includes(query)) return true;
+      const meta=META[n];
+      return meta ? meta.synonyms.some(s=>s.toLowerCase().includes(query)) : false;
+    });
     if(!list.length) continue;
     shown+=list.length;
     const h=document.createElement("h2");
@@ -171,6 +178,8 @@ function render(){
     for(const name of list){
       const cell=document.createElement("figure");
       cell.className="cell"; cell.style.margin="0";
+      const meta=META[name];
+      if(meta) cell.title=meta.use+(meta.avoid?"\\n\\n"+meta.avoid:"");
       cell.appendChild(draw(name,size,variant));
       const cap=document.createElement("figcaption");
       cap.textContent=name;

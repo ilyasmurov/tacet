@@ -11,6 +11,8 @@ export type { StrokeOpts } from "./stroke.js";
 export { renderSpec, hasIcon, iconNames, ACCENT_VAR, BODY_CLASS, SVG_STYLE } from "./renderSpec.js";
 export type { RenderOpts, RenderResult, ElementSpec, MaskSpec, IconVariant } from "./renderSpec.js";
 export { toReactAttrs, toReactAttrName } from "./reactAttrs.js";
+export { META, hasMeta, searchIcons } from "./meta.js";
+export type { IconMeta } from "./meta.js";
 
 export {
   animate, prepare, reverse, resetAnimation, resolveAnimateCfg,
