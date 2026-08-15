@@ -1,0 +1,25 @@
+{
+  "name": "@tacet/core",
+  "version": "0.1.0",
+  "description": "Данные и движок набора иконок Tacet. Без зависимостей.",
+  "license": "MIT",
+  "author": "Ilya Smurov",
+  "repository": { "type": "git", "url": "git+https://github.com/ilyasmurov/tacet.git", "directory": "packages/core" },
+  "homepage": "https://tacet.smurov.com",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": ["icons", "svg", "icon-set", "animated-icons"]
+}
