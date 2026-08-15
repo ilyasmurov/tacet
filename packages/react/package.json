@@ -1,0 +1,49 @@
+{
+  "name": "tacet",
+  "version": "0.1.0",
+  "description": "Набор иконок «аутлайн с разрезами» для React: анимация самоотрисовки, четыре плотности разрезов, 64 музыкальных инструмента.",
+  "license": "MIT",
+  "author": "Ilya Smurov",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilyasmurov/tacet.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://tacet.smurov.com",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@tacet/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.2.8"
+  },
+  "keywords": [
+    "icons",
+    "react",
+    "svg",
+    "icon-set",
+    "animated-icons"
+  ]
+}
