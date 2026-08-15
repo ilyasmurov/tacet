@@ -8,6 +8,7 @@
     "typecheck": "pnpm -r --filter './packages/*' typecheck",
     "test": "vitest run",
     "svg": "pnpm build && node scripts/build-svg.ts",
+    "meta": "pnpm build && node scripts/build-meta.ts meta",
     "gallery": "pnpm build && node scripts/build-gallery.ts gallery.html"
   },
   "devDependencies": {
