@@ -1,0 +1,225 @@
+/* Лендинг Tacet. Палитра, типографика и приёмы взяты из лендинга Taskless:
+   светлая страница без тёмного варианта, узкая моноширинная в заголовках,
+   Onest в тексте, холодные нейтрали со сдвигом в сторону акцента.
+
+   Разделители линиями не рисуем: секции разводит воздух и смена фона. */
+
+:root {
+  --ground: #f2f3f6;
+  --raised: #ffffff;
+  --sunken: #e7e9ee;
+  --ink: #0d1015;
+  --ink-2: #474e5a;
+  --ink-3: #666d7a;
+  --accent: #1c5cab;
+  --viz: #2a78d6;
+  --warm: #c94a17;
+  --ok: #17805a;
+  --radius: 12px;
+  --maxw: 980px;
+
+  --f-display: 'PT Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --f-body: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  --f-mono: 'PT Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Акцентная деталь глифов. Графический синий, он ярче интерфейсного. */
+  --tacet-accent: var(--viz);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Верх страницы белый и уходит в серый по наклонной — отдельным слоем, иначе
+   градиент растянулся бы на всю высоту документа и перехода не было бы видно. */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 130vh;
+  background: linear-gradient(163deg,
+    #ffffff 0%, #ffffff 22%,
+    color-mix(in srgb, #ffffff 55%, var(--ground)) 48%,
+    var(--ground) 78%);
+  pointer-events: none;
+  z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+/* ── шапка ── */
+.top { padding: 22px 0 0; }
+.top .inner { display: flex; align-items: center; gap: 20px; }
+.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+.brand span { font-family: var(--f-display); font-size: 19px; letter-spacing: -0.01em; }
+.top nav { margin-left: auto; display: flex; gap: 20px; align-items: center; }
+.top nav a { color: var(--ink-2); text-decoration: none; font-size: 15px; }
+.top nav a:hover { color: var(--ink); }
+
+/* ── первый экран ── */
+.hero { padding: 76px 0 20px; }
+h1 {
+  font-family: var(--f-display);
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px;
+}
+.hero p { font-size: 20px; color: var(--ink-2); max-width: 56ch; margin: 0 0 28px; }
+.hero p b { color: var(--ink); font-weight: 600; }
+
+.install {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--raised); border-radius: var(--radius);
+  padding: 13px 18px; font-family: var(--f-mono); font-size: 15px;
+  box-shadow: 0 1px 2px rgba(13, 16, 21, 0.06), 0 8px 24px rgba(13, 16, 21, 0.05);
+}
+.install button {
+  font: inherit; font-size: 13px; color: var(--ink-3); background: var(--sunken);
+  border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer;
+}
+.install button:hover { color: var(--ink); }
+
+/* Живой ряд: иконки рисуются сами, по очереди. */
+.parade {
+  display: flex; flex-wrap: wrap; gap: 22px; align-items: center;
+  margin: 46px 0 0; color: var(--ink);
+}
+.parade svg { overflow: visible; }
+
+/* ── секции ── */
+section { padding: 68px 0; }
+h2 {
+  font-family: var(--f-display);
+  font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.12; letter-spacing: -0.02em;
+  margin: 0 0 14px;
+}
+section > .wrap > p { color: var(--ink-2); max-width: 62ch; margin: 0 0 26px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 12.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px;
+}
+
+.card {
+  background: var(--raised); border-radius: var(--radius); padding: 26px;
+  box-shadow: 0 1px 2px rgba(13, 16, 21, 0.05), 0 10px 30px rgba(13, 16, 21, 0.04);
+}
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+
+pre {
+  margin: 0; font-family: var(--f-mono); font-size: 13.5px; line-height: 1.65;
+  color: var(--ink-2); overflow-x: auto;
+}
+pre b { color: var(--ink); font-weight: 400; background: color-mix(in srgb, var(--viz) 12%, transparent); padding: 1px 3px; border-radius: 4px; }
+code { font-family: var(--f-mono); font-size: 0.93em; }
+
+.demo { display: flex; align-items: center; justify-content: center; gap: 30px; min-height: 150px; }
+.demo-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.demo-item .label { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); }
+.demo-item .label b { color: var(--ink); font-weight: 400; }
+
+.replay {
+  font: inherit; font-size: 14px; color: var(--accent); background: transparent;
+  border: 0; padding: 0; cursor: pointer; text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-thickness: 1px;
+}
+
+/* Толщина штриха: три размера рядом. */
+.sizes { display: flex; align-items: flex-end; gap: 34px; flex-wrap: wrap; justify-content: center; }
+.sizes .one { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.sizes .px { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* Инструменты. */
+.instruments { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.instruments .one { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px; border-radius: 10px; }
+.instruments .one:hover { background: var(--sunken); }
+.instruments .name { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); text-align: center; word-break: break-all; }
+
+/* Семантика для агентов. */
+.meta-demo { display: grid; gap: 14px; }
+.meta-row { display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start; }
+.meta-row .glyph { display: flex; justify-content: center; padding-top: 3px; }
+.meta-row .name { font-family: var(--f-mono); font-size: 14px; margin-bottom: 4px; }
+.meta-row .use { color: var(--ink-2); font-size: 15px; }
+.meta-row .avoid { color: var(--warm); font-size: 14.5px; margin-top: 5px; }
+.meta-row .avoid b { font-family: var(--f-mono); font-weight: 400; font-size: 0.95em; }
+
+/* ── галерея ── */
+.gallery-bar {
+  position: sticky; top: 0; z-index: 5; background: var(--ground);
+  padding: 14px 0 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.gallery-bar input {
+  font: inherit; font-size: 15px; color: var(--ink); background: var(--raised);
+  border: 0; border-radius: 10px; padding: 10px 14px; width: 280px; outline: none;
+  box-shadow: 0 1px 2px rgba(13, 16, 21, 0.06);
+}
+.gallery-bar input::placeholder { color: var(--ink-3); }
+.chips { display: flex; gap: 3px; background: var(--sunken); border-radius: 10px; padding: 3px; }
+.chips button {
+  font: inherit; font-size: 13px; color: var(--ink-3); background: transparent;
+  border: 0; border-radius: 8px; padding: 6px 11px; cursor: pointer;
+}
+.chips button:hover { color: var(--ink); }
+.chips button[aria-pressed="true"] { color: var(--ink); background: var(--raised); }
+.counter { margin-left: auto; font-family: var(--f-mono); font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+.group-title {
+  font-family: var(--f-mono); font-size: 12.5px; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--ink-3); margin: 30px 0 12px;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 5px; }
+.cell {
+  display: flex; flex-direction: column; align-items: center; gap: 11px;
+  padding: 17px 7px 12px; border-radius: 11px; cursor: pointer; background: transparent;
+  transition: background 0.12s ease;
+}
+.cell:hover { background: var(--raised); }
+.cell .cname { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); text-align: center; word-break: break-all; line-height: 1.35; }
+.cell.copied .cname { color: var(--ok); }
+.empty { color: var(--ink-2); padding: 40px 0; }
+
+/* ── подвал ── */
+footer { padding: 60px 0 80px; color: var(--ink-3); font-size: 14.5px; }
+footer .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+footer a { color: var(--ink-2); text-decoration: none; }
+footer a:hover { color: var(--ink); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(18px);
+  background: var(--ink); color: var(--raised); font-size: 14px; padding: 10px 17px;
+  border-radius: 10px; opacity: 0; transition: all 0.18s ease; pointer-events: none; z-index: 20;
+}
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 760px) {
+  body { font-size: 16px; }
+  /* Навигация уезжает под логотип: в строку она не помещается, и последние
+     ссылки обрезало краем экрана. */
+  .top .inner { flex-wrap: wrap; gap: 12px 16px; }
+  .top nav { margin-left: 0; width: 100%; gap: 16px; }
+  .top nav a { font-size: 14px; }
+  .hero { padding: 34px 0 10px; }
+  .hero p { font-size: 18px; }
+  section { padding: 46px 0; }
+  .cols { grid-template-columns: 1fr; }
+  .demo { flex-wrap: wrap; gap: 22px; }
+  .gallery-bar input { width: 100%; }
+  .counter { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
