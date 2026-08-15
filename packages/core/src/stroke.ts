@@ -11,9 +11,21 @@ export const STROKE_AT_24 = 1.5;
  *
  * 0.45 подобран по глифам набора: на 12–24px даёт ту же толщину, с которой
  * иконки рисовались, а на крупных не позволяет линии разжиреть — 128px выходит
- * 3.16px против 7.2px при пропорциональном росте.
+ * 3.19px против 7.2px при пропорциональном росте.
  */
 export const STROKE_EXPONENT = 0.45;
+
+/**
+ * Размер, от которого считаем, если пришла бессмыслица. Ноль, отрицательное и
+ * NaN случаются буднично: `size={containerWidth}` до первого замера,
+ * `size={props.size}` с undefined в данных, скрытый элемент с нулевой шириной.
+ * Формула на таких входах давала NaN в атрибуте, то есть невидимую иконку.
+ */
+const FALLBACK_SIZE = 24;
+
+function safeSize(size: number): number {
+  return Number.isFinite(size) && size > 0 ? size : FALLBACK_SIZE;
+}
 
 export interface StrokeOpts {
   /**
@@ -28,9 +40,14 @@ export interface StrokeOpts {
 
 /** Толщина штриха на экране, в CSS-пикселях. */
 export function strokeOnScreen(size: number, opts: StrokeOpts = {}): number {
-  if (opts.strokeWidth != null) return opts.strokeWidth;
+  if (opts.strokeWidth != null && Number.isFinite(opts.strokeWidth)) return opts.strokeWidth;
   if (opts.absoluteStroke) return STROKE_AT_24;
-  return STROKE_AT_24 * Math.pow(size / 24, STROKE_EXPONENT);
+  return STROKE_AT_24 * Math.pow(safeSize(size) / 24, STROKE_EXPONENT);
+}
+
+/** Размер после отсечения бессмыслицы — по нему считается и viewBox, и штрих. */
+export function normalizeSize(size: number): number {
+  return safeSize(size);
 }
 
 /**

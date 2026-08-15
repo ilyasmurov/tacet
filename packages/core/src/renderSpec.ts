@@ -2,13 +2,30 @@
 // На неё опираются обе обёртки, поэтому движок в наборе ровно один.
 
 import { ICONS, SOLID_BY_DEFAULT, type IconDef, type IconName, type Part } from "./data.js";
-import { dashFor, insetFor, strokeOnScreen, type StrokeOpts } from "./stroke.js";
+import { dashFor, insetFor, normalizeSize, strokeOnScreen, type StrokeOpts } from "./stroke.js";
 
 /** A — один разрез · B — все разрезы · C — один разрез и акцент · D — все разрезы и акцент. */
 export type IconVariant = "A" | "B" | "C" | "D";
 
 /** Цвет акцентных деталей. Без переменной иконка монохромная. */
 export const ACCENT_VAR = "var(--tacet-accent, currentColor)";
+
+/**
+ * Класс группы, в которой лежит тело глифа. По нему движок находит, что
+ * анимировать: без этой группы `animate()` молча ничего не сделает.
+ */
+export const BODY_CLASS = "tc-body";
+
+/**
+ * Стили, без которых svg отрисуется неверно. `overflow: visible` обязателен:
+ * при оптическом зуме края глифов выходят за окно viewBox, а браузер по
+ * умолчанию их срезает.
+ */
+export const SVG_STYLE = { overflow: "visible" } as const;
+
+// ICONS закрыт через satisfies — иначе IconName выродится в string. Для доступа
+// по произвольной строке нужен вид пошире.
+const BY_NAME = ICONS as Record<string, IconDef>;
 
 export interface RenderOpts extends StrokeOpts {
   /** Размер в пикселях, он же ширина и высота. По умолчанию 24. */
@@ -21,7 +38,11 @@ export interface RenderOpts extends StrokeOpts {
   zoom?: boolean | undefined;
   /** Чем красить акцентные детали. По умолчанию — переменная `--tacet-accent`. */
   accentColor?: string | undefined;
-  /** Уникальный хвост для id масок. Обязателен, если на странице несколько иконок с вырезом. */
+  /**
+   * Хвост для id маски. Нужен, когда на странице несколько экземпляров одного
+   * и того же глифа: у разных глифов id и так разные, в него входит имя.
+   * Из строки берутся только буквы, цифры, дефис и подчёркивание.
+   */
   idSuffix?: string | undefined;
 }
 
@@ -37,15 +58,19 @@ export interface MaskSpec {
 }
 
 export interface RenderResult {
-  /** Атрибуты корневого `<svg>`, кроме обработчиков и стилей. */
+  /** Атрибуты корневого `<svg>`. Стили не входят — их отдаёт SVG_STYLE. */
   svgAttrs: Record<string, string | number>;
   /** Маска-вырез, если у глифа есть части типа `hole`. */
   mask: MaskSpec | null;
-  /** Тело глифа. Кладётся в `<g class="tc-body">` — по нему работает анимация. */
+  /** Тело глифа. Кладётся в `<g class="tc-body">`, иначе анимация его не найдёт. */
   parts: ElementSpec[];
-  /** Значение атрибута `stroke-width`, в единицах viewBox. */
-  strokeWidth: number;
-  /** Та же толщина, но в CSS-пикселях на экране. */
+  /**
+   * Значение атрибута `stroke-width`, в единицах viewBox. Это НЕ то же самое,
+   * что `RenderOpts.strokeWidth` — тот задаётся в пикселях экрана. Обратно в
+   * опции годится `strokeOnScreen`, а не это поле.
+   */
+  strokeAttr: number;
+  /** Толщина штриха на экране, в CSS-пикселях. */
   strokeOnScreen: number;
 }
 
@@ -58,6 +83,11 @@ function colorFor(part: Part, variant: IconVariant, accent: string): string {
   if (part.col) return part.col;
   const accentOn = (variant === "C" || variant === "D") && part.accent;
   return accentOn ? accent : "currentColor";
+}
+
+/** id попадает в атрибут и в url(#...) — пускаем только безопасные символы. */
+function safeId(raw: string): string {
+  return raw.replace(/[^A-Za-z0-9_-]/g, "");
 }
 
 function shapeAttrs(part: Part): { tag: ElementSpec["tag"]; attrs: Record<string, string | number> } {
@@ -106,15 +136,18 @@ export function hasIcon(name: string): name is IconName {
 }
 
 /** Все имена набора, в порядке объявления. */
-export function iconNames(): string[] {
-  return Object.keys(ICONS);
+export function iconNames(): IconName[] {
+  return Object.keys(ICONS) as IconName[];
 }
 
 export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | null {
-  const def = ICONS[name] as IconDef | undefined;
-  if (!def) return null;
+  // Именно hasOwnProperty, а не `ICONS[name]`: иначе "toString" и "valueOf"
+  // достанут методы прототипа, пройдут проверку на существование и уронят
+  // функцию там, где по контракту должен вернуться null.
+  if (!hasIcon(name)) return null;
+  const def = BY_NAME[name]!;
 
-  const size = opts.size ?? 24;
+  const size = normalizeSize(opts.size ?? 24);
   const variant = opts.variant ?? "D";
   const accent = opts.accentColor ?? ACCENT_VAR;
   const solid = isSolid(name, opts.solid);
@@ -123,11 +156,13 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
   const inset = zoom ? insetFor(size) : 0;
   const visible = 24 - 2 * inset;
   const onScreen = strokeOnScreen(size, opts);
-  // Атрибут задаётся в единицах viewBox, а на экране всё умножается на size/visible.
-  // Отсюда обратный пересчёт — тогда экранная толщина равна ровно onScreen.
-  const strokeWidth = (onScreen * visible) / size;
+  // Атрибут задаётся в единицах viewBox, а на экране всё умножается на
+  // size/visible. Отсюда обратный пересчёт — тогда экранная толщина равна
+  // ровно onScreen.
+  const strokeAttr = (onScreen * visible) / size;
 
-  const maskId = opts.idSuffix ? `tc-hole-${opts.idSuffix}` : `tc-hole-${name}`;
+  const suffix = opts.idSuffix ? safeId(opts.idSuffix) : "";
+  const maskId = `tc-hole-${safeId(name)}${suffix ? "-" + suffix : ""}`;
   const mask = buildHoleMask(def, maskId);
 
   const parts: ElementSpec[] = [];
@@ -136,9 +171,17 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
     const { tag, attrs } = shapeAttrs(part);
     const color = colorFor(part, variant, accent);
 
+    // При non-scaling-stroke ширина считается в координатах вьюпорта, то есть
+    // масштаб viewBox на неё не действует и компенсировать нечего. Отдадим сюда
+    // strokeAttr — и деталь окажется тоньше соседей тем сильнее, чем крупнее
+    // иконка: на 128px корпус скрипки был бы в шесть раз тоньше её грифа.
+    let nonScaling = false;
     if (part.tf) {
       attrs["transform"] = part.tf;
-      if (!part.scaleStroke) attrs["vector-effect"] = "non-scaling-stroke";
+      if (!part.scaleStroke) {
+        attrs["vector-effect"] = "non-scaling-stroke";
+        nonScaling = true;
+      }
     }
     if (part.masked && mask) attrs["mask"] = `url(#${mask.id})`;
 
@@ -154,7 +197,7 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
       Object.assign(attrs, {
         fill: "none",
         stroke: color,
-        "stroke-width": strokeWidth,
+        "stroke-width": nonScaling ? onScreen : strokeAttr,
         "stroke-linecap": "round",
         "stroke-linejoin": "round",
         pathLength: 100,
@@ -175,7 +218,7 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
     },
     mask,
     parts,
-    strokeWidth,
+    strokeAttr,
     strokeOnScreen: onScreen,
   };
 }

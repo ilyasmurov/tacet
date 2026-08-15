@@ -43,7 +43,10 @@ const dot = (cx: number, cy: number, r: number, o: Partial<Part> = {}): Part => 
 const FB = "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z";
 const FF = "M14 2v5a1 1 0 0 0 1 1h5";
 
-export const ICONS: Record<string, IconDef> = {
+// satisfies, а не аннотация Record<string, IconDef>: с аннотацией IconName
+// вырождается в string, и у пакета пропадают и автодополнение по именам,
+// и проверка опечаток.
+export const ICONS = {
     // ── shell / navigation ──
     "home": [p("M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z", [[8, 9], [58, 9]])],
     "inbox": [p("M5.4 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.4-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.8 1.1z", [[13, 9], [60, 9]]), p("M22 12h-6l-2 3h-4l-2-3H2", [[42, 14]], { accent: true })],
@@ -294,7 +297,7 @@ export const ICONS: Record<string, IconDef> = {
     "folder-plus": [p("M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z", [[13, 9], [58, 9]]), p("M12 11.5v5M9.5 14h5", null, { accent: true })],
     "folder-input": [p("M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1", [[13, 9], [60, 9]]), p("M2 13h10", [[45, 14]], { accent: true }), p("m9 16 3-3-3-3", null, { accent: true })],
     "folder-tree": [p("M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z", [[13, 9], [60, 9]]), p("M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z", [[42, 14]]), p("M3 5a2 2 0 0 0 2 2h3", null, { accent: true }), p("M3 3v13a2 2 0 0 0 2 2h3", [[45, 14]], { accent: true })],
-};
+} satisfies Record<string, IconDef>;
 
 export const ANIM: Record<string, AnimCfg> = {
     menu: { mode: "draw", stagger: 150 },

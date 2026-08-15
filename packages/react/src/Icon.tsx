@@ -6,7 +6,8 @@ import {
   type SVGProps, type MutableRefObject,
 } from "react";
 import {
-  renderSpec, animate, prepare, reverse, resolveAnimateCfg, canAnimateOnMount, toReactAttrs,
+  renderSpec, animate, prepare, reverse, resetAnimation, resolveAnimateCfg,
+  canAnimateOnMount, toReactAttrs, BODY_CLASS, SVG_STYLE,
   type IconVariant, type AnimMode, type ElementSpec,
 } from "@tacet/core";
 
@@ -114,10 +115,14 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
     mode: animationMode, duration, spinDeg, stagger, seq, delay: animationDelay,
   });
 
-  // Прячем до первой отрисовки, иначе кадр мигнёт готовой картинкой.
+  // Прячем до первой отрисовки, иначе кадр мигнёт готовой картинкой. Если
+  // проигрыш так и не случится — размонтировали, отменили кадр, — состояние
+  // надо снять, иначе иконка останется невидимой без единой ошибки.
   useLayoutEffect(() => {
-    if (!animateIn || !innerRef.current) return;
-    prepare(innerRef.current, cfg);
+    const svg = innerRef.current;
+    if (!animateIn || !svg) return;
+    prepare(svg, cfg);
+    return () => resetAnimation(svg);
     // Пересобирать эффект на каждое изменение cfg не нужно: важен только момент
     // появления и смена глифа.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,14 +164,14 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
       role={title ? "img" : undefined}
       aria-hidden={title ? undefined : true}
       aria-label={title}
-      style={{ overflow: "visible", ...style }}
+      style={{ ...SVG_STYLE, ...style }}
       {...rest}
     >
       {title ? <title>{title}</title> : null}
       {spec.mask ? (
         <mask {...asSvgProps<SVGMaskElement>(spec.mask.attrs)}>{renderElements(spec.mask.children)}</mask>
       ) : null}
-      <g className="tc-body">{renderElements(spec.parts)}</g>
+      <g className={BODY_CLASS}>{renderElements(spec.parts)}</g>
     </svg>
   );
 });
