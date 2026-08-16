@@ -4,8 +4,9 @@
 // core and the custom element sit next to it and load as ES modules through an
 // import map. Which makes the gallery on the page a live check that it works.
 
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { createHash } from "node:crypto";
+import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ICONS, META, iconNames } from "tacet-core";
 import { INSTRUMENT_NAMES, SERVICE_NAMES } from "../scripts/groups.ts";
@@ -13,6 +14,39 @@ import { INSTRUMENT_NAMES, SERVICE_NAMES } from "../scripts/groups.ts";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const out = join(here, "dist");
+
+/**
+ * Hash of the built packages. It goes into the path the modules are served
+ * from, which makes the cache safe: change the contents and the path changes
+ * with it, so a browser can never pair a stale module with a fresh import map.
+ *
+ * This is not a precaution invented in advance. The modules were served from a
+ * fixed path with a week-long cache, then the packages were renamed — and every
+ * browser that had been to the site kept a module importing `@tacet/core` while
+ * the new import map only knew `tacet-core`. The import failed to resolve, the
+ * custom element never registered and the icons quietly stopped appearing.
+ *
+ * Hashing the directory rather than each file keeps the relative imports inside
+ * the packages working untouched.
+ */
+function hashTree(dir: string): string {
+  const hash = createHash("sha256");
+  const walk = (current: string) => {
+    for (const entry of readdirSync(current).sort()) {
+      const full = join(current, entry);
+      if (statSync(full).isDirectory()) { walk(full); continue; }
+      if (!full.endsWith(".js")) continue;
+      hash.update(relative(dir, full));
+      hash.update(readFileSync(full));
+    }
+  };
+  walk(dir);
+  return hash.digest("hex").slice(0, 10);
+}
+
+const buildId = hashTree(join(root, "packages/core/dist"))
+  + hashTree(join(root, "packages/element/dist")).slice(0, 6);
+const modulesPath = `./tacet/${buildId}`;
 
 const names = iconNames();
 const instruments = new Set<string>(INSTRUMENT_NAMES);
@@ -68,7 +102,7 @@ const html = `<!doctype html>
 <link rel="stylesheet" href="./fonts/fonts.css">
 <link rel="stylesheet" href="./styles.css">
 <script type="importmap">
-{ "imports": { "tacet-core": "./tacet/core/index.js" } }
+{ "imports": { "tacet-core": "${modulesPath}/core/index.js" } }
 </script>
 </head>
 <body>
@@ -225,7 +259,7 @@ const html = `<!doctype html>
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import "./tacet/element/index.js";
+import "${modulesPath}/element/index.js";
 import { META, iconNames } from "tacet-core";
 
 const GROUPS = ${JSON.stringify(groups)};
@@ -362,9 +396,14 @@ mkdirSync(out, { recursive: true });
 writeFileSync(join(out, "index.html"), html, "utf8");
 cpSync(join(here, "styles.css"), join(out, "styles.css"));
 
-// Packages go in built: the page loads them as plain ES modules.
-cpSync(join(root, "packages/core/dist"), join(out, "tacet/core"), { recursive: true });
-cpSync(join(root, "packages/element/dist"), join(out, "tacet/element"), { recursive: true });
+// Packages go in built: the page loads them as plain ES modules. The build id
+// in the path is what lets the cache hold them for a week without risk.
+//
+// Previous builds are wiped rather than kept: the page that references them is
+// replaced in the same deploy, and leftovers would pile up build after build.
+rmSync(join(out, "tacet"), { recursive: true, force: true });
+cpSync(join(root, "packages/core/dist"), join(out, `tacet/${buildId}/core`), { recursive: true });
+cpSync(join(root, "packages/element/dist"), join(out, `tacet/${buildId}/element`), { recursive: true });
 
 // Static SVG and the semantics — served as files too.
 cpSync(join(root, "svg"), join(out, "svg"), { recursive: true });

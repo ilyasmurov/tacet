@@ -9,7 +9,8 @@
     "test": "vitest run",
     "svg": "pnpm build && node scripts/build-svg.ts",
     "meta": "pnpm build && node scripts/build-meta.ts meta",
-    "gallery": "pnpm build && node scripts/build-gallery.ts gallery.html"
+    "gallery": "pnpm build && node scripts/build-gallery.ts gallery.html",
+    "deploy": "./scripts/deploy-site.sh"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.10",
