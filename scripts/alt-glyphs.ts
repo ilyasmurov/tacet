@@ -5,9 +5,10 @@
 // проигравшие лежат здесь — если при переезде проекта где-то не сойдётся
 // привычная форма, замена сводится к переносу одной строки.
 //
-// В сборку не входит: файл не экспортируется из index.ts.
+// Лежит в scripts, а не в пакете: это справочник для переезда проектов,
+// в рантайме он не нужен и в npm ему делать нечего.
 
-import type { IconDef } from "./data.js";
+import type { IconDef } from "../packages/core/src/data.ts";
 
 const p = (d: string, gaps?: [number, number][] | null, o: Record<string, unknown> = {}) => ({ t: "path", d, gaps, ...o });
 const c = (cx: number, cy: number, r: number, gaps?: [number, number][] | null, o: Record<string, unknown> = {}) => ({ t: "circle", cx, cy, r, gaps, ...o });
