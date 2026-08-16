@@ -141,6 +141,38 @@ const html = `<!doctype html>
 <title>Tacet — icon set</title>
 <meta name="description" content="Open-source set of ${names.length} icons in an outline-with-cuts style: the cut is data, hence the draw-in animation and four cut densities. With a note on when to use which icon.">
 <link rel="icon" href="./svg/note.svg" type="image/svg+xml">
+<link rel="canonical" href="https://tacet.smurov.com/">
+
+<!-- A shared link is half the reason someone clicks, so the card gets a real
+     image rather than a bare line of text. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tacet.smurov.com/">
+<meta property="og:title" content="Tacet — icon set">
+<meta property="og:description" content="Open-source set of ${names.length} icons where the cut is data, not geometry: draw-in animation and four cut densities out of one source. MIT.">
+<meta property="og:image" content="https://tacet.smurov.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tacet — icon set">
+<meta name="twitter:description" content="Open-source set of ${names.length} icons where the cut is data, not geometry. MIT.">
+<meta name="twitter:image" content="https://tacet.smurov.com/og.png">
+
+<!-- Structured data: tells search and language models this is a library with a
+     licence, a repository and packages — not a page that happens to mention icons. -->
+<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  name: "Tacet",
+  description: `Outline icon set of ${names.length} glyphs where the cut in a stroke is data rather than geometry: draw-in animation, four cut densities and a solid mode out of a single source. Every glyph carries guidance on when to use it.`,
+  url: "https://tacet.smurov.com/",
+  codeRepository: "https://github.com/ilyasmurov/tacet",
+  license: "https://spdx.org/licenses/MIT.html",
+  programmingLanguage: "TypeScript",
+  author: { "@type": "Person", name: "Ilya Smurov", url: "https://smurov.com" },
+  keywords: ["icons", "icon set", "svg icons", "react icons", "web component", "open source", "animated icons"],
+})}
+</script>
 <link rel="stylesheet" href="./fonts/fonts.css">
 <link rel="stylesheet" href="./styles.css">
 <script type="importmap">
@@ -567,6 +599,12 @@ mkdirSync(out, { recursive: true });
 writeFileSync(join(out, "index.html"), html, "utf8");
 cpSync(join(here, "styles.css"), join(out, "styles.css"));
 
+// Card for shared links. Drawn once in the language of the page itself — the
+// set's own glyphs, PT Mono, the accent blue — and kept as a file: a picture
+// that changes with every build would be a moving target for the crawlers
+// that cache it.
+cpSync(join(here, "og.png"), join(out, "og.png"));
+
 // Packages go in built: the page loads them as plain ES modules. The build id
 // in the path is what lets the cache hold them for a week without risk.
 //
@@ -579,6 +617,22 @@ cpSync(join(root, "packages/element/dist"), join(out, `tacet/${buildId}/element`
 // Static SVG and the semantics — served as files too.
 cpSync(join(root, "svg"), join(out, "svg"), { recursive: true });
 cpSync(join(root, "meta/llms.txt"), join(out, "llms.txt"));
+
+// Robots and a sitemap: one page, but a crawler should not have to guess.
+writeFileSync(
+  join(out, "robots.txt"),
+  ["User-Agent: *", "Allow: /", "", "Sitemap: https://tacet.smurov.com/sitemap.xml", ""].join("\n"),
+  "utf8",
+);
+writeFileSync(
+  join(out, "sitemap.xml"),
+  `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://tacet.smurov.com/</loc></url>
+</urlset>
+`,
+  "utf8",
+);
 cpSync(join(root, "meta/icons.json"), join(out, "icons.json"));
 
 // Fonts: only the weights and subsets we need, no latin-ext.
