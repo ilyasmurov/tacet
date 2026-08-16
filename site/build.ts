@@ -544,6 +544,21 @@ if (parade && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
   });
 }
 </script>
+
+<!-- Яндекс.Метрика. Счётчик общий с smurov.com: в его настройках включён учёт
+     поддоменов, поэтому tacet.smurov.com попадает в ту же статистику. -->
+<script>
+if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+  (function(m,e,t,r,i,k,a){
+    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for (var j=0; j<document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=111664633", "ym");
+  ym(111664633, "init", { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true });
+}
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/111664633" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 </body>
 </html>
 `;
