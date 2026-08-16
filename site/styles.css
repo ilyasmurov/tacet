@@ -324,6 +324,9 @@ footer a:hover { color: var(--ink); }
   .top nav a { font-size: 14px; }
   .hero { padding-block: 34px 10px; }
   .hero p { font-size: 18px; }
+  /* Eleven glyphs on a phone: with a smaller gap they fall as 5 + 5 + 1, and the
+     lone one on the last line reads as a leftover. This gap gives 4 + 4 + 3. */
+  .parade { gap: 30px 34px; }
   section { padding: 46px 0; }
   .card { padding: 20px; }
   .cols { grid-template-columns: 1fr; }
