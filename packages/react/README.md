@@ -50,7 +50,7 @@ Every glyph carries a note on what it is for and what it gets confused with —
 useful when the code is written by an agent that picks icons by name:
 
 ```js
-import { META } from "@tacet/core";
+import { META } from "tacet-core";
 
 META["trash"].use;    // "Permanent deletion, the item is gone."
 META["trash"].avoid;  // "If the item is only moved out of sight … that is `archive` …"

@@ -1,5 +1,5 @@
 {
-  "name": "@tacet/element",
+  "name": "tacet-element",
   "version": "0.1.0",
   "description": "Веб-компонент <tacet-icon>: набор иконок Tacet без React.",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "prepack": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@tacet/core": "workspace:^"
+    "tacet-core": "workspace:^"
   },
   "keywords": [
     "icons",

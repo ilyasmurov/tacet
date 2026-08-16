@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Icon } from "tacet";
-import { iconNames } from "@tacet/core";
+import { iconNames } from "tacet-core";
 import { defineTacetIcon } from "./TacetIconElement.js";
 
 beforeAll(() => {

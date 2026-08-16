@@ -30,11 +30,11 @@ import { Icon } from "tacet";
 Not using React:
 
 ```bash
-npm i @tacet/element
+npm i tacet-element
 ```
 
 ```html
-<script type="module">import "@tacet/element";</script>
+<script type="module">import "tacet-element";</script>
 
 <tacet-icon name="rocket" size="24"></tacet-icon>
 ```
@@ -58,7 +58,7 @@ trash
 
 Search tags exist in every icon set. A guide to choosing does not — that is the
 part this set adds. It ships three ways: as the `META` export from
-`@tacet/core`, as [icons.json](https://tacet.smurov.com/icons.json), and as
+`tacet-core`, as [icons.json](https://tacet.smurov.com/icons.json), and as
 [llms.txt](https://tacet.smurov.com/llms.txt) for agents to read directly.
 
 Synonyms are bilingual, so search finds `trash` by both "delete" and «удалить».
@@ -68,8 +68,8 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 | Package | What for |
 |---|---|
 | [`tacet`](packages/react) | React component. React stays a peer dependency |
-| [`@tacet/core`](packages/core) | Data and engine. No dependencies at all |
-| [`@tacet/element`](packages/element) | `<tacet-icon>` custom element |
+| [`tacet-core`](packages/core) | Data and engine. No dependencies at all |
+| [`tacet-element`](packages/element) | `<tacet-icon>` custom element |
 
 Both wrappers are thin: they call `renderSpec()` from the core and know nothing
 about geometry. A test compares the DOM they produce across all 320 glyphs, so

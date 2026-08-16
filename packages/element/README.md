@@ -1,4 +1,4 @@
-# @tacet/element
+# tacet-element
 
 `<tacet-icon>` — the Tacet icon set for projects without React. 320 outline
 glyphs where the cut is data, not geometry.
@@ -6,13 +6,13 @@ glyphs where the cut is data, not geometry.
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
 
 ```bash
-npm i @tacet/element
+npm i tacet-element
 ```
 
 Importing the package registers the element:
 
 ```html
-<script type="module">import "@tacet/element";</script>
+<script type="module">import "tacet-element";</script>
 
 <tacet-icon name="rocket" size="24"></tacet-icon>
 <tacet-icon name="bell" size="20" animate></tacet-icon>
@@ -53,7 +53,7 @@ Without the variable the icon is monochrome.
 ## Own tag name
 
 ```js
-import { defineTacetIcon } from "@tacet/element";
+import { defineTacetIcon } from "tacet-element";
 defineTacetIcon("my-icon");
 ```
 

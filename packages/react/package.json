@@ -29,7 +29,7 @@
     "prepack": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@tacet/core": "workspace:^"
+    "tacet-core": "workspace:^"
   },
   "peerDependencies": {
     "react": ">=18"

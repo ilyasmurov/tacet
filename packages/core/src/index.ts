@@ -1,4 +1,4 @@
-// @tacet/core — данные набора и движок. Ни React, ни любых других зависимостей.
+// tacet-core — данные набора и движок. Ни React, ни любых других зависимостей.
 
 export { ICONS, ANIM, SOLID_BY_DEFAULT } from "./data.js";
 export type { Gap, Part, IconDef, IconName, AnimMode, AnimCfg } from "./data.js";

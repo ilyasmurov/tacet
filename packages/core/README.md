@@ -1,16 +1,16 @@
-# @tacet/core
+# tacet-core
 
 Data and engine of the Tacet icon set. **No dependencies at all** — not even a
 peer one. Use it when you build your own wrapper, generate files, or need the
 glyph data itself.
 
 For React take [`tacet`](https://www.npmjs.com/package/tacet); for plain HTML
-take [`@tacet/element`](https://www.npmjs.com/package/@tacet/element).
+take [`tacet-element`](https://www.npmjs.com/package/tacet-element).
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
 
 ```bash
-npm i @tacet/core
+npm i tacet-core
 ```
 
 ## Rendering
@@ -18,7 +18,7 @@ npm i @tacet/core
 `renderSpec()` is pure: name in, SVG attributes out. No DOM, no framework.
 
 ```js
-import { renderSpec } from "@tacet/core";
+import { renderSpec } from "tacet-core";
 
 const spec = renderSpec("bell", { size: 24 });
 // spec.svgAttrs   → attributes for <svg>
@@ -38,7 +38,7 @@ An unknown name returns `null`, including names that exist on `Object.prototype`
 Works on a plain DOM element, so any wrapper can use it:
 
 ```js
-import { animate, prepare, reverse, resetAnimation, resolveAnimateCfg } from "@tacet/core";
+import { animate, prepare, reverse, resetAnimation, resolveAnimateCfg } from "tacet-core";
 
 const cfg = resolveAnimateCfg("bell");
 prepare(svg, cfg);            // hide before the first paint
@@ -54,7 +54,7 @@ attribute and the gaps would crawl along the path.
 ## Data
 
 ```js
-import { ICONS, META, iconNames, hasIcon, searchIcons } from "@tacet/core";
+import { ICONS, META, iconNames, hasIcon, searchIcons } from "tacet-core";
 
 iconNames().length;              // 320
 ICONS["bell"];                   // parts with gaps as [start%, width%]
@@ -65,7 +65,7 @@ searchIcons("удалить", iconNames());  // ["trash", …] — synonyms are 
 ## Stroke
 
 ```js
-import { strokeOnScreen, STROKE_AT_24, STROKE_EXPONENT } from "@tacet/core";
+import { strokeOnScreen, STROKE_AT_24, STROKE_EXPONENT } from "tacet-core";
 
 strokeOnScreen(128);                          // 3.19 — not 7.2
 strokeOnScreen(128, { absoluteStroke: true }); // 1.50

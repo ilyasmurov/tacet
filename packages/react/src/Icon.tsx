@@ -1,4 +1,4 @@
-// React-обёртка над @tacet/core. Геометрии не знает: зовёт renderSpec и animate.
+// React-обёртка над tacet-core. Геометрии не знает: зовёт renderSpec и animate.
 // Внутри — только то, что действительно про React: ref, id, замер размера, эффекты.
 
 import {
@@ -9,7 +9,7 @@ import {
   renderSpec, animate, prepare, reverse, resetAnimation, resolveAnimateCfg,
   canAnimateOnMount, toReactAttrs, BODY_CLASS, SVG_STYLE,
   type IconVariant, type AnimMode, type ElementSpec,
-} from "@tacet/core";
+} from "tacet-core";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "ref"> {
   /** Имя глифа, например "rocket" или "guitar-electric". */

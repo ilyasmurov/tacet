@@ -7,7 +7,7 @@
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ICONS, META, iconNames } from "@tacet/core";
+import { ICONS, META, iconNames } from "tacet-core";
 import { INSTRUMENT_NAMES, SERVICE_NAMES } from "../scripts/groups.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -68,7 +68,7 @@ const html = `<!doctype html>
 <link rel="stylesheet" href="./fonts/fonts.css">
 <link rel="stylesheet" href="./styles.css">
 <script type="importmap">
-{ "imports": { "@tacet/core": "./tacet/core/index.js" } }
+{ "imports": { "tacet-core": "./tacet/core/index.js" } }
 </script>
 </head>
 <body>
@@ -188,7 +188,7 @@ const html = `<!doctype html>
     </div>
     <p style="margin-top:22px">Отдаётся как <a href="./llms.txt">llms.txt</a> и
     <a href="./icons.json">icons.json</a>, а в коде — экспортом <code>META</code> из
-    <code>@tacet/core</code>.</p>
+    <code>tacet-core</code>.</p>
   </div>
 </section>
 
@@ -226,7 +226,7 @@ const html = `<!doctype html>
 
 <script type="module">
 import "./tacet/element/index.js";
-import { META, iconNames } from "@tacet/core";
+import { META, iconNames } from "tacet-core";
 
 const GROUPS = ${JSON.stringify(groups)};
 let size = 24, variant = "D", query = "";

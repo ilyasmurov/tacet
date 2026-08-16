@@ -1,5 +1,5 @@
 {
-  "name": "@tacet/site",
+  "name": "tacet-site",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,7 +8,7 @@
     "build": "node build.ts"
   },
   "dependencies": {
-    "@tacet/core": "workspace:^"
+    "tacet-core": "workspace:^"
   },
   "devDependencies": {
     "@fontsource/onest": "^5.3.0",

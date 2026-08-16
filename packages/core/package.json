@@ -1,5 +1,5 @@
 {
-  "name": "@tacet/core",
+  "name": "tacet-core",
   "version": "0.1.0",
   "description": "Данные и движок набора иконок Tacet. Без зависимостей.",
   "license": "MIT",

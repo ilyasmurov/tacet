@@ -7,7 +7,7 @@
 import {
   renderSpec, animate, prepare, resetAnimation, resolveAnimateCfg, BODY_CLASS, SVG_STYLE,
   type ElementSpec, type IconVariant, type AnimMode, type RenderOpts,
-} from "@tacet/core";
+} from "tacet-core";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const HOST_SELECTOR =
