@@ -1,15 +1,15 @@
-// Перенос глифов из набора Ansamblist в данные Tacet.
+// Moving glyphs from the Ansamblist set into the Tacet data.
 //
-// Формат там — подмножество здешнего (`gaps`, `accent`, `fill`, `activeFill`,
-// `tf`, `sw`), поэтому перенос механический: разбираем объекты и печатаем их
-// обратно вызовами тех же билдеров, что используются в data.ts.
+// Their format is a subset of this one (`gaps`, `accent`, `fill`, `activeFill`,
+// `tf`, `sw`), so the move is mechanical: parse the objects and print them back
+// as calls to the same builders data.ts uses.
 //
-// Имена приводим к дефисам: весь остальной набор так и назван, а `guitar_electric`
-// посреди `git-branch` читается как чужое. Ansamblist при переезде сделает
-// replace(/_/g, "-") на ключах INSTRUMENTS.
+// Names are converted to hyphens: the rest of the set is named that way, and
+// `guitar_electric` in the middle of `git-branch` reads as a foreign body. When
+// Ansamblist migrates it will do replace(/_/g, "-") on the INSTRUMENTS keys.
 //
-// Глифы, чьё имя уже занято набором Taskless, пропускаются — по ним решение
-// принимается глазами, отдельным шагом.
+// Glyphs whose name the Taskless set already holds are skipped — those are
+// decided by eye, as a separate step.
 
 export interface RawPart {
   t: "path" | "circle" | "rect" | "hole";
@@ -29,7 +29,7 @@ export function toKebab(name: string): string {
 }
 
 function num(n: number): string {
-  // Печатаем компактно: 12.0 → 12, но точность не теряем.
+  // Printed compactly: 12.0 → 12, without losing precision.
   return String(Number(n.toFixed(4)));
 }
 
@@ -48,13 +48,13 @@ function gapsArg(part: RawPart): string {
   return "[" + part.gaps.map(([s, w]) => `[${num(s)}, ${num(w)}]`).join(", ") + "]";
 }
 
-/** Одна часть глифа — вызовом билдера, как это написано в data.ts вручную. */
+/** One part of a glyph, as a builder call — the way data.ts is written by hand. */
 export function partToSource(part: RawPart): string {
   const extra = opts(part);
   const tail = (gaps: string) => (extra ? `, ${gaps}, ${extra}` : gaps === "null" ? "" : `, ${gaps}`);
 
   if (part.t === "circle") {
-    // dot() — это залитый кружок; отдельный билдер ради читаемости данных.
+    // dot() is a filled circle; a separate builder for readable data.
     if (part.fill && !part.gaps) {
       const rest = opts({ ...part, fill: false });
       return `dot(${num(part.cx!)}, ${num(part.cy!)}, ${num(part.r!)}${rest ? `, ${rest}` : ""})`;
@@ -78,7 +78,7 @@ export interface MergeResult {
   skipped: string[];
 }
 
-/** Готовый блок для вставки в data.ts плюс отчёт, что взяли и что пропустили. */
+/** A ready block to paste into data.ts plus a report of what was taken and skipped. */
 export function mergeGlyphs(
   incoming: Record<string, RawPart[]>,
   existingNames: ReadonlySet<string>,

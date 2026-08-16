@@ -1,11 +1,11 @@
-// Продолжение семантики интерфейса: люди, звонки, инфраструктура, стрелки
-// и всё, что не поместилось в первую часть. Разделение чисто механическое —
-// иначе один файл разрастается до неудобного.
+// The interface semantics continued: people, calls, infrastructure, arrows and
+// everything that did not fit into the first part. The split is purely
+// mechanical — otherwise a single file grows past comfortable.
 
 import type { IconMeta } from "./metaTypes.js";
 
 export const UI_META_2: Record<string, IconMeta> = {
-  // ── люди ──
+  // ── people ──
   "user": {
     use: "One person, a profile.",
     avoid: "For several people use `users`; for a team as an entity use `team`.",
@@ -76,7 +76,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["mic", "message-square"],
   },
 
-  // ── уведомления, метки, избранное ──
+  // ── notifications, marks, favourites ──
   "bell": {
     use: "Notifications.",
     avoid: "For muted notifications use `bell-off`; for an incoming pile use `inbox`.",
@@ -162,7 +162,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["heart"],
   },
 
-  // ── календарь и время ──
+  // ── calendar and time ──
   "calendar": {
     use: "Date, schedule, a calendar view.",
     avoid: "For a moment in time use `clock`; for a meeting with a time use `calendar-clock`.",
@@ -175,7 +175,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["calendar", "clock", "video"],
   },
 
-  // ── звонки и медиа-контроль ──
+  // ── calls and media controls ──
   "phone": {
     use: "Voice call.",
     avoid: "For a device use `smartphone`; for a video call use `video`.",
@@ -307,7 +307,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["captions", "file-audio", "activity"],
   },
 
-  // ── сообщения ──
+  // ── messages ──
   "message-square": {
     use: "One message or a comment.",
     avoid: "For a whole conversation use `messages-square`.",
@@ -354,7 +354,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["note", "info", "post"],
   },
 
-  // ── инфраструктура ──
+  // ── infrastructure ──
   "server": {
     use: "Server, a host, an environment.",
     avoid: "For a database use `database`; for an event host use `hosting`.",
@@ -426,7 +426,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["monitor", "desktop-download", "presentation"],
   },
 
-  // ── разработка ──
+  // ── development ──
   "git-branch": {
     use: "Branch in version control.",
     avoid: "For a business process use `workflow`.",
@@ -551,7 +551,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["building", "cloud", "map-pin"],
   },
 
-  // ── стрелки и управление ──
+  // ── arrows and controls ──
   "chevron-right": {
     use: "Moving forward or expanding a collapsed item.",
     avoid: "For navigating between entities use `arrow-right`: chevrons are for interface mechanics.",
@@ -628,7 +628,7 @@ export const UI_META_2: Record<string, IconMeta> = {
     related: ["check", "minus", "circle"],
   },
 
-  // ── прочее ──
+  // ── everything else ──
   "ticket": {
     use: "Ticket to an event, an entry pass.",
     avoid: "For a support ticket in this set use `message-square`.",

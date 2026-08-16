@@ -1,5 +1,5 @@
-// Тесты движка анимации. Проверяют то, что руками не увидишь: маску проявления,
-// её инвалидацию и то, что состояния снимаются, а не залипают.
+// Tests for the animation engine. They cover what you cannot see by hand: the
+// reveal mask, its invalidation, and that states come off instead of sticking.
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { animate, prepare, resetAnimation, resolveAnimateCfg, reverse } from "./animate.js";
@@ -7,7 +7,7 @@ import { BODY_CLASS, renderSpec } from "./renderSpec.js";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 
-/** Собирает тот же DOM, что отдают обёртки. */
+/** Builds the same DOM the wrappers produce. */
 function draw(name: string, size = 24): SVGSVGElement {
   const spec = renderSpec(name, { size })!;
   const svg = document.createElementNS(SVGNS, "svg") as SVGSVGElement;
@@ -24,7 +24,7 @@ function draw(name: string, size = 24): SVGSVGElement {
   return svg;
 }
 
-/** Перерисовать тело под другой глиф, как это делает React при смене пропа. */
+/** Re-render the body for another glyph, the way React does on a prop change. */
 function swapGlyph(svg: SVGSVGElement, name: string): void {
   const spec = renderSpec(name, { size: 24 })!;
   const body = svg.querySelector(`g.${BODY_CLASS}`)!;
@@ -45,15 +45,15 @@ beforeEach(() => {
   document.body.textContent = "";
 });
 
-describe("маска проявления", () => {
-  it("строится по фигурам глифа", () => {
+describe("the reveal mask", () => {
+  it("is built from the glyph shapes", () => {
     const svg = draw("bell");
     animate(svg, cfg);
     expect(svg.querySelector("mask")).not.toBeNull();
     expect(maskShapes(svg).length).toBeGreaterThan(0);
   });
 
-  it("пересобирается, когда глиф сменился", () => {
+  it("is rebuilt when the glyph changes", () => {
     const svg = draw("clock");
     animate(svg, cfg);
     const before = maskShapes(svg);
@@ -63,13 +63,13 @@ describe("маска проявления", () => {
     animate(svg, cfg);
     const after = maskShapes(svg);
 
-    // Иначе новый глиф проявляется через силуэт старого — на экране огрызок.
+    // Otherwise the new glyph reveals through the old silhouette — a stump on screen.
     expect(after.length).not.toBe(before.length);
     expect(svg.querySelector("mask")!.id).not.toBe(idBefore);
     expect(svg.querySelectorAll("mask").length).toBe(1);
   });
 
-  it("переиспользуется, пока глиф тот же", () => {
+  it("is reused while the glyph stays the same", () => {
     const svg = draw("bell");
     animate(svg, cfg);
     const id = svg.querySelector("mask")!.id;
@@ -79,8 +79,8 @@ describe("маска проявления", () => {
   });
 });
 
-describe("обратный ход и повторное появление", () => {
-  it("после reverse иконка возвращается, а не гаснет навсегда", () => {
+describe("reverse and re-entrance", () => {
+  it("after reverse the icon comes back instead of going dark for good", () => {
     const svg = draw("loading");
     const live = () => Array.from(svg.querySelectorAll<SVGElement>(`g.${BODY_CLASS} [data-dash]`));
 
@@ -95,11 +95,11 @@ describe("обратный ход и повторное появление", () 
     }
   });
 
-  it("возврат живых фигур не портит маску проявления", () => {
+  it("restoring live shapes does not spoil the reveal mask", () => {
     const svg = draw("bell");
     reverse(svg);
     animate(svg, cfg);
-    // У клонов свой рабочий dasharray; перепиши им исходный — проявление встанет.
+    // Clones have their own working dasharray; overwrite it and the reveal stalls.
     for (const clone of svg.querySelectorAll<SVGElement>("mask [data-rev]")) {
       expect(clone.getAttribute("stroke-dasharray")).toBe("100 100");
       expect(clone.hasAttribute("data-dash")).toBe(false);
@@ -107,8 +107,8 @@ describe("обратный ход и повторное появление", () 
   });
 });
 
-describe("снятие состояния", () => {
-  it("prepare без animate оставляет иконку скрытой, resetAnimation её возвращает", () => {
+describe("clearing the state", () => {
+  it("prepare without animate leaves the icon hidden, resetAnimation brings it back", () => {
     const svg = draw("rocket");
     prepare(svg, cfg);
     const body = svg.querySelector<SVGGElement>(`g.${BODY_CLASS}`)!;
@@ -122,7 +122,7 @@ describe("снятие состояния", () => {
     expect(body.style.transform).toBe("");
   });
 
-  it("после сброса анимация играется заново", () => {
+  it("after a reset the animation plays again", () => {
     const svg = draw("bell");
     animate(svg, cfg);
     resetAnimation(svg);
@@ -131,8 +131,8 @@ describe("снятие состояния", () => {
   });
 });
 
-describe("режимы", () => {
-  it("pop и fade работают без маски", () => {
+describe("modes", () => {
+  it("pop and fade work without a mask", () => {
     for (const mode of ["pop", "fade"] as const) {
       const svg = draw("bell");
       animate(svg, resolveAnimateCfg("bell", { mode }));
@@ -141,13 +141,13 @@ describe("режимы", () => {
     }
   });
 
-  it("spin доворачивает сам svg", () => {
+  it("spin rotates the svg itself", () => {
     const svg = draw("loading");
     animate(svg, resolveAnimateCfg("loading", { mode: "spin", spinDeg: 90 }));
     expect(svg.style.transform).toContain("rotate");
   });
 
-  it("без тела анимация молчит, а не падает", () => {
+  it("without a body the animation stays quiet instead of crashing", () => {
     const svg = document.createElementNS(SVGNS, "svg") as SVGSVGElement;
     expect(() => animate(svg, cfg)).not.toThrow();
     expect(() => resetAnimation(svg)).not.toThrow();

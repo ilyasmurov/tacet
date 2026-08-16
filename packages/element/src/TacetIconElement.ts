@@ -1,8 +1,8 @@
-// <tacet-icon> — тот же движок для проектов без React.
+// <tacet-icon> — the same engine for projects without React.
 //
-// Рисуем в light DOM, а не в shadow: так разметка совпадает с той, что даёт
-// React-обёртка (это проверяется тестом паритета), и снаружи иконку можно
-// стилизовать обычным CSS.
+// Rendering goes into light DOM rather than shadow: this way the markup matches
+// what the React wrapper produces (covered by the parity test), and the icon can
+// be styled from outside with ordinary CSS.
 
 import {
   renderSpec, animate, prepare, resetAnimation, resolveAnimateCfg, BODY_CLASS, SVG_STYLE,
@@ -42,8 +42,8 @@ export class TacetIconElement extends HTMLElement {
 
   disconnectedCallback(): void {
     this.#unbindHover();
-    // Элемент могли снять до того, как анимация проиграла: снимаем маску и
-    // таймер, иначе при возврате в DOM иконка окажется спрятанной.
+    // The element may have been removed before the animation played: drop the
+    // mask and the timer, or it comes back to the DOM hidden.
     const svg = this.querySelector("svg");
     if (svg) resetAnimation(svg as SVGSVGElement);
   }
@@ -107,7 +107,7 @@ export class TacetIconElement extends HTMLElement {
     host.addEventListener("mouseenter", this.#onEnter);
   }
 
-  /** Перерисовать. Зовётся само при смене атрибутов. */
+  /** Re-render. Called automatically when attributes change. */
   render(): void {
     const name = this.getAttribute("name") ?? "";
     const spec = renderSpec(name, this.#opts());
@@ -116,7 +116,7 @@ export class TacetIconElement extends HTMLElement {
 
     if (!spec) {
       if (name && typeof console !== "undefined") {
-        console.warn(`tacet: неизвестная иконка "${name}"`);
+        console.warn(`tacet: unknown icon "${name}"`);
       }
       return;
     }
@@ -166,7 +166,7 @@ export class TacetIconElement extends HTMLElement {
   }
 }
 
-/** Зарегистрировать <tacet-icon>. Повторный вызов безвреден, в Node молчит. */
+/** Register <tacet-icon>. Calling again is harmless; in Node it stays quiet. */
 export function defineTacetIcon(tag = "tacet-icon"): void {
   if (typeof customElements === "undefined") return;
   if (customElements.get(tag)) return;

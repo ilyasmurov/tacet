@@ -1,8 +1,8 @@
-// Группы набора: чем глиф является, а не как называется.
+// Groups of the set: what a glyph is, not what it is called.
 //
-// Инструменты и услуги приехали из Ansamblist и там же перечислены по порядку;
-// всё остальное — интерфейс. Списки нужны галерее и сайту, поэтому лежат
-// отдельно от данных: набору как таковому группировка не требуется.
+// Instruments and services came from Ansamblist and are listed there in order;
+// everything else is interface. The lists serve the gallery and the site, so they
+// live apart from the data: the set itself needs no grouping.
 
 export const INSTRUMENT_NAMES: readonly string[] = [
   "vocals",

@@ -1,5 +1,5 @@
-// Данные набора правятся руками, и кривая запись всплывает только на экране —
-// поэтому проверяем их целостность отдельно от рендера.
+// The set's data is edited by hand, and a malformed entry only shows up on
+// screen — so integrity is checked separately from rendering.
 
 import { describe, expect, it } from "vitest";
 import { ANIM, ICONS, SOLID_BY_DEFAULT, type IconDef, type Part } from "./data.js";
@@ -7,19 +7,19 @@ import { dashFor } from "./stroke.js";
 
 const entries = Object.entries(ICONS as unknown as Record<string, IconDef>);
 
-describe("данные глифов", () => {
-  it("набор не пустой и имена уникальны", () => {
+describe("glyph data", () => {
+  it("the set is not empty and names are unique", () => {
     expect(entries.length).toBeGreaterThan(200);
     expect(new Set(Object.keys(ICONS)).size).toBe(entries.length);
   });
 
-  it("имена годятся для id, файлов и url", () => {
+  it("names are fit for ids, files and urls", () => {
     for (const [name] of entries) {
       expect(name, name).toMatch(/^[a-z0-9-]+$/);
     }
   });
 
-  it("у каждой части заполнены обязательные поля", () => {
+  it("every part has its required fields filled in", () => {
     for (const [name, def] of entries) {
       for (const raw of def) {
         if (!raw) continue;
@@ -39,7 +39,7 @@ describe("данные глифов", () => {
     }
   });
 
-  it("разрезы лежат внутри контура и не наезжают друг на друга", () => {
+  it("cuts stay inside the contour and never overlap", () => {
     for (const [name, def] of entries) {
       for (const raw of def) {
         const gaps = (raw as Part | null)?.gaps;
@@ -50,14 +50,14 @@ describe("данные глифов", () => {
           expect(start, name).toBeGreaterThanOrEqual(0);
           expect(width, name).toBeGreaterThan(0);
           expect(start + width, name).toBeLessThanOrEqual(100);
-          expect(start, `${name}: разрезы наезжают`).toBeGreaterThanOrEqual(prevEnd);
+          expect(start, `${name}: cuts overlap`).toBeGreaterThanOrEqual(prevEnd);
           prevEnd = start + width;
         }
       }
     }
   });
 
-  it("dashFor всегда покрывает ровно длину контура", () => {
+  it("dashFor always covers exactly the contour length", () => {
     for (const [name, def] of entries) {
       for (const raw of def) {
         const gaps = (raw as Part | null)?.gaps;
@@ -69,14 +69,14 @@ describe("данные глифов", () => {
   });
 });
 
-describe("сопутствующие таблицы", () => {
-  it("пресеты анимации ссылаются на существующие глифы", () => {
+describe("companion tables", () => {
+  it("animation presets point at glyphs that exist", () => {
     for (const name of Object.keys(ANIM)) {
       expect(Object.prototype.hasOwnProperty.call(ICONS, name), name).toBe(true);
     }
   });
 
-  it("список сплошных по умолчанию ссылается на существующие глифы", () => {
+  it("the solid-by-default list points at glyphs that exist", () => {
     for (const name of SOLID_BY_DEFAULT) {
       expect(Object.prototype.hasOwnProperty.call(ICONS, name), name).toBe(true);
     }

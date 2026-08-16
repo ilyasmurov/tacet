@@ -1,17 +1,18 @@
-// Сколько места глиф занимает в боксе 24×24.
+// How much room a glyph takes inside the 24×24 box.
 //
-// Нужно для оптического зума: набор Taskless рисовался так, что глифы занимают
-// около 74% бокса, и зум это компенсирует. Глифы Ansamblist рисовались отдельно,
-// и если их доля другая, общий зум их либо раздует, либо оставит мелкими.
+// Needed for optical zoom: the Taskless set was drawn so that glyphs occupy
+// about 74% of the box, and the zoom compensates for that. The Ansamblist glyphs
+// were drawn separately, and if their share differs, a shared zoom would either
+// inflate them or leave them small.
 //
-// Кривые считаются точно: у Безье берутся экстремумы, а не выпуклая оболочка по
-// контрольным точкам. Оболочка годилась, пока мы сравнивали два набора одной
-// меркой, но для окна SVG-файла она завышает габариты и заставляет расширять
-// viewBox там, где глиф на самом деле помещается.
+// Curves are measured exactly: Bézier extrema rather than the convex hull of the
+// control points. The hull was fine while we compared two sets by one yardstick,
+// but for an SVG file's window it overstates the bounds and forces the viewBox
+// wider where the glyph actually fits.
 
 export interface Box { minX: number; minY: number; maxX: number; maxY: number }
 
-/** Экстремумы кубической Безье по одной оси — точки, где производная равна нулю. */
+/** Extrema of a cubic Bézier along one axis — where the derivative is zero. */
 function cubicExtrema(p0: number, p1: number, p2: number, p3: number): number[] {
   const a = 3 * (-p0 + 3 * p1 - 3 * p2 + p3);
   const b = 6 * (p0 - 2 * p1 + p2);
@@ -38,7 +39,7 @@ function cubicExtrema(p0: number, p1: number, p2: number, p3: number): number[] 
   return out;
 }
 
-/** То же для квадратичной. */
+/** The same for a quadratic one. */
 function quadExtrema(p0: number, p1: number, p2: number): number[] {
   const denom = p0 - 2 * p1 + p2;
   if (Math.abs(denom) < 1e-12) return [];
@@ -55,7 +56,7 @@ function nums(chunk: string): number[] {
   return (chunk.match(NUM) ?? []).map(Number);
 }
 
-/** Габариты пути. Понимает относительные команды — иначе счёт врёт. */
+/** Bounds of a path. Understands relative commands — without that the count lies. */
 export function pathBox(d: string): Box | null {
   let x = 0, y = 0, startX = 0, startY = 0;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -118,8 +119,8 @@ export function pathBox(d: string): Box | null {
           x = rel ? x + args[i + 2]! : args[i + 2]!;
           y = rel ? y + args[i + 3]! : args[i + 3]!;
           hit(x0, y0); hit(x, y);
-          // S — кубическая с зеркальной первой контрольной точкой; для габаритов
-          // хватает трактовки как квадратичной по заданной точке.
+          // S is a cubic with a mirrored first control point; for bounds,
+          // treating it as a quadratic through the given point is enough.
           for (const v of quadExtrema(x0, cx, x)) hit(v, y0);
           for (const v of quadExtrema(y0, cy, y)) hit(x0, v);
           i += 4;
@@ -137,10 +138,11 @@ export function pathBox(d: string): Box | null {
           const x0 = x, y0 = y;
           x = rel ? x + args[i + 5]! : args[i + 5]!;
           y = rel ? y + args[i + 6]! : args[i + 6]!;
-          // Считаем по концам дуги. Оценка «конец плюс радиус» врала на порядок:
-          // в наборе дуги — это скругления и полукружия, они укладываются между
-          // своими концами, а большой радиус при малой хорде раздувал габарит
-          // на десяток единиц там, где глиф спокойно сидит в боксе.
+          // Measured by the arc endpoints. The "endpoint plus radius" estimate
+          // was off by an order of magnitude: arcs in this set are roundings and
+          // half-circles that stay between their own ends, while a large radius
+          // over a short chord inflated the bounds by ten units where the glyph
+          // sits comfortably inside the box.
           hit(x0, y0); hit(x, y);
           i += 7;
         }
@@ -153,7 +155,7 @@ export function pathBox(d: string): Box | null {
   return seen ? { minX, minY, maxX, maxY } : null;
 }
 
-/** Габариты глифа целиком: пути, окружности и прямоугольники вместе. */
+/** Bounds of the whole glyph: paths, circles and rectangles together. */
 export function glyphBox(def: readonly unknown[]): Box | null {
   let box: Box | null = null;
   const merge = (b: Box | null) => {
@@ -182,7 +184,7 @@ export function glyphBox(def: readonly unknown[]): Box | null {
   return box;
 }
 
-/** Какую долю бокса 24×24 занимает глиф по большей стороне. */
+/** What share of the 24×24 box the glyph takes along its larger side. */
 export function fillRatio(box: Box | null): number {
   if (!box) return 0;
   return Math.max(box.maxX - box.minX, box.maxY - box.minY) / 24;

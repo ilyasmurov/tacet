@@ -1,6 +1,6 @@
-// Инструменты и музыкальные роли. Форма короткая: здесь важно, чтобы глиф
-// нашёлся по названию на двух языках, а спутать саксофон с трубой можно только
-// нарочно — поэтому avoid стоит лишь там, где путаница реальна.
+// Instruments and musical roles. The short form: what matters here is that the
+// glyph is found by its name in either language, and mixing up a saxophone with
+// a trumpet takes effort — so `avoid` appears only where confusion is real.
 
 import type { IconMeta } from "./metaTypes.js";
 

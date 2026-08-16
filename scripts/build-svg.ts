@@ -1,28 +1,29 @@
-// Печёт из данных набора отдельные SVG-файлы и спрайт.
+// Bakes standalone SVG files and a sprite out of the set's data.
 //
-// Разрезы в статике сохраняются — они запечены в stroke-dasharray. Анимация
-// теряется: она живёт в рантайме и строит маску из клонов, файлу это негде взять.
+// Cuts survive in static files — they are baked into stroke-dasharray. The
+// animation does not: it lives at runtime and builds a mask from clones, which a
+// file has nowhere to get.
 //
-// Толщина считается для 24px по общей формуле. Акцентные детали остаются на
-// var(--tacet-accent, currentColor): вставишь файл инлайном — цвет подхватится
-// из CSS, вставишь через <img> — деталь просто станет цветом текста.
+// Stroke is computed for 24px by the shared formula. Accent details stay on
+// var(--tacet-accent, currentColor): inline the file and the colour comes from
+// CSS, drop it in through <img> and the detail simply becomes the text colour.
 
-// Берём собранный пакет, а не исходники: внутри ядра импорты идут с
-// расширением .js, как требует Node для ESM, и по исходникам не резолвятся.
-// Отсюда и порядок в package.json: сначала build, потом этот скрипт.
+// We take the built package rather than the sources: inside the core the
+// imports carry the .js extension Node requires for ESM, and they do not resolve
+// against the sources. Hence the order in package.json: build first, then this.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { renderSpec, iconNames } from "../packages/core/dist/index.js";
 
 const SIZE = 24;
 
 /**
- * Окно у всех файлов одно и то же — бокс, в котором набор рисовался.
+ * Every file shares one window — the box the set was drawn in.
  *
- * Оптический зум рантайма сюда не переносим: он компенсирует то, что на экране
- * глиф читается мельче соседнего текста, а файл всё равно масштабируют под своё
- * место. Зато при едином окне иконки выравниваются в сетке и в Фигме, и в чужом
- * спрайте. Замер по всему набору: габариты укладываются в x 2..22.8 и y 1..22.3,
- * то есть ничего не срезается даже с учётом штриха.
+ * The runtime's optical zoom is not carried over: it compensates for a glyph
+ * reading smaller than the text beside it on screen, whereas a file gets scaled
+ * to its place anyway. With a single window the icons line up in a grid, both in
+ * Figma and in somebody else's sprite. Measured across the whole set, the bounds
+ * fit into x 2..22.8 and y 1..22.3 — nothing is clipped, stroke included.
  */
 const VIEW_BOX = "0 0 24 24";
 
@@ -35,7 +36,7 @@ function attrsToString(attrs: Record<string, string | number>): string {
 interface Built { name: string; body: string }
 
 function build(name: string): Built {
-  // zoom: false — окно уже задано константой, второй раз обрезать нечего.
+  // zoom: false — the window is already fixed by the constant, nothing to trim.
   const spec = renderSpec(name, { size: SIZE, zoom: false, idSuffix: name })!;
 
   const parts: string[] = [];
@@ -69,4 +70,4 @@ writeFileSync(
   "utf8",
 );
 
-console.log(`файлов: ${built.length} + спрайт → ${outDir}/  (viewBox ${VIEW_BOX} у всех)`);
+console.log(`files: ${built.length} + sprite → ${outDir}/  (viewBox ${VIEW_BOX} for all)`);

@@ -1,5 +1,6 @@
-// Творцы и услуги вокруг музыки. Форма короткая, но avoid стоит там, где рядом
-// живёт похожая роль: снимать концерт и монтировать его — разные люди.
+// Creators and services around music. The short form, but `avoid` is there
+// wherever a lookalike role lives next door: shooting a concert and cutting the
+// footage are done by different people.
 
 import type { IconMeta } from "./metaTypes.js";
 

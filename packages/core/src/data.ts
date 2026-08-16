@@ -1,14 +1,14 @@
-// Геометрия набора Tacet — «аутлайн с разрезами».
+// Geometry of the Tacet set — outline with cuts.
 //
-// Экспортирует ICONS, ANIM, SOLID_BY_DEFAULT и типы. Толщина штриха и разрезы
-// считаются в stroke.ts, рендер — в renderSpec.ts; здесь только данные.
+// Exports ICONS, ANIM, SOLID_BY_DEFAULT and the types. Stroke width and cuts are
+// computed in stroke.ts, rendering lives in renderSpec.ts; this file is data only.
 //
-// Правила глифа: viewBox 24×24, круглые концы и стыки, глиф держится внутри
-// бокса. Разрез живёт в `gaps` как [начало%, ширина%] по длине контура,
-// приведённой к 100 через pathLength — то есть его можно двигать и убирать,
-// не трогая сам путь. Акцентная деталь помечается `accent: true` и красится
-// переменной --tacet-accent в вариантах C и D. Жёсткий цвет — только через
-// `col` (приоритеты). Имена глифов заморожены: по ним стоят импорты.
+// Rules for a glyph: 24×24 viewBox, round caps and joins, the glyph stays inside
+// the box. A cut lives in `gaps` as [start%, width%] along the contour length
+// normalised to 100 through pathLength — meaning it can be moved or removed
+// without touching the path itself. An accent detail is flagged `accent: true`
+// and painted with --tacet-accent in variants C and D. A hard-coded colour comes
+// only through `col` (priorities). Glyph names are frozen: imports rely on them.
 
 export type Gap = [number, number];
 
@@ -43,9 +43,9 @@ const dot = (cx: number, cy: number, r: number, o: Partial<Part> = {}): Part => 
 const FB = "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z";
 const FF = "M14 2v5a1 1 0 0 0 1 1h5";
 
-// satisfies, а не аннотация Record<string, IconDef>: с аннотацией IconName
-// вырождается в string, и у пакета пропадают и автодополнение по именам,
-// и проверка опечаток.
+// `satisfies` rather than a Record<string, IconDef> annotation: with the
+// annotation IconName degrades into string, and the package loses both name
+// completion and typo checking.
 export const ICONS = {
     // ── shell / navigation ──
     "home": [p("M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z", [[8, 9], [58, 9]])],
@@ -299,11 +299,12 @@ export const ICONS = {
     "folder-tree": [p("M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z", [[13, 9], [60, 9]]), p("M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z", [[42, 14]]), p("M3 5a2 2 0 0 0 2 2h3", null, { accent: true }), p("M3 3v13a2 2 0 0 0 2 2h3", [[45, 14]], { accent: true })],
 
     // ─────────────────────────────────────────────────────────────────
-    // Ниже — глифы из набора Ansamblist. Имена приведены к дефисам:
-    // в наборе один стиль имён, а ключи INSTRUMENTS переводятся на месте.
+    // Below are glyphs from the Ansamblist set. Names were converted to
+    // hyphens: the set keeps one naming style, and INSTRUMENTS keys are
+    // translated on the spot.
     // ─────────────────────────────────────────────────────────────────
 
-    // ── инструменты и роли ──
+    // ── instruments and roles ──
     "vocals": [rc(9, 2, 6, 12, 3, [[14, 11], [60, 11]]), p("M5 11a7 7 0 0 0 14 0", [[42, 14]], { accent: true }), p("M12 18v3.5"), p("M8.5 21.5h7")],
     "guitar-electric": [p("M12 10.2c1.9 0 2.7 1.2 2.4 2.5-.2 1 .5 1.5 1.1 2.1 1.2 1.2 1.1 3.4-.4 4.7a5 5 0 0 1-6.2 0c-1.5-1.3-1.6-3.5-.4-4.7.6-.6 1.3-1.1 1.1-2.1-.3-1.3.5-2.5 2.4-2.5z", [[12, 9], [58, 9]]), p("M12 10.2V2.2", [[28, 22]]), p("M10 14.6h4M10 17h4", null, { accent: true })],
     "guitar-acoustic": [p("M12 9.5c2 0 2.9 1.3 2.6 2.7-.2 1.1.5 1.6 1.2 2.3 1.3 1.3 1.2 3.6-.4 5a5.4 5.4 0 0 1-6.8 0c-1.6-1.4-1.7-3.7-.4-5 .7-.7 1.4-1.2 1.2-2.3-.3-1.4.6-2.7 2.6-2.7z", [[12, 9], [58, 9]]), c(12, 15.6, 1.6, null, { accent: true }), p("M12 9.5V2.5", [[30, 24]]), p("M9.9 4.4h4.2")],
@@ -369,7 +370,7 @@ export const ICONS = {
     "timpani": [p("M3.75 9.5h16.5l-1.3 6.2c-.6 2.9-3.1 4.8-6.95 4.8s-6.35-1.9-6.95-4.8z", [[14, 10], [62, 10]]), p("M14.5 7 18.7 2.8", null, { accent: true }), dot(19.4, 2.2, 1.15, { accent: true })],
     "other": [c(12, 12, 9, [[13, 9], [62, 9]]), dot(7.8, 12, 1.1), dot(12, 12, 1.1, { accent: true }), dot(16.2, 12, 1.1)],
 
-    // ── творцы и услуги ──
+    // ── creators and services ──
     "hosting": [c(12, 6.4, 3.5, [[18, 13]]), p("M12 9.9V19", [[45, 18]]), p("M8 21.5h8"), dot(12, 6.4, 1.1, { accent: true })],
     "catering": [p("M4 15.5c0-4.4 3.6-8 8-8s8 3.6 8 8", [[14, 10], [58, 10]]), p("M2.5 15.5h19", [[42, 16]]), dot(12, 5.4, 1.15, { accent: true })],
     "transport-logistics": [rc(2.5, 6.5, 12, 9.5, 1.5, [[13, 9], [62, 9]]), p("M14.5 9.5h3.4a1 1 0 0 1 .8.4l2.5 3.1a1 1 0 0 1 .3.6v2.4a.5.5 0 0 1-.5.5h-1.6", [[40, 14]]), c(7, 17.6, 1.9, [[25, 18]], { accent: true }), c(17, 17.6, 1.9, [[25, 18]], { accent: true })],
@@ -390,7 +391,7 @@ export const ICONS = {
     "merch-production": [p("M8.5 3.5c0 1.9 1.6 3.2 3.5 3.2s3.5-1.3 3.5-3.2L20.5 6l-2 4-2-.8v11.3h-9V9.2l-2 .8-2-4z", [[14, 9], [60, 9]])],
     "livestream": [dot(12, 12, 1.7, { accent: true }), p("M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7", null, { accent: true }), p("M5.6 18.4a9 9 0 0 1 0-12.8", [[40, 22]]), p("M18.4 5.6a9 9 0 0 1 0 12.8", [[40, 22]])],
 
-    // ── UI из ансамблиста ──
+    // ── UI from Ansamblist ──
     "heart": [p("M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z", [[9, 8], [55, 8]], { accent: true })],
     "comment": [p("M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8z", [[10, 9], [58, 9]])],
     "share": [c(18, 5, 2.6, [[18, 20]]), c(6, 12, 2.6, [[18, 20]], { accent: true }), c(18, 19, 2.6, [[18, 20]]), p("M8.4 10.8l7.2-4.2M8.4 13.2l7.2 4.2")],

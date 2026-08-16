@@ -1,5 +1,5 @@
-// Галерея набора: одна самодостаточная страница со всеми глифами.
-// Данные и движок встраиваются внутрь, поэтому файл открывается как есть.
+// Gallery of the set: one self-contained page with every glyph.
+// Data and engine are inlined, so the file opens as it is.
 
 import { writeFileSync } from "node:fs";
 import { ICONS, META } from "../packages/core/dist/index.js";
@@ -10,12 +10,12 @@ const instruments = new Set(INSTRUMENT_NAMES);
 const services = new Set(SERVICE_NAMES);
 
 const groups = [
-  { id: "ui", title: "Интерфейс", names: names.filter((n) => !instruments.has(n) && !services.has(n)) },
-  { id: "instruments", title: "Инструменты и роли", names: names.filter((n) => instruments.has(n)) },
-  { id: "services", title: "Творцы и услуги", names: names.filter((n) => services.has(n)) },
+  { id: "ui", title: "Interface", names: names.filter((n) => !instruments.has(n) && !services.has(n)) },
+  { id: "instruments", title: "Instruments and roles", names: names.filter((n) => instruments.has(n)) },
+  { id: "services", title: "Creators and services", names: names.filter((n) => services.has(n)) },
 ];
 
-const html = `<title>Tacet — набор иконок</title>
+const html = `<title>Tacet — icon set</title>
 <style>
   :root {
     --bg:#fbfaf8; --panel:#f3f0ec; --hover:#ece8e2; --ink:#1c1a17;
@@ -69,14 +69,14 @@ const html = `<title>Tacet — набор иконок</title>
 
 <div class="wrap">
   <h1>Tacet</h1>
-  <p class="lede">Аутлайн с разрезами: <b>${names.length} глифов</b>, где разрыв контура задан данными, а не вырезан
-  в геометрии. Отсюда анимация самоотрисовки, четыре плотности разрезов и акцентная деталь — из одного источника.</p>
+  <p class="lede">Outline with cuts: <b>${names.length} glyphs</b> where the break in the contour is data rather than
+  something carved into the geometry. Hence the draw-in animation, four cut densities and the accent detail — from one source.</p>
 
   <div class="bar">
-    <input id="q" placeholder="Поиск: «удалить», «success», «баян»" autocomplete="off">
+    <input id="q" placeholder="Search: delete, success, bayan" autocomplete="off">
     <span class="chips" id="sizes"></span>
     <span class="chips" id="variants"></span>
-    <span class="chips"><button id="theme">Тёмная</button></span>
+    <span class="chips"><button id="theme">Dark</button></span>
     <span class="count" id="count"></span>
   </div>
 
@@ -161,8 +161,8 @@ function render(){
   out.textContent="";
   let shown=0;
   for(const group of GROUPS){
-    // Ищем и по имени, и по синонимам: «удалить» находит trash, «success» —
-    // check-circle. Без этого набор из 320 глифов не прочешешь.
+    // Search covers names and synonyms alike: "delete" finds trash, "success"
+    // finds check-circle. Without it a set of 320 glyphs cannot be combed.
     const list=group.names.filter(n=>{
       if(n.includes(query)) return true;
       const meta=META[n];
@@ -188,7 +188,7 @@ function render(){
         navigator.clipboard?.writeText('<Icon name="'+name+'" />');
         cell.classList.add("copied");
         setTimeout(()=>cell.classList.remove("copied"),700);
-        say("Скопировано: "+name);
+        say("Copied: "+name);
       };
       grid.appendChild(cell);
     }
@@ -197,10 +197,10 @@ function render(){
   if(!shown){
     const empty=document.createElement("p");
     empty.className="empty";
-    empty.textContent="Ничего не нашлось. Попробуй другое слово.";
+    empty.textContent="Nothing found. Try another word.";
     out.appendChild(empty);
   }
-  document.getElementById("count").textContent=shown+" из "+${names.length};
+  document.getElementById("count").textContent=shown+" of "+${names.length};
 }
 
 function chips(id,values,current,onPick,label){
@@ -221,8 +221,8 @@ document.getElementById("q").oninput=(e)=>{ query=e.target.value.trim().toLowerC
 
 const root=document.documentElement, themeBtn=document.getElementById("theme");
 const isDark=()=>{ const s=root.getAttribute("data-theme"); return s?s==="dark":matchMedia("(prefers-color-scheme: dark)").matches; };
-themeBtn.textContent=isDark()?"Светлая":"Тёмная";
-themeBtn.onclick=()=>{ root.setAttribute("data-theme",isDark()?"light":"dark"); themeBtn.textContent=isDark()?"Светлая":"Тёмная"; };
+themeBtn.textContent=isDark()?"Light":"Dark";
+themeBtn.onclick=()=>{ root.setAttribute("data-theme",isDark()?"light":"dark"); themeBtn.textContent=isDark()?"Light":"Dark"; };
 
 render();
 </script>
@@ -230,4 +230,4 @@ render();
 
 const out = process.argv[2] ?? "gallery.html";
 writeFileSync(out, html, "utf8");
-console.log(`галерея: ${out} · глифов ${names.length} · ${Math.round(html.length / 1024)} KB`);
+console.log(`gallery: ${out} · glyphs ${names.length} · ${Math.round(html.length / 1024)} KB`);

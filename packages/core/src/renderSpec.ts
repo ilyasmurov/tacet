@@ -1,47 +1,47 @@
-// «Имя глифа → готовые атрибуты SVG». Чистая функция: ни DOM, ни React.
-// На неё опираются обе обёртки, поэтому движок в наборе ровно один.
+// "Glyph name in, ready SVG attributes out." A pure function: no DOM, no React.
+// Both wrappers lean on it, which is why the set has exactly one engine.
 
 import { ICONS, SOLID_BY_DEFAULT, type IconDef, type IconName, type Part } from "./data.js";
 import { dashFor, insetFor, normalizeSize, strokeOnScreen, type StrokeOpts } from "./stroke.js";
 
-/** A — один разрез · B — все разрезы · C — один разрез и акцент · D — все разрезы и акцент. */
+/** A — one cut · B — all cuts · C — one cut and accent · D — all cuts and accent. */
 export type IconVariant = "A" | "B" | "C" | "D";
 
-/** Цвет акцентных деталей. Без переменной иконка монохромная. */
+/** Colour of accent details. Without the variable the icon is monochrome. */
 export const ACCENT_VAR = "var(--tacet-accent, currentColor)";
 
 /**
- * Класс группы, в которой лежит тело глифа. По нему движок находит, что
- * анимировать: без этой группы `animate()` молча ничего не сделает.
+ * Class of the group holding the glyph body. The engine finds what to animate
+ * by it: without this group `animate()` silently does nothing.
  */
 export const BODY_CLASS = "tc-body";
 
 /**
- * Стили, без которых svg отрисуется неверно. `overflow: visible` обязателен:
- * при оптическом зуме края глифов выходят за окно viewBox, а браузер по
- * умолчанию их срезает.
+ * Styles the svg cannot be drawn correctly without. `overflow: visible` is
+ * required: with optical zoom the edges of glyphs reach past the viewBox window,
+ * and browsers clip them by default.
  */
 export const SVG_STYLE = { overflow: "visible" } as const;
 
-// ICONS закрыт через satisfies — иначе IconName выродится в string. Для доступа
-// по произвольной строке нужен вид пошире.
+// ICONS is closed with `satisfies`, otherwise IconName degrades into string.
+// Looking up by an arbitrary string needs a wider view of the same object.
 const BY_NAME = ICONS as Record<string, IconDef>;
 
 export interface RenderOpts extends StrokeOpts {
-  /** Размер в пикселях, он же ширина и высота. По умолчанию 24. */
+  /** Size in pixels, used for both width and height. Defaults to 24. */
   size?: number | undefined;
-  /** По умолчанию D. */
+  /** Defaults to D. */
   variant?: IconVariant | undefined;
-  /** Цельный контур: разрезы игнорируются, данные `gaps` при этом не меняются. */
+  /** Solid contour: cuts are ignored, the `gaps` data itself stays untouched. */
   solid?: boolean | undefined;
-  /** Оптический зум. Выключай, когда фактический размер неизвестен. По умолчанию включён. */
+  /** Optical zoom. Turn it off when the actual size is unknown. On by default. */
   zoom?: boolean | undefined;
-  /** Чем красить акцентные детали. По умолчанию — переменная `--tacet-accent`. */
+  /** What to paint accent details with. Defaults to the `--tacet-accent` variable. */
   accentColor?: string | undefined;
   /**
-   * Хвост для id маски. Нужен, когда на странице несколько экземпляров одного
-   * и того же глифа: у разных глифов id и так разные, в него входит имя.
-   * Из строки берутся только буквы, цифры, дефис и подчёркивание.
+   * Suffix for the mask id. Needed when a page holds several instances of the
+   * same glyph: different glyphs already get different ids, the name is part of
+   * it. Only letters, digits, hyphen and underscore are kept from the string.
    */
   idSuffix?: string | undefined;
 }
@@ -58,19 +58,19 @@ export interface MaskSpec {
 }
 
 export interface RenderResult {
-  /** Атрибуты корневого `<svg>`. Стили не входят — их отдаёт SVG_STYLE. */
+  /** Attributes for the root `<svg>`. Styles are not included — see SVG_STYLE. */
   svgAttrs: Record<string, string | number>;
-  /** Маска-вырез, если у глифа есть части типа `hole`. */
+  /** Cut-out mask, when the glyph has `hole` parts. */
   mask: MaskSpec | null;
-  /** Тело глифа. Кладётся в `<g class="tc-body">`, иначе анимация его не найдёт. */
+  /** The glyph body. Goes inside `<g class="tc-body">`, or animation won't find it. */
   parts: ElementSpec[];
   /**
-   * Значение атрибута `stroke-width`, в единицах viewBox. Это НЕ то же самое,
-   * что `RenderOpts.strokeWidth` — тот задаётся в пикселях экрана. Обратно в
-   * опции годится `strokeOnScreen`, а не это поле.
+   * Value for the `stroke-width` attribute, in viewBox units. This is NOT the
+   * same as `RenderOpts.strokeWidth`, which is given in screen pixels. To feed
+   * a value back into the options use `strokeOnScreen`, not this field.
    */
   strokeAttr: number;
-  /** Толщина штриха на экране, в CSS-пикселях. */
+  /** Stroke width on screen, in CSS pixels. */
   strokeOnScreen: number;
 }
 
@@ -85,7 +85,7 @@ function colorFor(part: Part, variant: IconVariant, accent: string): string {
   return accentOn ? accent : "currentColor";
 }
 
-/** id попадает в атрибут и в url(#...) — пускаем только безопасные символы. */
+/** The id lands in an attribute and in url(#...) — allow safe characters only. */
 function safeId(raw: string): string {
   return raw.replace(/[^A-Za-z0-9_-]/g, "");
 }
@@ -130,20 +130,20 @@ function buildHoleMask(def: IconDef, id: string): MaskSpec | null {
   };
 }
 
-/** Есть ли такой глиф в наборе. */
+/** Whether the set has such a glyph. */
 export function hasIcon(name: string): name is IconName {
   return Object.prototype.hasOwnProperty.call(ICONS, name);
 }
 
-/** Все имена набора, в порядке объявления. */
+/** Every name in the set, in declaration order. */
 export function iconNames(): IconName[] {
   return Object.keys(ICONS) as IconName[];
 }
 
 export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | null {
-  // Именно hasOwnProperty, а не `ICONS[name]`: иначе "toString" и "valueOf"
-  // достанут методы прототипа, пройдут проверку на существование и уронят
-  // функцию там, где по контракту должен вернуться null.
+  // hasOwnProperty rather than `ICONS[name]`: otherwise "toString" and "valueOf"
+  // pick up prototype methods, pass the existence check and crash the function
+  // where the contract says it must return null.
   if (!hasIcon(name)) return null;
   const def = BY_NAME[name]!;
 
@@ -156,9 +156,9 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
   const inset = zoom ? insetFor(size) : 0;
   const visible = 24 - 2 * inset;
   const onScreen = strokeOnScreen(size, opts);
-  // Атрибут задаётся в единицах viewBox, а на экране всё умножается на
-  // size/visible. Отсюда обратный пересчёт — тогда экранная толщина равна
-  // ровно onScreen.
+  // The attribute is set in viewBox units and everything is then multiplied by
+  // size/visible on screen. Hence the reverse conversion — this way the actual
+  // on-screen width equals onScreen exactly.
   const strokeAttr = (onScreen * visible) / size;
 
   const suffix = opts.idSuffix ? safeId(opts.idSuffix) : "";
@@ -171,10 +171,11 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
     const { tag, attrs } = shapeAttrs(part);
     const color = colorFor(part, variant, accent);
 
-    // При non-scaling-stroke ширина считается в координатах вьюпорта, то есть
-    // масштаб viewBox на неё не действует и компенсировать нечего. Отдадим сюда
-    // strokeAttr — и деталь окажется тоньше соседей тем сильнее, чем крупнее
-    // иконка: на 128px корпус скрипки был бы в шесть раз тоньше её грифа.
+    // Under non-scaling-stroke the width is measured in viewport coordinates,
+    // so the viewBox scale does not apply and there is nothing to compensate.
+    // Feed strokeAttr here and the part ends up thinner than its neighbours,
+    // the more so the larger the icon: at 128px a violin body would be six
+    // times thinner than its own neck.
     let nonScaling = false;
     if (part.tf) {
       attrs["transform"] = part.tf;

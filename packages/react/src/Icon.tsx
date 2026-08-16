@@ -1,5 +1,6 @@
-// React-обёртка над tacet-core. Геометрии не знает: зовёт renderSpec и animate.
-// Внутри — только то, что действительно про React: ref, id, замер размера, эффекты.
+// React wrapper over tacet-core. Knows no geometry: it calls renderSpec and
+// animate. What stays inside is only what is genuinely about React — refs, ids,
+// size measurement, effects.
 
 import {
   useEffect, useId, useLayoutEffect, useRef, useState, forwardRef,
@@ -12,46 +13,46 @@ import {
 } from "tacet-core";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "ref"> {
-  /** Имя глифа, например "rocket" или "guitar-electric". */
+  /** Glyph name, for example "rocket" or "guitar-electric". */
   name: string;
-  /** Размер в пикселях. По умолчанию 24. */
+  /** Size in pixels. Defaults to 24. */
   size?: number | undefined;
-  /** A — один разрез · B — все · C — один и акцент · D — все и акцент. По умолчанию D. */
+  /** A — one cut · B — all · C — one and accent · D — all and accent. Defaults to D. */
   variant?: IconVariant | undefined;
-  /** Цельный контур: разрезы не рисуются. */
+  /** Solid contour: cuts are not drawn. */
   solid?: boolean | undefined;
-  /** Толщина штриха на экране, в пикселях. Задана — размер на неё не влияет. */
+  /** Stroke width on screen, in pixels. Once set, size does not affect it. */
   strokeWidth?: number | undefined;
-  /** Толщина не растёт с размером. */
+  /** Stroke stops following size. */
   absoluteStroke?: boolean | undefined;
-  /** Оптический зум. Выключай, если фактический размер неизвестен. */
+  /** Optical zoom. Turn it off when the actual size is unknown. */
   zoom?: boolean | undefined;
-  /** Цвет акцентных деталей. По умолчанию — переменная --tacet-accent. */
+  /** Colour of accent details. Defaults to the --tacet-accent variable. */
   accentColor?: string | undefined;
-  /** Проиграть появление при монтировании. */
+  /** Play the entrance on mount. */
   animateIn?: boolean | undefined;
-  /** Проиграть появление при наведении на ближайший кликабельный элемент. */
+  /** Replay on hovering the nearest clickable ancestor. */
   animateOnHover?: boolean | undefined;
-  /** Смена значения повторяет анимацию. */
+  /** Changing the value replays the animation. */
   replayKey?: number | string | undefined;
-  /** Задержка до старта анимации, мс. */
+  /** Delay before the animation starts, ms. */
   animationDelay?: number | undefined;
-  /** Перебить пресет анимации глифа. */
+  /** Override the glyph's animation preset. */
   animationMode?: AnimMode | undefined;
   duration?: number | undefined;
   spinDeg?: number | undefined;
   stagger?: number | undefined;
   seq?: number | undefined;
-  /** Подпись для скринридера. Без неё иконка скрыта как декоративная. */
+  /** Label for screen readers. Without it the icon is hidden as decorative. */
   title?: string | undefined;
 }
 
 const HOST_SELECTOR =
   'button, a, [role="button"], [role="menuitem"], [role="tab"], [role="option"], label';
 
-// Ядро отдаёт канонические имена из спецификации SVG (stroke-width). Разметку
-// React с ними рисует верно, но в dev-режиме ругается на каждый — поэтому
-// переводим в его написание. Итоговый DOM от этого не меняется.
+// The core emits canonical SVG names (stroke-width). React renders markup with
+// them correctly but complains about each one in dev mode — so we translate into
+// its spelling. The resulting DOM is the same either way.
 function asSvgProps<T>(attrs: Record<string, string | number>): SVGProps<T> {
   return toReactAttrs(attrs) as unknown as SVGProps<T>;
 }
@@ -80,10 +81,10 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
     else if (forwardedRef) (forwardedRef as MutableRefObject<SVGSVGElement | null>).current = el;
   };
 
-  // Иконку нередко сжимает CSS-класс при дефолтных атрибутах 24 — тогда штрих,
-  // посчитанный от 24, после сжатия превращается в нитку. Меряем фактическую
-  // ширину и считаем от неё. clientWidth не зависит от transform, поэтому
-  // анимации spin и pop замер не сбивают.
+  // Icons often get shrunk by a CSS class while the attributes stay at the
+  // default 24 — and then the stroke, computed for 24, becomes a thread after
+  // the shrink. We measure the actual width and compute from it. clientWidth
+  // ignores transforms, so the spin and pop animations do not disturb it.
   const [measured, setMeasured] = useState<number | null>(null);
   const sizeRef = useRef(size);
   sizeRef.current = size;
@@ -115,16 +116,16 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
     mode: animationMode, duration, spinDeg, stagger, seq, delay: animationDelay,
   });
 
-  // Прячем до первой отрисовки, иначе кадр мигнёт готовой картинкой. Если
-  // проигрыш так и не случится — размонтировали, отменили кадр, — состояние
-  // надо снять, иначе иконка останется невидимой без единой ошибки.
+  // Hide before the first paint, or the frame flashes the finished picture. If
+  // the play never happens — unmounted, frame cancelled — the state has to come
+  // off, otherwise the icon stays invisible without a single error.
   useLayoutEffect(() => {
     const svg = innerRef.current;
     if (!animateIn || !svg) return;
     prepare(svg, cfg);
     return () => resetAnimation(svg);
-    // Пересобирать эффект на каждое изменение cfg не нужно: важен только момент
-    // появления и смена глифа.
+    // Rebuilding the effect on every cfg change is unnecessary: only the moment
+    // of appearance and a glyph change matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, animateIn]);
 
@@ -136,8 +137,8 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, animateIn, replayKey]);
 
-  // Реплей по наведению — только внутри кликабельного элемента: наводишь на
-  // кнопку целиком, анимируется иконка. Декоративные иконки от ховера молчат.
+  // Hover replay only inside a clickable element: you hover the whole button and
+  // the icon animates. Decorative icons stay silent on hover.
   useEffect(() => {
     if (!animateOnHover) return;
     const svg = innerRef.current;
@@ -151,7 +152,7 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
   }, [name, animateOnHover]);
 
   if (!spec) {
-    if (typeof console !== "undefined") console.warn(`tacet: неизвестная иконка "${name}"`);
+    if (typeof console !== "undefined") console.warn(`tacet: unknown icon "${name}"`);
     return null;
   }
 

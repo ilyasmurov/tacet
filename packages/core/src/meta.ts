@@ -1,12 +1,12 @@
-// Семантика набора: не «как называется», а «когда брать».
+// Semantics of the set: not "what it is called" but "when to take it".
 //
-// Теги для поиска есть у любого набора иконок. Здесь другое: подсказка выбора,
-// адресованная в первую очередь агенту, который пишет интерфейс и берёт иконку
-// по имени. Именно так рождаются trash вместо archive и check вместо
-// check-circle — человек ловит это глазами, агент нет.
+// Search tags exist in every icon set. This is a different thing: guidance on
+// choosing, addressed first of all to an agent that writes an interface and
+// picks an icon by name. That is how trash ends up instead of archive and check
+// instead of check-circle — a human catches it by eye, an agent does not.
 //
-// `use` и `avoid` — по-английски: пакет международный. Синонимы — на обоих
-// языках, чтобы поиск находил и по «сохранить», и по «save».
+// `use` and `avoid` are in English: the package is international. Synonyms are
+// bilingual so search finds a glyph by both "delete" and «удалить».
 
 import { UI_META } from "./metaUi.js";
 import { UI_META_2 } from "./metaUi2.js";
@@ -23,12 +23,12 @@ export const META: Record<string, IconMeta> = {
   ...SERVICE_META,
 };
 
-/** Есть ли описание для глифа. */
+/** Whether the glyph has a description. */
 export function hasMeta(name: string): boolean {
   return Object.prototype.hasOwnProperty.call(META, name);
 }
 
-/** Поиск по имени и синонимам, регистр не важен. */
+/** Search by name and synonyms, case-insensitive. */
 export function searchIcons(query: string, names: readonly string[]): string[] {
   const q = query.trim().toLowerCase();
   if (!q) return [...names];

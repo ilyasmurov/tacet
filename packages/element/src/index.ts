@@ -1,7 +1,7 @@
-// tacet-element — <tacet-icon> для проектов без React.
+// tacet-element — <tacet-icon> for projects without React.
 //
-// Импорт пакета регистрирует элемент сам: в разметке это чаще всего то, чего
-// от него и ждут. Нужен другой тег — зови defineTacetIcon("my-icon").
+// Importing the package registers the element on its own: in markup that is
+// usually what people expect. Need a different tag — call defineTacetIcon("my-icon").
 
 import { defineTacetIcon } from "./TacetIconElement.js";
 

@@ -1,13 +1,13 @@
-// Перевод SVG-атрибутов в написание, которое ждёт React.
+// Translating SVG attribute names into the spelling React expects.
 //
-// renderSpec отдаёт канонические имена из спецификации SVG (`stroke-width`) —
-// их принимает setAttribute, с ними же уходят статические SVG-файлы. React
-// разметку с ними рисует правильно, но в dev-режиме печатает на каждый такой
-// атрибут «Invalid DOM property». Четыре предупреждения на иконку — это чужая
-// консоль, забитая нашим пакетом, поэтому для React переводим.
+// renderSpec emits the canonical names from the SVG specification
+// (`stroke-width`) — those are what setAttribute takes, and what static SVG
+// files ship with. React renders markup with them correctly, but in dev mode it
+// prints "Invalid DOM property" for every one. Four warnings per icon means
+// somebody else's console filled with our package, so for React we translate.
 //
-// Атрибуты, которые в SVG и так пишутся слитно (`pathLength`, `maskUnits`),
-// и любые `data-*` / `aria-*` React принимает как есть — их здесь нет.
+// Attributes that are already spelled solid in SVG (`pathLength`, `maskUnits`)
+// and anything `data-*` / `aria-*` React takes as is — they are not listed here.
 
 const REACT_ATTR_NAMES: Record<string, string> = {
   "stroke-width": "strokeWidth",
@@ -25,12 +25,12 @@ const REACT_ATTR_NAMES: Record<string, string> = {
   "shape-rendering": "shapeRendering",
 };
 
-/** Имя атрибута в написании React. Незнакомое возвращается без изменений. */
+/** Attribute name in React spelling. Unknown ones come back unchanged. */
 export function toReactAttrName(name: string): string {
   return REACT_ATTR_NAMES[name] ?? name;
 }
 
-/** Набор атрибутов, переведённый для React. */
+/** A set of attributes translated for React. */
 export function toReactAttrs(
   attrs: Record<string, string | number>,
 ): Record<string, string | number> {

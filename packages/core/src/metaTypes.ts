@@ -1,13 +1,13 @@
-// Тип семантики вынесен отдельно, чтобы части (интерфейс, инструменты, услуги)
-// не тянули друг друга и не ходили по кругу через сборку.
+// The semantics type lives on its own so the parts (interface, instruments,
+// services) do not pull each other in or loop back through the barrel.
 
 export interface IconMeta {
-  /** Когда брать. Одна фраза, без воды. */
+  /** When to take it. One phrase, no padding. */
   use: string;
-  /** С чем путают и что взять вместо. Пусто, если путать не с чем. */
+  /** What it gets confused with and what to take instead. Empty when nothing does. */
   avoid?: string;
-  /** Слова для поиска: английские и русские. */
+  /** Words to search by: English and Russian. */
   synonyms: string[];
-  /** Соседи по смыслу — их стоит рассмотреть рядом. */
+  /** Neighbours in meaning — worth considering alongside. */
   related?: string[];
 }

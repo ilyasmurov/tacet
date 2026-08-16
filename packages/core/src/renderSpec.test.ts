@@ -5,30 +5,30 @@ import { strokeOnScreen } from "./stroke.js";
 
 const attr = (spec: NonNullable<ReturnType<typeof renderSpec>>, i = 0) => spec.parts[i]!.attrs;
 
-describe("имена глифов", () => {
-  it("неизвестное имя даёт null, а не исключение", () => {
-    expect(renderSpec("нет-такого")).toBeNull();
+describe("glyph names", () => {
+  it("an unknown name returns null rather than throwing", () => {
+    expect(renderSpec("no-such-glyph")).toBeNull();
   });
 
-  // ICONS[name] достал бы методы прототипа: они truthy, проверку на
-  // существование проходят и роняют функцию на def.filter.
+  // ICONS[name] would pick up prototype methods: they are truthy, pass the
+  // existence check and crash the function on def.filter.
   it.each(["toString", "valueOf", "hasOwnProperty", "__proto__", "constructor"])(
-    "имя из прототипа (%s) даёт null",
+    "a prototype name (%s) returns null",
     (name) => {
       expect(() => renderSpec(name)).not.toThrow();
       expect(renderSpec(name)).toBeNull();
     },
   );
 
-  it("hasIcon согласован с renderSpec", () => {
-    for (const name of ["bell", "toString", "нет-такого", "rocket"]) {
+  it("hasIcon agrees with renderSpec", () => {
+    for (const name of ["bell", "toString", "no-such-glyph", "rocket"]) {
       expect(hasIcon(name)).toBe(renderSpec(name) !== null);
     }
   });
 });
 
-describe("толщина штриха", () => {
-  it("на экране выходит ровно та, что обещана, на всех размерах", () => {
+describe("stroke width", () => {
+  it("on screen it is exactly what was promised, at every size", () => {
     for (const size of [10, 12, 16, 24, 32, 48, 64, 128]) {
       const spec = renderSpec("bell", { size })!;
       const inset = Number(String(spec.svgAttrs["viewBox"]).split(" ")[0]);
@@ -38,14 +38,14 @@ describe("толщина штриха", () => {
     }
   });
 
-  it("без зума пересчёт тоже сходится", () => {
+  it("without zoom the conversion still adds up", () => {
     const spec = renderSpec("bell", { size: 48, zoom: false })!;
     expect(spec.svgAttrs["viewBox"]).toBe("0 0 24 24");
     expect(spec.strokeAttr * (48 / 24)).toBeCloseTo(spec.strokeOnScreen, 10);
   });
 
-  // size приходит из данных и из замеров контейнера — ноль и мусор там будни.
-  it.each([0, -10, NaN, Infinity])("вырожденный размер (%s) не даёт NaN в атрибутах", (size) => {
+  // size comes from data and from container measurements — zero and junk are routine there.
+  it.each([0, -10, NaN, Infinity])("a degenerate size (%s) puts no NaN into the attributes", (size) => {
     const spec = renderSpec("bell", { size })!;
     expect(Number.isFinite(spec.strokeAttr)).toBe(true);
     expect(Number.isFinite(spec.strokeOnScreen)).toBe(true);
@@ -53,20 +53,20 @@ describe("толщина штриха", () => {
     expect(Number(spec.svgAttrs["width"])).toBeGreaterThan(0);
   });
 
-  it("absoluteStroke держит толщину на любом размере", () => {
+  it("absoluteStroke holds the width at any size", () => {
     for (const size of [12, 24, 128]) {
       expect(renderSpec("bell", { size, absoluteStroke: true })!.strokeOnScreen).toBeCloseTo(1.5, 10);
     }
   });
 });
 
-describe("части с трансформом", () => {
-  // При non-scaling-stroke ширина считается в координатах вьюпорта, масштаб
-  // viewBox на неё не действует. Компенсация зума таким частям не нужна: с ней
-  // корпус инструмента на 128px оказывался в шесть раз тоньше соседних линий.
-  const NAME = "__тест-с-трансформом";
+describe("parts with a transform", () => {
+  // Under non-scaling-stroke the width is measured in viewport coordinates and
+  // the viewBox scale does not apply. Such parts need no zoom compensation: with
+  // it an instrument body at 128px came out six times thinner than its neighbours.
+  const NAME = "__test-with-transform";
 
-  it("получают толщину в экранных пикселях, а не в единицах viewBox", () => {
+  it("get their width in screen pixels, not in viewBox units", () => {
     const icons = ICONS as unknown as Record<string, IconDef>;
     icons[NAME] = [
       { t: "path", d: "M4 4h16", gaps: null, tf: "scale(1.2)" },
@@ -87,8 +87,8 @@ describe("части с трансформом", () => {
   });
 });
 
-describe("варианты и разрезы", () => {
-  it("A и C оставляют один разрез, B и D — все", () => {
+describe("variants and cuts", () => {
+  it("A and C keep one cut, B and D keep them all", () => {
     const dashes = (v: "A" | "B" | "C" | "D") =>
       String(renderSpec("bell", { variant: v })!.parts[0]!.attrs["stroke-dasharray"]).split(" ").length;
     expect(dashes("A")).toBeLessThan(dashes("B"));
@@ -96,13 +96,13 @@ describe("варианты и разрезы", () => {
     expect(dashes("B")).toBe(dashes("D"));
   });
 
-  it("solid убирает разрезы, не трогая данные", () => {
+  it("solid removes the cuts without touching the data", () => {
     const solid = renderSpec("bell", { solid: true })!;
     expect(solid.parts.every((p) => p.attrs["stroke-dasharray"] === "100 0")).toBe(true);
     expect(ICONS["bell"]![0]!.gaps).toBeTruthy();
   });
 
-  it("акцент красится переменной только в C и D", () => {
+  it("the accent is painted with the variable only in C and D", () => {
     const accented = (v: "A" | "B" | "C" | "D") =>
       renderSpec("bell", { variant: v })!.parts.some((p) => String(p.attrs["stroke"]).includes("--tacet-accent"));
     expect(accented("A")).toBe(false);
@@ -112,19 +112,19 @@ describe("варианты и разрезы", () => {
   });
 });
 
-describe("маска-вырез", () => {
-  it("id склеен из имени и суффикса", () => {
+describe("cut-out mask", () => {
+  it("the id is built from the name and the suffix", () => {
     const spec = renderSpec("calendar-clock", { idSuffix: "abc" })!;
     expect(spec.mask?.id).toBe("tc-hole-calendar-clock-abc");
   });
 
-  it("из суффикса выкидывается всё, что может сломать атрибут", () => {
+  it("anything that could break the attribute is stripped from the suffix", () => {
     const spec = renderSpec("calendar-clock", { idSuffix: 'x" onload="alert(1)' })!;
     expect(spec.mask!.id).toBe("tc-hole-calendar-clock-xonloadalert1");
     expect(spec.mask!.id).not.toMatch(/["'<>() ]/);
   });
 
-  it("React-подобный id с двоеточиями не ломает ссылку", () => {
+  it("a React-style id with colons does not break the reference", () => {
     const spec = renderSpec("calendar-clock", { idSuffix: ":r1:" })!;
     expect(spec.mask!.id).not.toContain(":");
     const masked = spec.parts.find((p) => p.attrs["mask"]);
@@ -132,8 +132,8 @@ describe("маска-вырез", () => {
   });
 });
 
-describe("набор целиком", () => {
-  it("каждый глиф рендерится и даёт хотя бы одну фигуру", () => {
+describe("the whole set", () => {
+  it("every glyph renders and yields at least one shape", () => {
     for (const name of iconNames()) {
       const spec = renderSpec(name, { size: 24 });
       expect(spec, name).not.toBeNull();
@@ -141,7 +141,7 @@ describe("набор целиком", () => {
     }
   });
 
-  it("ни одного NaN или undefined в атрибутах", () => {
+  it("no NaN or undefined anywhere in the attributes", () => {
     for (const name of iconNames()) {
       for (const part of renderSpec(name, { size: 20 })!.parts) {
         for (const [key, value] of Object.entries(part.attrs)) {

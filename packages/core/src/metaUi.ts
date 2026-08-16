@@ -1,10 +1,10 @@
-// Семантика интерфейсных глифов. Здесь и происходят промахи выбора, поэтому
-// поле avoid заполняется везде, где есть с чем спутать.
+// Semantics of the interface glyphs. This is where the wrong pick actually
+// happens, so `avoid` is filled in wherever there is something to confuse.
 
 import type { IconMeta } from "./metaTypes.js";
 
 export const UI_META: Record<string, IconMeta> = {
-  // ── навигация и разделы ──
+  // ── navigation and sections ──
   "home": {
     use: "Main screen or root of the app.",
     avoid: "For a physical building or an organization use `building`.",
@@ -84,7 +84,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["git-branch", "activity"],
   },
 
-  // ── действия над объектом ──
+  // ── actions on an object ──
   "trash": {
     use: "Permanent deletion, the item is gone.",
     avoid: "If the item is only moved out of sight and can come back, that is `archive`. If access is being denied rather than data removed, use `ban`.",
@@ -219,7 +219,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["plus", "slash", "square"],
   },
 
-  // ── подтверждение и состояние ──
+  // ── confirmation and state ──
   "check": {
     use: "A bare checkmark inside another control: a checkbox, a menu item, a chip.",
     avoid: "For the result of an operation — «done, succeeded» — use `check-circle`: it reads as a status, not as a mark.",
@@ -314,7 +314,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["clock", "rotate", "activity"],
   },
 
-  // ── статусы задач ──
+  // ── task statuses ──
   "status-backlog": {
     use: "Task exists but nobody committed to it yet.",
     avoid: "If the task is planned for work use `status-todo`.",
@@ -362,7 +362,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["circle-dot", "circle"],
   },
 
-  // ── приоритеты ──
+  // ── priorities ──
   "priority-low": {
     use: "Low priority. Colour is baked into the glyph.",
     avoid: "Do not recolour with currentColor — the priority scale must stay recognisable.",
@@ -386,7 +386,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["priority-high", "alert", "zap"],
   },
 
-  // ── файлы и папки ──
+  // ── files and folders ──
   "file": {
     use: "A file of unknown or generic type.",
     avoid: "When the type is known take a specific glyph: `file-image`, `file-video`, `file-spreadsheet`.",
@@ -484,7 +484,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["archive", "database", "folder-input"],
   },
 
-  // ── редактор текста ──
+  // ── text editor ──
   "bold": {
     use: "Bold weight for the selected text.",
     synonyms: ["bold", "strong", "жирный", "полужирный"],
@@ -630,7 +630,7 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["file-image", "camera", "palette"],
   },
 
-  // ── видимость и доступ ──
+  // ── visibility and access ──
   "eye": {
     use: "Showing something or a view counter.",
     synonyms: ["show", "visible", "preview", "views", "показать", "видно", "просмотры"],

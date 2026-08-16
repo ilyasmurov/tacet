@@ -1,5 +1,5 @@
-// Анимация поверх уже отрисованного svg. Работает с обычным DOM-элементом,
-// поэтому одинаково годится и для React-обёртки, и для веб-компонента.
+// Animation on top of an already rendered svg. Works with a plain DOM element,
+// so it serves the React wrapper and the custom element equally well.
 
 import { ANIM, type AnimMode } from "./data.js";
 import { BODY_CLASS } from "./renderSpec.js";
@@ -13,28 +13,28 @@ const FILL_SELECTOR =
   "path[fill]:not([fill='none']):not([data-mk]):not([data-rev])";
 const SCALE_SELECTOR = FILL_SELECTOR + `, g.${BODY_CLASS} [data-pop]`;
 
-// Счётчик модульный, поэтому две копии пакета на странице дали бы одинаковые
-// id, а url(#id) резолвится по всему документу и берёт первый попавшийся узел —
-// вторая иконка маскировалась бы силуэтом первой. Префикс на экземпляр модуля
-// разводит их наверняка.
+// The counter is module-scoped, so two copies of the package on one page would
+// hand out identical ids — and url(#id) resolves across the whole document,
+// taking the first node it finds, which would mask the second icon with the
+// silhouette of the first. A per-instance prefix keeps them apart for good.
 const MODULE_ID = Math.random().toString(36).slice(2, 7);
 let maskCounter = 0;
 
 export interface AnimateCfg {
   mode?: AnimMode | undefined;
-  /** Длительность отрисовки, мс. */
+  /** Draw-in duration, ms. */
   duration?: number | undefined;
-  /** Угол доворота для режима spin, градусы. */
+  /** Rotation for the spin mode, degrees. */
   spinDeg?: number | undefined;
-  /** Разброс старта штрихов, мс: контур собирается вразнобой. */
+  /** Spread of stroke starts, ms: the contour assembles out of order. */
   stagger?: number | undefined;
-  /** Строгая очередь штрихов, мс на штрих. */
+  /** Strict queue of strokes, ms per stroke. */
   seq?: number | undefined;
-  /** Задержка до старта, мс. */
+  /** Delay before the start, ms. */
   delay?: number | undefined;
 }
 
-/** То, что возвращает resolveAnimateCfg и ждут prepare/animate. */
+/** What resolveAnimateCfg returns and prepare/animate expect. */
 export interface ResolvedAnimateCfg {
   mode: AnimMode; duration: number; spinDeg: number; stagger: number; seq: number; delay: number;
 }
@@ -45,22 +45,23 @@ export function prefersReducedMotion(): boolean {
 }
 
 /**
- * Играть ли анимацию появления на этом устройстве.
+ * Whether the entrance animation should play on this device.
  *
- * На телефоне иконки появляются во время скролла — анимации толком не видно,
- * а стоит она дорого: на стенде из 360 иконок отрисовка занимала 1718 мс против
- * 857 мс без неё и оставляла в DOM лишнюю тысячу узлов. Причина в том, что режим
- * draw строит на каждую иконку маску из клонов всех её фигур и форсирует reflow.
+ * On a phone icons appear while the page is being scrolled — the animation is
+ * barely seen, yet it costs a lot: on a bench of 360 icons rendering took
+ * 1718 ms against 857 ms without it and left an extra thousand nodes in the
+ * DOM. The reason is that the draw mode builds a mask out of clones of every
+ * shape per icon and forces a reflow.
  *
- * Предикат передаётся снаружи (в браузере — `window.matchMedia`), чтобы правило
- * можно было проверить тестом, а не гадать про окружение.
+ * The predicate is passed in (in a browser — `window.matchMedia`) so the rule
+ * can be covered by a test instead of guessing about the environment.
  */
 export function canAnimateOnMount(matches: ((query: string) => boolean) | null): boolean {
   if (!matches) return false;
   return matches("(hover: hover) and (pointer: fine)");
 }
 
-/** Пресет анимации для глифа, дополненный тем, что передали вызовом. */
+/** The glyph's animation preset, extended with whatever the call passed in. */
 export function resolveAnimateCfg(name: string, cfg: AnimateCfg = {}): ResolvedAnimateCfg {
   const preset = ANIM[name] ?? {};
   return {
@@ -73,7 +74,7 @@ export function resolveAnimateCfg(name: string, cfg: AnimateCfg = {}): ResolvedA
   };
 }
 
-/** Чем описывается текущее содержимое тела: по нему видно, что глиф сменился. */
+/** What describes the current body contents: it shows when the glyph changed. */
 function bodySignature(svg: SVGSVGElement, body: SVGGElement): string {
   return (svg.getAttribute("data-icon") ?? "") + ":" + body.children.length;
 }
@@ -88,14 +89,15 @@ function dropReveal(svg: SVGSVGElement, body: SVGGElement): void {
 }
 
 /**
- * Маска проявления: клоны всех фигур глифа, обведённые чуть толще оригинала.
- * Анимируется `stroke-dashoffset` маски, а не самого контура — иначе анимация
- * дралась бы с разрезами за один и тот же атрибут, и разрывы ползли бы по
- * контуру вместо того, чтобы стоять на месте.
+ * The reveal mask: clones of every shape of the glyph, stroked slightly thicker
+ * than the original. What gets animated is the mask's `stroke-dashoffset`, not
+ * the contour itself — otherwise the animation would fight the cuts over the
+ * same attribute and the gaps would crawl along the path instead of holding
+ * their place.
  *
- * Маска кешируется на теле, но пересобирается, как только содержимое сменилось:
- * React переиспользует тот же svg-узел при смене имени иконки, и старая маска
- * оставила бы новый глиф проявляться через чужой силуэт.
+ * The mask is cached on the body but rebuilt as soon as the contents change:
+ * React reuses the same svg node when the icon name changes, and a stale mask
+ * would reveal the new glyph through somebody else's silhouette.
  */
 function buildReveal(svg: SVGSVGElement, body: SVGGElement): NodeListOf<SVGElement> {
   const signature = bodySignature(svg, body);
@@ -115,14 +117,14 @@ function buildReveal(svg: SVGSVGElement, body: SVGGElement): NodeListOf<SVGEleme
   body.querySelectorAll("path, circle, rect").forEach((el) => {
     const clone = el.cloneNode(false) as SVGElement;
     clone.removeAttribute("mask");
-    // Клон живёт по своим правилам проявления — чужая память о разрезах ему
-    // только мешает и путает выборки.
+    // The clone lives by its own reveal rules — somebody else's memory of cuts
+    // only gets in the way and confuses the selectors.
     clone.removeAttribute("data-dash");
     clone.style.cssText = "";
 
     const strokeAttr = el.getAttribute("stroke");
     const isStroke = !!strokeAttr && strokeAttr !== "none";
-    // Мелкие кольца обводить бессмысленно — они проявляются целиком, как заливки.
+    // Stroking tiny rings is pointless — they reveal whole, like fills do.
     const smallRing = isStroke && el.tagName === "circle" && parseFloat(el.getAttribute("r") ?? "0") <= 3;
 
     if (isStroke && !smallRing) {
@@ -160,14 +162,15 @@ function buildReveal(svg: SVGSVGElement, body: SVGGElement): NodeListOf<SVGEleme
 }
 
 /**
- * Вернуть живым фигурам исходный вид. Нужно после reverse(): тот гасит и
- * схлопывает сам контур, а появление рисуется маской и живых фигур не трогает —
- * без сброса иконка после «стёрлась и рисуется снова» осталась бы невидимой.
+ * Restore the live shapes. Needed after reverse(): that one dims and collapses
+ * the contour itself, while the entrance is drawn with a mask and never touches
+ * live shapes — without the restore an icon that "erased and drew again" would
+ * stay invisible.
  */
 function restoreLive(svg: SVGSVGElement): void {
-  // Только фигуры тела: клоны внутри маски тоже носят data-dash, и вернуть им
-  // «исходный» dasharray значило бы сломать проявление — у них он свой,
-  // рабочий («100 100» плюс сдвиг).
+  // Body shapes only: clones inside the mask also carry data-dash, and handing
+  // them back their "original" dasharray would break the reveal — theirs is a
+  // different, working one ("100 100" plus an offset).
   svg.querySelectorAll<SVGElement>(`g.${BODY_CLASS} [data-dash]`).forEach((el) => {
     el.style.transition = "none";
     el.style.opacity = "";
@@ -182,9 +185,9 @@ function restoreLive(svg: SVGSVGElement): void {
 }
 
 /**
- * Снять всё, что навесили prepare/animate/reverse, и показать иконку как есть.
- * Зови, если анимацию подготовили, но так и не проиграли: иначе глиф останется
- * спрятанным под маской и без единой ошибки в консоли.
+ * Drop everything prepare/animate/reverse put on the element and show the icon
+ * as it is. Call it when an animation was prepared but never played: otherwise
+ * the glyph stays hidden under the mask without a single error in the console.
  */
 export function resetAnimation(svg: SVGSVGElement): void {
   const body = svg.querySelector<SVGGElement>(BODY_SELECTOR);
@@ -205,8 +208,9 @@ export function resetAnimation(svg: SVGSVGElement): void {
 }
 
 /**
- * Спрятать глиф до старта анимации, чтобы первый кадр не мигнул готовой
- * картинкой. Зовётся синхронно после вставки в DOM, до отрисовки.
+ * Hide the glyph before the animation starts so the first frame does not flash
+ * the finished picture. Called synchronously after insertion into the DOM,
+ * before paint.
  */
 export function prepare(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
   if (prefersReducedMotion()) return;
@@ -247,15 +251,15 @@ export function prepare(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
   }
 }
 
-/** Проиграть появление. Безопасно звать повторно — это же и есть реплей. */
+/** Play the entrance. Safe to call again — that is exactly what a replay is. */
 export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
   if (prefersReducedMotion()) return;
   const body = svg.querySelector<SVGGElement>(BODY_SELECTOR);
   if (!body) return;
   const { delay, duration, stagger, seq } = cfg;
 
-  // После reverse() живые фигуры погашены и схлопнуты — вернём их, иначе
-  // рисоваться будет маска поверх невидимого глифа.
+  // After reverse() the live shapes are dimmed and collapsed — bring them back,
+  // otherwise the mask would be drawing over an invisible glyph.
   restoreLive(svg);
 
   if (cfg.mode === "pop") {
@@ -311,7 +315,8 @@ export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
     svg.style.transform = "rotate(0deg)";
   }
 
-  // Маску снимаем, когда она отработала: пока она висит, глиф клипается по ней.
+  // The mask comes off once it has done its job: while it hangs there, the
+  // glyph is clipped by it.
   const timers = body as unknown as { __tcRevealTimer?: number };
   if (timers.__tcRevealTimer) clearTimeout(timers.__tcRevealTimer);
   timers.__tcRevealTimer = window.setTimeout(
@@ -333,8 +338,8 @@ export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
 }
 
 /**
- * Обратный ход: контур стирается, заливки схлопываются. Для лоадеров и для
- * иконок, которые уезжают с экрана. Следующий animate() вернёт всё на место.
+ * The way back: the contour erases, fills collapse. For loaders and for icons
+ * leaving the screen. The next animate() brings everything back.
  */
 export function reverse(svg: SVGSVGElement): void {
   if (prefersReducedMotion()) return;

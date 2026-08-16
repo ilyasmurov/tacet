@@ -1,9 +1,9 @@
-// Печёт машиночитаемую семантику набора: icons.json для инструментов и
-// llms.txt для агентов.
+// Bakes the machine-readable semantics of the set: icons.json for tooling and
+// llms.txt for agents.
 //
-// llms.txt — сложившаяся конвенция: файл в корне сайта, который модель читает,
-// чтобы понять проект. Здесь он отвечает на единственный вопрос, который у
-// агента возникает про набор иконок: какую взять и с чем её путают.
+// llms.txt is an established convention: a file at the site root that a model
+// reads to understand the project. Here it answers the single question an agent
+// actually has about an icon set — which one to take and what it is confused with.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { ICONS, META, iconNames } from "../packages/core/dist/index.js";
@@ -86,5 +86,5 @@ writeFileSync(`${outDir}/llms.txt`, lines.join("\n"), "utf8");
 
 const described = names.filter((n) => META[n]).length;
 const withAvoid = names.filter((n) => META[n]?.avoid).length;
-console.log(`icons.json и llms.txt → ${outDir}/`);
-console.log(`описано ${described} из ${names.length}, из них с разбором путаницы ${withAvoid}`);
+console.log(`icons.json and llms.txt → ${outDir}/`);
+console.log(`described ${described} of ${names.length}, of them with a confusion note ${withAvoid}`);
