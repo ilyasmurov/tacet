@@ -1,8 +1,14 @@
 /* The Tacet landing page. Palette, typography and devices are taken from the
-   Taskless landing: a light page with no dark variant, a narrow monospace in
-   headings, Onest in body text, cool neutrals biased towards the accent.
+   Taskless landing: a narrow monospace in headings, Onest in body text, cool
+   neutrals biased towards the accent.
 
-   No rules as separators: sections are set apart by air and a change of ground. */
+   No rules as separators: sections are set apart by air and a change of ground.
+
+   Theming has three states, not two: light, dark, and following the system —
+   which is the default. An explicit choice is stamped onto the root element as
+   data-theme and remembered; with nothing stamped the media query decides. That
+   is why the dark values are declared twice: once for the system preference
+   guarded against an explicit light choice, once for the explicit dark one. */
 
 :root {
   --ground: #f2f3f6;
@@ -15,6 +21,8 @@
   --viz: #2a78d6;
   --warm: #c94a17;
   --ok: #17805a;
+  --shadow-1: rgba(13, 16, 21, 0.06);
+  --shadow-2: rgba(13, 16, 21, 0.05);
   --radius: 12px;
   --maxw: 980px;
 
@@ -25,6 +33,42 @@
   /* Accent detail of the glyphs. The graphic blue, brighter than the UI one. */
   --tacet-accent: var(--viz);
   color-scheme: light;
+}
+
+/* Dark values, written once and used twice. On the dark ground the accent has
+   to be lighter: #2a78d6 falls to about 3:1 there, while #7aa7ff keeps above 7. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #131519;
+    --raised: #1b1e24;
+    --sunken: #23272f;
+    --ink: #eef1f6;
+    --ink-2: #b4bdc9;
+    --ink-3: #8b95a3;
+    --accent: #7aa7ff;
+    --viz: #7aa7ff;
+    --warm: #ff9166;
+    --ok: #4ecb8f;
+    --shadow-1: rgba(0, 0, 0, 0.5);
+    --shadow-2: rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #131519;
+  --raised: #1b1e24;
+  --sunken: #23272f;
+  --ink: #eef1f6;
+  --ink-2: #b4bdc9;
+  --ink-3: #8b95a3;
+  --accent: #7aa7ff;
+  --viz: #7aa7ff;
+  --warm: #ff9166;
+  --ok: #4ecb8f;
+  --shadow-1: rgba(0, 0, 0, 0.5);
+  --shadow-2: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -48,9 +92,11 @@ body::before {
   position: absolute;
   inset: 0 0 auto;
   height: 130vh;
+  /* Mixed from --raised rather than hard-coded white: on the dark theme a white
+     top would read as a hole punched through the page. */
   background: linear-gradient(163deg,
-    #ffffff 0%, #ffffff 22%,
-    color-mix(in srgb, #ffffff 55%, var(--ground)) 48%,
+    var(--raised) 0%, var(--raised) 22%,
+    color-mix(in srgb, var(--raised) 55%, var(--ground)) 48%,
     var(--ground) 78%);
   pointer-events: none;
   z-index: 0;
@@ -68,6 +114,14 @@ body > * { position: relative; z-index: 1; }
 .top nav a { color: var(--ink-2); text-decoration: none; font-size: 15px; }
 .top nav a:hover { color: var(--ink); }
 
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0; cursor: pointer;
+  background: transparent; border: 0; border-radius: 9px; color: var(--ink-3);
+}
+.theme-toggle:hover { color: var(--ink); background: var(--sunken); }
+.theme-toggle tacet-icon { display: inline-flex; }
+
 /* ── first screen ── */
 .hero { padding: 76px 0 20px; }
 h1 {
@@ -84,7 +138,7 @@ h1 {
   display: inline-flex; align-items: center; gap: 12px;
   background: var(--raised); border-radius: var(--radius);
   padding: 13px 18px; font-family: var(--f-mono); font-size: 15px;
-  box-shadow: 0 1px 2px rgba(13, 16, 21, 0.06), 0 8px 24px rgba(13, 16, 21, 0.05);
+  box-shadow: 0 1px 2px var(--shadow-1), 0 8px 24px var(--shadow-2);
 }
 .install button {
   font: inherit; font-size: 13px; color: var(--ink-3); background: var(--sunken);
@@ -115,7 +169,7 @@ section > .wrap > p { color: var(--ink-2); max-width: 62ch; margin: 0 0 26px; }
 
 .card {
   background: var(--raised); border-radius: var(--radius); padding: 26px;
-  box-shadow: 0 1px 2px rgba(13, 16, 21, 0.05), 0 10px 30px rgba(13, 16, 21, 0.04);
+  box-shadow: 0 1px 2px var(--shadow-2), 0 10px 30px var(--shadow-2);
 }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
 
@@ -136,6 +190,12 @@ code { font-family: var(--f-mono); font-size: 0.93em; }
   border: 0; padding: 0; cursor: pointer; text-decoration: underline;
   text-underline-offset: 3px; text-decoration-thickness: 1px;
 }
+
+/* The "any stack" section: two ways side by side. */
+.way { font-family: var(--f-mono); font-size: 13px; color: var(--ink); margin: 0 0 14px; }
+.way-note { color: var(--ink-3); font-size: 14px; margin: 16px 0 0; }
+.way-tail { color: var(--ink-2); margin-top: 30px; }
+.card pre { white-space: pre-wrap; word-break: break-word; }
 
 /* Stroke width: sizes side by side. */
 .sizes { display: flex; align-items: flex-end; gap: 34px; flex-wrap: wrap; justify-content: center; }
@@ -165,7 +225,7 @@ code { font-family: var(--f-mono); font-size: 0.93em; }
 .gallery-bar input {
   font: inherit; font-size: 15px; color: var(--ink); background: var(--raised);
   border: 0; border-radius: 10px; padding: 10px 14px; width: 280px; outline: none;
-  box-shadow: 0 1px 2px rgba(13, 16, 21, 0.06);
+  box-shadow: 0 1px 2px var(--shadow-1);
 }
 .gallery-bar input::placeholder { color: var(--ink-3); }
 .chips { display: flex; gap: 3px; background: var(--sunken); border-radius: 10px; padding: 3px; }

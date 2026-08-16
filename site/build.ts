@@ -104,6 +104,17 @@ const html = `<!doctype html>
 <script type="importmap">
 { "imports": { "tacet-core": "${modulesPath}/core/index.js" } }
 </script>
+<script>
+// Runs before the first paint on purpose: reading the choice after render would
+// show a flash of the wrong theme. Nothing stored means "follow the system",
+// and then no attribute is stamped and the media query decides.
+try {
+  var saved = localStorage.getItem("tacet-theme");
+  if (saved === "light" || saved === "dark") {
+    document.documentElement.setAttribute("data-theme", saved);
+  }
+} catch (e) { /* private mode: fall back to the system preference */ }
+</script>
 </head>
 <body>
 
@@ -118,6 +129,7 @@ const html = `<!doctype html>
       <a href="#agents">For agents</a>
       <a href="./llms.txt">llms.txt</a>
       <a href="https://github.com/ilyasmurov/tacet">GitHub</a>
+      <button class="theme-toggle" id="theme" type="button" aria-label="Theme"></button>
     </nav>
   </div>
 </div>
@@ -158,6 +170,45 @@ const html = `<!doctype html>
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="stacks">
+  <div class="wrap">
+    <p class="eyebrow">any stack</p>
+    <h2>React is one of three ways</h2>
+    <p>The engine has no idea React exists: it turns a glyph name into SVG attributes and
+    animates a plain DOM element. React is a thin wrapper over it — and so is the custom
+    element, which needs no framework at all.</p>
+    <div class="cols">
+      <div class="card">
+        <p class="way">Custom element</p>
+        <pre>npm i tacet-element
+
+&lt;script type="module"&gt;
+  import "tacet-element";
+&lt;/script&gt;
+
+&lt;tacet-icon name="rocket" size="24"&gt;&lt;/tacet-icon&gt;
+&lt;tacet-icon name="bell" animate&gt;&lt;/tacet-icon&gt;</pre>
+        <p class="way-note">Works anywhere HTML does: Vue, Svelte, Astro, a plain page,
+        a template rendered on the server.</p>
+      </div>
+      <div class="card">
+        <p class="way">Engine on its own</p>
+        <pre>npm i tacet-core
+
+import { renderSpec, animate } from "tacet-core";
+
+const spec = renderSpec("rocket", { size: 24 });
+// spec.parts → [{ tag: "path", attrs: {...} }]</pre>
+        <p class="way-note">For your own wrapper, a generator, or a build step. No
+        dependencies at all, not even a peer one.</p>
+      </div>
+    </div>
+    <p class="way-tail">Need no runtime whatsoever — take the static files: every glyph is
+    served here as <a href="./svg/bell.svg">an individual SVG</a>, and all of them together as
+    <a href="./svg/sprite.svg">one sprite</a>. Cuts are baked in; only the animation is lost.</p>
   </div>
 </section>
 
@@ -251,7 +302,7 @@ const html = `<!doctype html>
     <a href="./icons.json">icons.json</a>
   </div>
   <div class="row">
-    <span>MIT · Ilya Smurov</span>
+    <span>MIT · <a href="https://smurov.com">Ilya Smurov</a></span>
     <span>${names.length} glyphs</span>
   </div>
 </footer>
@@ -264,6 +315,44 @@ import { META, iconNames } from "tacet-core";
 
 const GROUPS = ${JSON.stringify(groups)};
 let size = 24, variant = "D", query = "";
+
+// Theme: three states rather than two. "system" is the default and stores
+// nothing; an explicit choice is remembered and wins over the media query.
+const THEME_ORDER = ["system", "light", "dark"];
+const THEME_ICON = { system: "monitor", light: "sun", dark: "moon" };
+const THEME_LABEL = { system: "Theme: system", light: "Theme: light", dark: "Theme: dark" };
+const themeButton = document.getElementById("theme");
+
+function currentTheme() {
+  const stamped = document.documentElement.getAttribute("data-theme");
+  return stamped === "light" || stamped === "dark" ? stamped : "system";
+}
+
+function applyTheme(theme) {
+  if (theme === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme);
+  try {
+    if (theme === "system") localStorage.removeItem("tacet-theme");
+    else localStorage.setItem("tacet-theme", theme);
+  } catch (e) { /* private mode: the choice simply lives for this page */ }
+  drawThemeButton(theme);
+}
+
+function drawThemeButton(theme) {
+  themeButton.textContent = "";
+  const glyph = document.createElement("tacet-icon");
+  glyph.setAttribute("name", THEME_ICON[theme]);
+  glyph.setAttribute("size", "20");
+  themeButton.appendChild(glyph);
+  themeButton.setAttribute("aria-label", THEME_LABEL[theme]);
+  themeButton.title = THEME_LABEL[theme];
+}
+
+drawThemeButton(currentTheme());
+themeButton.addEventListener("click", () => {
+  const next = THEME_ORDER[(THEME_ORDER.indexOf(currentTheme()) + 1) % THEME_ORDER.length];
+  applyTheme(next);
+});
 
 const toast = document.getElementById("toast");
 let toastTimer;
