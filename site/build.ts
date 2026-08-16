@@ -94,8 +94,8 @@ const html = `<!doctype html>
   Отсюда анимация самоотрисовки, четыре плотности разрезов и сплошной режим — из одного источника,
   без второго комплекта файлов.</p>
   <div class="install">
-    <span id="install-cmd">npm i tacet</span>
-    <button type="button" data-copy="npm i tacet">Скопировать</button>
+    <span id="install-cmd">npm i tacet-react</span>
+    <button type="button" data-copy="npm i tacet-react">Скопировать</button>
   </div>
   <div class="parade" id="parade">
     ${PARADE.map((n) => icon(n, 34, 'animate=""')).join("\n    ")}

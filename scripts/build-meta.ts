@@ -63,7 +63,7 @@ const lines: string[] = [
   "and its closest neighbours. Pick by `use`, then check `avoid` — that is where the usual",
   "mistakes are named: trash instead of archive, check instead of check-circle.",
   "",
-  "Usage: `<Icon name=\"...\" />` from `tacet`, or `<tacet-icon name=\"...\">` from `tacet-element`.",
+  "Usage: `<Icon name=\"...\" />` from `tacet-react`, or `<tacet-icon name=\"...\">` from `tacet-element`.",
   "",
 ];
 
