@@ -1,7 +1,7 @@
 {
   "name": "tacet-element",
-  "version": "0.1.0",
-  "description": "Веб-компонент <tacet-icon>: набор иконок Tacet без React.",
+  "version": "0.1.1",
+  "description": "Tacet icon set as a custom element: <tacet-icon> for any stack without React. 320 outline glyphs with self-drawing animation.",
   "license": "MIT",
   "author": "Ilya Smurov",
   "repository": {

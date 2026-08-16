@@ -106,7 +106,10 @@ body > * { position: relative; z-index: 1; }
 .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
 
 /* ── header ── */
-.top { padding: 22px 0 0; }
+/* padding-block, not the shorthand: these blocks also carry .wrap, and a
+   shorthand would zero out its side padding — on a wide screen nobody notices,
+   on a phone the text lands flush against the edge. */
+.top { padding-block: 22px 0; }
 .top .inner { display: flex; align-items: center; gap: 20px; }
 .brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
 .brand span { font-family: var(--f-display); font-size: 19px; letter-spacing: -0.01em; }
@@ -121,9 +124,16 @@ body > * { position: relative; z-index: 1; }
 }
 .theme-toggle:hover { color: var(--ink); background: var(--sunken); }
 .theme-toggle tacet-icon { display: inline-flex; }
+/* A dot for "following the system": the glyph already says light or dark, this
+   says where that came from. */
+.theme-toggle[data-auto="true"] { position: relative; }
+.theme-toggle[data-auto="true"]::after {
+  content: ""; position: absolute; right: 5px; bottom: 5px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+}
 
 /* ── first screen ── */
-.hero { padding: 76px 0 20px; }
+.hero { padding-block: 76px 20px; }
 h1 {
   font-family: var(--f-display);
   font-size: clamp(40px, 7vw, 72px);
@@ -146,12 +156,21 @@ h1 {
 }
 .install button:hover { color: var(--ink); }
 
-/* The live row: icons draw themselves, one after another. */
+/* The live row: icons draw themselves, one after another, and replay on hover.
+   Smaller than they were, with more air between them — as a dense row of large
+   glyphs it read as a toolbar rather than a sample. */
 .parade {
-  display: flex; flex-wrap: wrap; gap: 22px; align-items: center;
-  margin: 46px 0 0; color: var(--ink);
+  display: flex; flex-wrap: wrap; gap: clamp(20px, 3.4vw, 38px); align-items: center;
+  margin: 50px 0 0; color: var(--ink);
 }
 .parade svg { overflow: visible; }
+/* Each glyph gets a slot of its own: the hover target is the slot, not the
+   26px drawing inside it. */
+.parade-slot {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 10px;
+}
+.parade-slot:hover { background: var(--sunken); }
 
 /* ── sections ── */
 section { padding: 68px 0; }
@@ -173,6 +192,12 @@ section > .wrap > p { color: var(--ink-2); max-width: 62ch; margin: 0 0 26px; }
 }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
 
+/* Grid items refuse to shrink below their content by default, so a long path
+   inside <pre> pushed the card — and the whole page — wider than the screen.
+   min-width: 0 lets them shrink and hands the overflow to the code block. */
+.cols > *, .ways > * { min-width: 0; }
+pre { max-width: 100%; }
+
 pre {
   margin: 0; font-family: var(--f-mono); font-size: 13.5px; line-height: 1.65;
   color: var(--ink-2); overflow-x: auto;
@@ -181,6 +206,11 @@ pre b { color: var(--ink); font-weight: 400; background: color-mix(in srgb, var(
 code { font-family: var(--f-mono); font-size: 0.93em; }
 
 .demo { display: flex; align-items: center; justify-content: center; gap: 30px; min-height: 150px; }
+/* Equal columns: with a flex row the labels set the width, and "solid unbroken"
+   made its column visibly wider than "A one cut". */
+.demo--even { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.demo--even .demo-item { min-width: 0; }
+.demo--even .label { text-align: center; }
 .demo-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .demo-item .label { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); }
 .demo-item .label b { color: var(--ink); font-weight: 400; }
@@ -191,15 +221,35 @@ code { font-family: var(--f-mono); font-size: 0.93em; }
   text-underline-offset: 3px; text-decoration-thickness: 1px;
 }
 
-/* The "any stack" section: two ways side by side. */
-.way { font-family: var(--f-mono); font-size: 13px; color: var(--ink); margin: 0 0 14px; }
-.way-note { color: var(--ink-3); font-size: 14px; margin: 16px 0 0; }
-.way-tail { color: var(--ink-2); margin-top: 30px; }
-.card pre { white-space: pre-wrap; word-break: break-word; }
+/* The "any stack" section: three ways without cards. The code blocks are the
+   only surface here — a card around them boxed a box, and the columns read as
+   heavier than what they held. */
+.ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; align-items: start; }
+.way { display: flex; flex-direction: column; gap: 12px; }
+.way h3 {
+  font-family: var(--f-display); font-size: 18px; font-weight: 400;
+  letter-spacing: -0.01em; margin: 0;
+}
+.way > p { color: var(--ink-3); font-size: 14.5px; line-height: 1.5; margin: 0 0 4px; }
+.way pre {
+  background: var(--sunken); border-radius: 10px; padding: 13px 15px;
+  font-size: 12.5px; line-height: 1.65; color: var(--ink-2);
+  white-space: pre-wrap; word-break: break-word;
+}
 
-/* Stroke width: sizes side by side. */
-.sizes { display: flex; align-items: flex-end; gap: 34px; flex-wrap: wrap; justify-content: center; }
-.sizes .one { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+/* Syntax colours. Deliberately few: a tag, an attribute, a string, a keyword,
+   a comment — enough to give the code shape without turning it into a parrot. */
+.way code i { font-style: normal; }
+.way code .t { color: var(--viz); }
+.way code .a { color: var(--ok); }
+.way code .s { color: var(--warm); }
+.way code .k { color: var(--accent); }
+.way code .c { color: var(--ink-3); }
+
+/* Stroke width: sizes side by side, on equal columns. In a flex row the widest
+   icon dragged the group off centre and the whole thing leaned to one side. */
+.sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: end; }
+.sizes .one { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
 .sizes .px { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
 /* Instruments. */
@@ -253,7 +303,7 @@ code { font-family: var(--f-mono); font-size: 0.93em; }
 .empty { color: var(--ink-2); padding: 40px 0; }
 
 /* ── footer ── */
-footer { padding: 60px 0 80px; color: var(--ink-3); font-size: 14.5px; }
+footer { padding-block: 60px 80px; color: var(--ink-3); font-size: 14.5px; }
 footer .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
 footer a { color: var(--ink-2); text-decoration: none; }
 footer a:hover { color: var(--ink); }
@@ -272,11 +322,21 @@ footer a:hover { color: var(--ink); }
   .top .inner { flex-wrap: wrap; gap: 12px 16px; }
   .top nav { margin-left: 0; width: 100%; gap: 16px; }
   .top nav a { font-size: 14px; }
-  .hero { padding: 34px 0 10px; }
+  .hero { padding-block: 34px 10px; }
   .hero p { font-size: 18px; }
   section { padding: 46px 0; }
+  .card { padding: 20px; }
   .cols { grid-template-columns: 1fr; }
+  .ways { grid-template-columns: 1fr; }
   .demo { flex-wrap: wrap; gap: 22px; }
+  /* Five densities across a phone leave 55px a column: the glyphs hung over
+     their cells and the last label ran out of the card. Three per row. */
+  .demo--even { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 20px 10px; }
+  /* Four sizes in one row need 296px of glyph alone — on a phone the 96 and the
+     128 climbed on top of each other. Two per row where they fit, one where they
+     do not; the sizes stay real, because a CSS-scaled icon would also scale its
+     stroke and the whole demo would be a lie. */
+  .sizes { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 26px 12px; }
   .gallery-bar input { width: 100%; }
   .counter { margin-left: 0; }
 }

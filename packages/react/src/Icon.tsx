@@ -47,8 +47,13 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "ref"> {
   title?: string | undefined;
 }
 
+// Where hover is listened for. Clickable ancestors are covered by default —
+// hovering a button should animate the icon inside it. Anything else opts in
+// with data-tacet-hover: a gallery cell or a card is a comfortable target,
+// while a 24px glyph is not.
 const HOST_SELECTOR =
-  'button, a, [role="button"], [role="menuitem"], [role="tab"], [role="option"], label';
+  'button, a, [role="button"], [role="menuitem"], [role="tab"], [role="option"], label,'
+  + ' [data-tacet-hover]';
 
 // The core emits canonical SVG names (stroke-width). React renders markup with
 // them correctly but complains about each one in dev mode — so we translate into
@@ -137,14 +142,15 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, animateIn, replayKey]);
 
-  // Hover replay only inside a clickable element: you hover the whole button and
-  // the icon animates. Decorative icons stay silent on hover.
+  // Hover replay attaches to the nearest clickable ancestor: you hover the whole
+  // button and the icon animates. Standing on its own, the icon listens to
+  // itself — animateOnHover is an explicit request, and quietly ignoring it
+  // because there is no button around would be the wrong kind of clever.
   useEffect(() => {
     if (!animateOnHover) return;
     const svg = innerRef.current;
     if (!svg) return;
-    const host = svg.closest(HOST_SELECTOR);
-    if (!host) return;
+    const host = svg.closest(HOST_SELECTOR) ?? svg;
     const onEnter = () => animate(svg, cfg);
     host.addEventListener("mouseenter", onEnter);
     return () => host.removeEventListener("mouseenter", onEnter);

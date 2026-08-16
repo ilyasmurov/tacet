@@ -131,6 +131,27 @@ describe("clearing the state", () => {
   });
 });
 
+describe("without the Web Animations API", () => {
+  // jsdom has no element.animate, and neither do very old browsers. The engine
+  // must then apply the final state at once: no animation is acceptable, an
+  // element stuck mid-reveal is not — that is an invisible icon.
+  it("applies the final state instead of leaving the icon hidden", () => {
+    const svg = draw("bell");
+    animate(svg, cfg);
+    for (const clone of svg.querySelectorAll<SVGElement>("mask [data-rev]")) {
+      expect(clone.style.strokeDashoffset).toBe("0");
+    }
+  });
+
+  it("repeated plays leave it visible too", () => {
+    const svg = draw("rocket");
+    for (let i = 0; i < 5; i++) animate(svg, cfg);
+    for (const clone of svg.querySelectorAll<SVGElement>("mask [data-rev]")) {
+      expect(clone.style.strokeDashoffset).toBe("0");
+    }
+  });
+});
+
 describe("modes", () => {
   it("pop and fade work without a mask", () => {
     for (const mode of ["pop", "fade"] as const) {

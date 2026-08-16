@@ -60,9 +60,11 @@ const groups = [
 ];
 
 // Glyphs for the first screen: varied in character, with visible animation.
+// Eleven, not twelve: the twelfth broke onto a second line on a desktop and the
+// row stopped reading as a row.
 const PARADE = [
   "rocket", "waveform", "git-branch", "saxophone", "bell", "folder-tree",
-  "check-circle", "handpan", "activity", "sparkles", "balalaika", "target",
+  "check-circle", "handpan", "activity", "sparkles", "balalaika",
 ];
 // Pairs that show why the semantics is needed at all.
 const CONFUSED = ["trash", "archive", "check", "check-circle"];
@@ -71,6 +73,46 @@ const SHOWCASE_INSTRUMENTS = [
   "saxophone", "balalaika", "handpan", "duduk", "bayan", "harp", "djembe", "sitar",
   "gusli", "kalimba", "didgeridoo", "jaw-harp", "accordion", "banjo", "cello", "timpani",
 ];
+
+/**
+ * A very small syntax highlighter. A library would mean either a CDN request or
+ * a heavy dependency for the sake of three code samples, and the page is meant
+ * to stand on its own — so it is one regex per language.
+ *
+ * One pass, not a chain of replacements: chained rules match the markup the
+ * previous ones inserted, and `class` inside an emitted <i class="t"> gets
+ * highlighted as an attribute, nesting tags into each other. A single regex
+ * with alternatives cannot do that — every character is consumed once.
+ *
+ * The text is escaped first, so a tag inside a sample can never become markup.
+ */
+const SYNTAX: Record<"html" | "js", RegExp> = {
+  html: /(?<str>"[^"]*")|(?<tag>(?<=&lt;\/?)[a-zA-Z][\w-]*)|(?<attr>[a-zA-Z-]+(?==))/g,
+  js: /(?<com>\/\/[^\n]*)|(?<str>"[^"]*"|'[^']*')|(?<kw>\b(?:import|from|const|let|return|function|new)\b)/g,
+};
+
+const SYNTAX_CLASS: Record<string, string> = {
+  str: "s", tag: "t", attr: "a", com: "c", kw: "k",
+};
+
+function highlight(code: string, lang: "html" | "js" | "shell"): string {
+  const escaped = code
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  if (lang === "shell") {
+    // A command line: the tool itself, then its arguments.
+    return escaped.replace(/^(\S+)(\s+.*)?$/, (_m, cmd: string, rest = "") =>
+      `<i class="k">${cmd}</i>${rest ? `<i class="s">${rest}</i>` : ""}`);
+  }
+
+  return escaped.replace(SYNTAX[lang], (match, ...args) => {
+    const groups = args[args.length - 1] as Record<string, string | undefined>;
+    const kind = Object.keys(groups).find((key) => groups[key] !== undefined);
+    return kind ? `<i class="${SYNTAX_CLASS[kind]}">${match}</i>` : match;
+  });
+}
 
 function icon(name: string, size: number, extra = ""): string {
   return `<tacet-icon name="${name}" size="${size}"${extra ? " " + extra : ""}></tacet-icon>`;
@@ -144,7 +186,7 @@ try {
     <button type="button" data-copy="npm i tacet-react">Copy</button>
   </div>
   <div class="parade" id="parade">
-    ${PARADE.map((n) => icon(n, 34, 'animate=""')).join("\n    ")}
+    ${PARADE.map((n) => `<span class="parade-slot" data-tacet-hover>${icon(n, 26, 'animate="" animate-on-hover=""')}</span>`).join("\n    ")}
   </div>
 </header>
 
@@ -165,7 +207,7 @@ try {
       </div>
       <div class="card demo">
         <div class="demo-item">
-          ${icon("bell", 76, 'animate="" id="bell-demo"')}
+          ${icon("bell", 52, 'animate="" id="bell-demo"')}
           <button class="replay" type="button" data-replay="bell-demo">Play again</button>
         </div>
       </div>
@@ -180,35 +222,41 @@ try {
     <p>The engine has no idea React exists: it turns a glyph name into SVG attributes and
     animates a plain DOM element. React is a thin wrapper over it — and so is the custom
     element, which needs no framework at all.</p>
-    <div class="cols">
-      <div class="card">
-        <p class="way">Custom element</p>
-        <pre>npm i tacet-element
-
-&lt;script type="module"&gt;
+    <div class="ways">
+      <div class="way">
+        <h3>Custom element</h3>
+        <p>Works anywhere HTML does: Vue, Svelte, Astro, a plain page, a template
+        rendered on the server.</p>
+        <pre><code>${highlight('npm i tacet-element', "shell")}</code></pre>
+        <pre><code>${highlight(`<script type="module">
   import "tacet-element";
-&lt;/script&gt;
+</script>
 
-&lt;tacet-icon name="rocket" size="24"&gt;&lt;/tacet-icon&gt;
-&lt;tacet-icon name="bell" animate&gt;&lt;/tacet-icon&gt;</pre>
-        <p class="way-note">Works anywhere HTML does: Vue, Svelte, Astro, a plain page,
-        a template rendered on the server.</p>
+<tacet-icon name="rocket" size="24"></tacet-icon>
+<tacet-icon name="bell" animate></tacet-icon>`, "html")}</code></pre>
       </div>
-      <div class="card">
-        <p class="way">Engine on its own</p>
-        <pre>npm i tacet-core
 
-import { renderSpec, animate } from "tacet-core";
+      <div class="way">
+        <h3>Engine on its own</h3>
+        <p>For your own wrapper, a generator or a build step. No dependencies at all,
+        not even a peer one.</p>
+        <pre><code>${highlight('npm i tacet-core', "shell")}</code></pre>
+        <pre><code>${highlight(`import { renderSpec } from "tacet-core";
 
 const spec = renderSpec("rocket", { size: 24 });
-// spec.parts → [{ tag: "path", attrs: {...} }]</pre>
-        <p class="way-note">For your own wrapper, a generator, or a build step. No
-        dependencies at all, not even a peer one.</p>
+// spec.parts → [{ tag: "path", attrs: {…} }]`, "js")}</code></pre>
+      </div>
+
+      <div class="way">
+        <h3>Static files</h3>
+        <p>No runtime at all. Cuts are baked into the files; only the animation is lost.
+        Every glyph is also served here as <a href="./svg/bell.svg">a single SVG</a>.</p>
+        <pre><code>${highlight('<img src="bell.svg" width="24" alt="">', "html")}</code></pre>
+        <pre><code>${highlight(`<svg width="24" height="24">
+  <use href="sprite.svg#tacet-bell"></use>
+</svg>`, "html")}</code></pre>
       </div>
     </div>
-    <p class="way-tail">Need no runtime whatsoever — take the static files: every glyph is
-    served here as <a href="./svg/bell.svg">an individual SVG</a>, and all of them together as
-    <a href="./svg/sprite.svg">one sprite</a>. Cuts are baked in; only the animation is lost.</p>
   </div>
 </section>
 
@@ -220,7 +268,7 @@ const spec = renderSpec("rocket", { size: 24 });
     Plus a solid mode — for places where breaks get in the way, small status marks for instance.</p>
     <!-- The glyph is chosen with two cuts on its main contour: with a single
          cut A is indistinguishable from B and the whole demo says nothing. -->
-    <div class="card demo">
+    <div class="card demo demo--even">
       <div class="demo-item">${icon("rocket", 56, 'variant="A"')}<span class="label"><b>A</b> one cut</span></div>
       <div class="demo-item">${icon("rocket", 56, 'variant="B"')}<span class="label"><b>B</b> all cuts</span></div>
       <div class="demo-item">${icon("rocket", 56, 'variant="C"')}<span class="label"><b>C</b> one and accent</span></div>
@@ -238,10 +286,10 @@ const spec = renderSpec("rocket", { size: 24 });
     turn into a heavy blueprint. Need an even hairline at any size — there is
     <code>absoluteStroke</code>.</p>
     <div class="card sizes">
-      <div class="one">${icon("target", 24)}<span class="px">24px · 1.50</span></div>
-      <div class="one">${icon("target", 48)}<span class="px">48px · 2.05</span></div>
-      <div class="one">${icon("target", 96)}<span class="px">96px · 2.83</span></div>
-      <div class="one">${icon("target", 128)}<span class="px">128px · 3.19</span></div>
+      <div class="one">${icon("saxophone", 24)}<span class="px">24px · 1.50</span></div>
+      <div class="one">${icon("saxophone", 48)}<span class="px">48px · 2.05</span></div>
+      <div class="one">${icon("saxophone", 96)}<span class="px">96px · 2.83</span></div>
+      <div class="one">${icon("saxophone", 128)}<span class="px">128px · 3.19</span></div>
     </div>
   </div>
 </section>
@@ -319,9 +367,20 @@ let size = 24, variant = "D", query = "";
 // Theme: three states rather than two. "system" is the default and stores
 // nothing; an explicit choice is remembered and wins over the media query.
 const THEME_ORDER = ["system", "light", "dark"];
-const THEME_ICON = { system: "monitor", light: "sun", dark: "moon" };
-const THEME_LABEL = { system: "Theme: system", light: "Theme: light", dark: "Theme: dark" };
+const THEME_LABEL = {
+  system: "Theme: follows the system",
+  light: "Theme: light",
+  dark: "Theme: dark",
+};
 const themeButton = document.getElementById("theme");
+
+// The button shows the theme you are actually looking at, not where the choice
+// came from: a monitor glyph told nobody whether the page is light or dark right
+// now. That the source is the system is said by the dot and the tooltip.
+function effectiveTheme(choice) {
+  if (choice !== "system") return choice;
+  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
 function currentTheme() {
   const stamped = document.documentElement.getAttribute("data-theme");
@@ -338,15 +397,21 @@ function applyTheme(theme) {
   drawThemeButton(theme);
 }
 
-function drawThemeButton(theme) {
+function drawThemeButton(choice) {
   themeButton.textContent = "";
   const glyph = document.createElement("tacet-icon");
-  glyph.setAttribute("name", THEME_ICON[theme]);
+  glyph.setAttribute("name", effectiveTheme(choice) === "dark" ? "moon" : "sun");
   glyph.setAttribute("size", "20");
   themeButton.appendChild(glyph);
-  themeButton.setAttribute("aria-label", THEME_LABEL[theme]);
-  themeButton.title = THEME_LABEL[theme];
+  themeButton.dataset.auto = choice === "system" ? "true" : "false";
+  themeButton.setAttribute("aria-label", THEME_LABEL[choice]);
+  themeButton.title = THEME_LABEL[choice];
 }
+
+// Following the system means the icon has to follow it too, live.
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (currentTheme() === "system") drawThemeButton("system");
+});
 
 drawThemeButton(currentTheme());
 themeButton.addEventListener("click", () => {
@@ -405,6 +470,8 @@ function renderGallery() {
       const cell = document.createElement("figure");
       cell.className = "cell";
       cell.style.margin = "0";
+      // The whole cell is the hover target: aiming at a 24px glyph is no fun.
+      cell.dataset.tacetHover = "";
       const meta = META[name];
       if (meta) cell.title = meta.use + (meta.avoid ? "\\n\\n" + meta.avoid : "");
 

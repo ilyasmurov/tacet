@@ -10,8 +10,13 @@ import {
 } from "tacet-core";
 
 const SVGNS = "http://www.w3.org/2000/svg";
+// Where hover is listened for. Clickable ancestors are covered by default —
+// hovering a button should animate the icon inside it. Anything else opts in
+// with data-tacet-hover: a gallery cell or a card is a comfortable target,
+// while a 24px glyph is not.
 const HOST_SELECTOR =
-  'button, a, [role="button"], [role="menuitem"], [role="tab"], [role="option"], label';
+  'button, a, [role="button"], [role="menuitem"], [role="tab"], [role="option"], label,'
+  + ' [data-tacet-hover]';
 
 let uid = 0;
 
@@ -101,8 +106,11 @@ export class TacetIconElement extends HTMLElement {
   #bindHover(): void {
     this.#unbindHover();
     if (!this.#bool("animate-on-hover")) return;
-    const host = this.closest(HOST_SELECTOR);
-    if (!host) return;
+    // The nearest clickable ancestor if there is one — hovering a button should
+    // animate the icon inside it. With no such ancestor the element listens to
+    // itself: the attribute is an explicit request, and refusing it because the
+    // icon happens to stand on its own would be a silent no-op.
+    const host = this.closest(HOST_SELECTOR) ?? this;
     this.#host = host;
     host.addEventListener("mouseenter", this.#onEnter);
   }

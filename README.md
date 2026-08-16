@@ -75,6 +75,34 @@ Both wrappers are thin: they call `renderSpec()` from the core and know nothing
 about geometry. A test compares the DOM they produce across all 320 glyphs, so
 they cannot drift apart quietly.
 
+## Animation
+
+The draw-in comes from the same record as the cuts: the contour draws itself
+while the gaps hold their place. Four modes — `draw`, `spin`, `pop`, `fade` — and
+every glyph carries its own preset, so `loading` spins and `waveform` staggers
+without being told to.
+
+```jsx
+<Icon name="bell" animateIn />                  // on mount
+<Icon name="bell" animateOnHover />             // on hover
+<Icon name="bell" replayKey={count} />          // on demand
+```
+
+Hover listens on the **nearest clickable ancestor** — hover a button and the icon
+inside it animates. Where there is no button, mark the container with
+`data-tacet-hover` and it becomes the target: aiming at a 24px glyph is no fun, a
+cell or a card is.
+
+```jsx
+<figure className="cell" data-tacet-hover>
+  <Icon name="saxophone" size={28} animateOnHover />
+</figure>
+```
+
+The same works in the custom element (`animate`, `animate-on-hover`) and on bare
+DOM through `animate()` / `prepare()` / `reverse()` from the core. Everything
+respects `prefers-reduced-motion`.
+
 ## Static SVG
 
 ```bash
@@ -112,7 +140,7 @@ is monochrome, so the set drops into any palette as is:
 ```bash
 pnpm install
 pnpm build       # all three packages
-pnpm test        # 84 tests
+pnpm test        # 86 tests
 pnpm svg         # static files
 pnpm meta        # icons.json and llms.txt
 pnpm gallery     # a self-contained gallery page

@@ -1,7 +1,7 @@
 {
   "name": "tacet-core",
-  "version": "0.1.0",
-  "description": "Данные и движок набора иконок Tacet. Без зависимостей.",
+  "version": "0.1.1",
+  "description": "Data and engine of the Tacet icon set: 320 outline glyphs where the cut is data, plus per-glyph guidance for AI agents. No dependencies.",
   "license": "MIT",
   "author": "Ilya Smurov",
   "repository": { "type": "git", "url": "git+https://github.com/ilyasmurov/tacet.git", "directory": "packages/core" },

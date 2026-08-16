@@ -20,6 +20,36 @@ const SCALE_SELECTOR = FILL_SELECTOR + `, g.${BODY_CLASS} [data-pop]`;
 const MODULE_ID = Math.random().toString(36).slice(2, 7);
 let maskCounter = 0;
 
+/**
+ * Play a keyframe animation and hold its final state.
+ *
+ * This used to be CSS transitions driven by hand: set the start value, force a
+ * style recalculation, then set the end value. It worked most of the time and
+ * failed the rest — `stroke-dashoffset` affects painting only, so nothing
+ * guarantees the reset lands before the transition is declared, and the browser
+ * is free to collapse both into one step. The visible symptom was an icon that
+ * animated on some hovers and silently stayed hidden on others.
+ *
+ * The Web Animations API has no such ambiguity: the animation starts because it
+ * was started, and a previous one on the same element is cancelled outright.
+ *
+ * Environments without the API (jsdom in tests, very old browsers) get the final
+ * state applied at once — no animation, but never a stuck element.
+ */
+function play(
+  el: SVGElement | SVGSVGElement,
+  frames: Keyframe[],
+  options: KeyframeAnimationOptions,
+  settle: (el: SVGElement | SVGSVGElement) => void,
+): void {
+  if (typeof el.animate !== "function") { settle(el); return; }
+  el.getAnimations?.().forEach((a) => a.cancel());
+  const animation = el.animate(frames, { fill: "forwards", ...options });
+  // The final state is written to the element as well: keeping a finished
+  // animation around forever would pile them up on every hover.
+  animation.addEventListener("finish", () => { settle(el); animation.cancel(); }, { once: true });
+}
+
 export interface AnimateCfg {
   mode?: AnimMode | undefined;
   /** Draw-in duration, ms. */
@@ -265,28 +295,26 @@ export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
   if (cfg.mode === "pop") {
     body.style.transformBox = "fill-box";
     body.style.transformOrigin = "center";
-    body.style.transition = "none";
-    body.style.transform = "scale(0.2)";
-    body.style.opacity = "0";
-    void body.getBoundingClientRect();
-    body.style.transition = `transform .55s cubic-bezier(.34,1.56,.64,1) ${delay}ms, opacity .25s ease ${delay}ms`;
-    body.style.transform = "scale(1)";
-    body.style.opacity = "1";
+    play(
+      body,
+      [{ transform: "scale(0.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }],
+      { duration: 550, delay, easing: "cubic-bezier(.34,1.56,.64,1)" },
+      (node) => { node.style.transform = "scale(1)"; node.style.opacity = "1"; },
+    );
     return;
   }
   if (cfg.mode === "fade") {
-    body.style.transition = "none";
-    body.style.opacity = "0";
-    void body.getBoundingClientRect();
-    body.style.transition = `opacity .5s ease ${delay}ms`;
-    body.style.opacity = "1";
+    play(
+      body,
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 500, delay, easing: "ease" },
+      (node) => { node.style.opacity = "1"; },
+    );
     return;
   }
 
   const revs = buildReveal(svg, body);
   body.setAttribute("mask", `url(#${body.dataset["revealId"]})`);
-  revs.forEach((el) => { el.style.transition = "none"; el.style.strokeDashoffset = "100"; });
-  void body.getBoundingClientRect();
 
   const order = Array.from({ length: revs.length }, (_, i) => i);
   if (stagger) {
@@ -302,17 +330,23 @@ export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
       ? i * seq
       : stagger ? (order[i] ?? 0) * stagger * (0.6 + Math.random() * 0.6) : 0;
     if (extra > maxExtra) maxExtra = extra;
-    el.style.transition = `stroke-dashoffset ${duration}ms cubic-bezier(.45,0,.2,1) ${delay + extra}ms`;
-    el.style.strokeDashoffset = "0";
+    el.style.strokeDashoffset = "100";
+    play(
+      el,
+      [{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }],
+      { duration, delay: delay + extra, easing: "cubic-bezier(.45,0,.2,1)" },
+      (node) => { (node as SVGElement).style.strokeDashoffset = "0"; },
+    );
   });
 
   if (cfg.mode === "spin") {
     svg.style.transformOrigin = "center";
-    svg.style.transition = "none";
-    svg.style.transform = `rotate(-${cfg.spinDeg}deg)`;
-    void svg.getBoundingClientRect();
-    svg.style.transition = `transform ${duration}ms cubic-bezier(.3,0,.2,1) ${delay}ms`;
-    svg.style.transform = "rotate(0deg)";
+    play(
+      svg,
+      [{ transform: `rotate(-${cfg.spinDeg}deg)` }, { transform: "rotate(0deg)" }],
+      { duration, delay, easing: "cubic-bezier(.3,0,.2,1)" },
+      (node) => { (node as SVGSVGElement).style.transform = "rotate(0deg)"; },
+    );
   }
 
   // The mask comes off once it has done its job: while it hangs there, the
@@ -329,11 +363,13 @@ export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
     const at = delay + (isPop ? 320 : 240) + i * 50;
     el.style.transformBox = "fill-box";
     el.style.transformOrigin = "center";
-    el.style.transition = "none";
     el.style.transform = "scale(0)";
-    void el.getBoundingClientRect();
-    el.style.transition = `transform .5s cubic-bezier(.34,1.56,.64,1) ${at}ms`;
-    el.style.transform = "scale(1)";
+    play(
+      el,
+      [{ transform: "scale(0)" }, { transform: "scale(1)" }],
+      { duration: 500, delay: at, easing: "cubic-bezier(.34,1.56,.64,1)" },
+      (node) => { (node as SVGElement).style.transform = "scale(1)"; },
+    );
   });
 }
 

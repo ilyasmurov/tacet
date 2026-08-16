@@ -1,7 +1,7 @@
 {
   "name": "tacet-react",
-  "version": "0.1.0",
-  "description": "Набор иконок «аутлайн с разрезами» для React: анимация самоотрисовки, четыре плотности разрезов, 64 музыкальных инструмента.",
+  "version": "0.1.1",
+  "description": "Tacet icon set for React: 320 outline glyphs where the cut is data, self-drawing animation, four cut densities, 64 musical instruments.",
   "license": "MIT",
   "author": "Ilya Smurov",
   "repository": {
