@@ -1,4 +1,4 @@
-# tacet
+# tacet-react
 
 React component for the Tacet icon set — 320 outline glyphs where the **cut is
 data, not geometry**.
@@ -6,11 +6,11 @@ data, not geometry**.
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
 
 ```bash
-npm i tacet
+npm i tacet-react
 ```
 
 ```jsx
-import { Icon } from "tacet";
+import { Icon } from "tacet-react";
 
 <Icon name="rocket" />
 <Icon name="bell" size={20} animateIn />

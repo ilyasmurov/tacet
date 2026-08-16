@@ -15,11 +15,11 @@ cut densities and a solid mode — out of one source, with no second set of file
 ## Install
 
 ```bash
-npm i tacet
+npm i tacet-react
 ```
 
 ```jsx
-import { Icon } from "tacet";
+import { Icon } from "tacet-react";
 
 <Icon name="rocket" />
 <Icon name="bell" size={20} animateIn />
@@ -67,7 +67,7 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 
 | Package | What for |
 |---|---|
-| [`tacet`](packages/react) | React component. React stays a peer dependency |
+| [`tacet-react`](packages/react) | React component. React stays a peer dependency |
 | [`tacet-core`](packages/core) | Data and engine. No dependencies at all |
 | [`tacet-element`](packages/element) | `<tacet-icon>` custom element |
 

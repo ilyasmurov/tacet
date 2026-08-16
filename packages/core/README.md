@@ -4,7 +4,7 @@ Data and engine of the Tacet icon set. **No dependencies at all** — not even a
 peer one. Use it when you build your own wrapper, generate files, or need the
 glyph data itself.
 
-For React take [`tacet`](https://www.npmjs.com/package/tacet); for plain HTML
+For React take [`tacet`](https://www.npmjs.com/package/tacet-react); for plain HTML
 take [`tacet-element`](https://www.npmjs.com/package/tacet-element).
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
