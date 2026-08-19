@@ -27,6 +27,24 @@ import { Icon } from "tacet-react";
 <Icon name="status-done" solid title="Done" />
 ```
 
+React Native:
+
+```bash
+npm i tacet-native react-native-svg
+```
+
+```jsx
+import { Icon } from "tacet-native";
+
+<Icon name="rocket" color="#18181b" />
+<Icon name="bell" size={20} color="#18181b" replayKey={taps} />
+```
+
+There is no cascade on a phone, so the colour is explicit — `currentColor` has
+nothing to inherit from. Cuts are converted from percentages into units of the
+contour: `pathLength` does not exist in react-native-svg. Of the animation modes
+only `draw` is there so far, and it plays on `replayKey`, not on mount.
+
 Not using React:
 
 ```bash
@@ -68,14 +86,25 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 | Package | What for |
 |---|---|
 | [`tacet-react`](packages/react) | React component. React stays a peer dependency |
+| [`tacet-native`](packages/native) | React Native component, drawn with react-native-svg |
 | [`tacet-core`](packages/core) | Data and engine. No dependencies at all |
 | [`tacet-element`](packages/element) | `<tacet-icon>` custom element |
 
-Both wrappers are thin: they call `renderSpec()` from the core and know nothing
-about geometry. A test compares the DOM they produce across all 320 glyphs, so
-they cannot drift apart quietly.
+The wrappers are thin: they call `renderSpec()` from the core and know nothing
+about geometry. A test compares the DOM the web ones produce across all 320
+glyphs, so they cannot drift apart quietly.
+
+The React Native one is thin in the same way, but a phone differs in three
+places, and each is handled in the wrapper rather than in the set: `pathLength`
+does not exist there, so cuts are measured into real units; `currentColor` has no
+cascade to inherit from, so the colour is passed in; and `overflow: visible` may
+not survive, so at the sharpest glyphs a tip can be clipped — `zoom={false}` is
+the way out. Its own tests run all 320 glyphs through the translation.
 
 ## Animation
+
+Web wrappers only, so far: React Native has the `draw` mode alone, played on
+`replayKey`.
 
 The draw-in comes from the same record as the cuts: the contour draws itself
 while the gaps hold their place. Four modes — `draw`, `spin`, `pop`, `fade` — and

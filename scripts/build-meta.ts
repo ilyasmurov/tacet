@@ -60,8 +60,9 @@ const lines: string[] = [
   "## Install",
   "",
   "React:      `pnpm add tacet-react`   — `import { Icon } from \"tacet-react\"`",
+  "React Native: `pnpm add tacet-native react-native-svg` — `import { Icon } from \"tacet-native\"`, colour is explicit: `<Icon name=\"bell\" color=\"#18181b\" />`",
   "Web component: `pnpm add tacet-element` — `<tacet-icon name=\"bell\">`",
-  "Data and engine only: `pnpm add tacet-core` (no dependencies, pulled in by both wrappers)",
+  "Data and engine only: `pnpm add tacet-core` (no dependencies, pulled in by every wrapper)",
   "",
   "Static SVG files for every glyph live in the repository: https://github.com/ilyasmurov/tacet",
   "",
@@ -71,7 +72,7 @@ const lines: string[] = [
   "and its closest neighbours. Pick by `use`, then check `avoid` — that is where the usual",
   "mistakes are named: trash instead of archive, check instead of check-circle.",
   "",
-  "Usage: `<Icon name=\"...\" />` from `tacet-react`, or `<tacet-icon name=\"...\">` from `tacet-element`.",
+  "Usage: `<Icon name=\"...\" />` from `tacet-react` or `tacet-native`, or `<tacet-icon name=\"...\">` from `tacet-element`.",
   "",
 ];
 

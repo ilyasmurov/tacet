@@ -250,10 +250,11 @@ try {
 <section id="stacks">
   <div class="wrap">
     <p class="eyebrow">any stack</p>
-    <h2>React is one of three ways</h2>
+    <h2>React is one of four ways</h2>
     <p>The engine has no idea React exists: it turns a glyph name into SVG attributes and
-    animates a plain DOM element. React is a thin wrapper over it — and so is the custom
-    element, which needs no framework at all.</p>
+    animates a plain DOM element. React is a thin wrapper over it — and so are the custom
+    element, which needs no framework at all, and the React Native one, which draws the
+    same glyphs on a phone.</p>
     <div class="ways">
       <div class="way">
         <h3>Custom element</h3>
@@ -266,6 +267,19 @@ try {
 
 <tacet-icon name="rocket" size="24"></tacet-icon>
 <tacet-icon name="bell" animate></tacet-icon>`, "html")}</code></pre>
+      </div>
+
+      <div class="way">
+        <h3>React Native</h3>
+        <p>The same set on a phone, drawn with react-native-svg. There is no cascade
+        there, so the colour is passed in, and cuts are measured into real units —
+        <code>pathLength</code> does not exist in React Native. Of the animation modes
+        only the draw-in is there so far, played on demand.</p>
+        <pre><code>${highlight('npm i tacet-native react-native-svg', "shell")}</code></pre>
+        <pre><code>${highlight(`import { Icon } from "tacet-native";
+
+<Icon name="rocket" size={24} color="#18181b" />
+<Icon name="bell" replayKey={taps} color="#18181b" />`, "html")}</code></pre>
       </div>
 
       <div class="way">
