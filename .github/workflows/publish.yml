@@ -52,6 +52,10 @@ jobs:
       - name: Pack
         run: pnpm -r --filter './packages/*' exec pnpm pack --pack-destination "$RUNNER_TEMP"
 
+      # A version already in the registry is skipped rather than failing the run.
+      # Publishing is not atomic: four packages go one by one, and a failure on
+      # the third leaves the first two out there. Rerunning the release must
+      # finish the job, not trip over what already made it.
       - name: Publish
         run: |
           shopt -s nullglob
@@ -60,7 +64,22 @@ jobs:
             echo "No archives — there is nothing to publish, and silence here would look like success."
             exit 1
           fi
+          published=0
           for archive in "${archives[@]}"; do
-            echo "publishing $(basename "$archive")"
+            spec=$(tar -xzOf "$archive" package/package.json | node -e "
+              let raw = '';
+              process.stdin.on('data', (c) => (raw += c));
+              process.stdin.on('end', () => {
+                const { name, version } = JSON.parse(raw);
+                process.stdout.write(name + '@' + version);
+              });
+            ")
+            if npm view "$spec" version >/dev/null 2>&1; then
+              echo "$spec is already in the registry — skipping"
+              continue
+            fi
+            echo "publishing $spec"
             npm publish "$archive" --access public --provenance
+            published=$((published + 1))
           done
+          echo "published $published package(s)"
