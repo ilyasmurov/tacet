@@ -1,6 +1,6 @@
 {
   "name": "tacet-native",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tacet icons for React Native — the same set, drawn with react-native-svg",
   "license": "MIT",
   "type": "module",

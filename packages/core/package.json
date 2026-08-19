@@ -1,10 +1,14 @@
 {
   "name": "tacet-core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Data and engine of the Tacet icon set: 320 outline glyphs where the cut is data, plus per-glyph guidance for AI agents. No dependencies.",
   "license": "MIT",
   "author": "Ilya Smurov",
-  "repository": { "type": "git", "url": "git+https://github.com/ilyasmurov/tacet.git", "directory": "packages/core" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilyasmurov/tacet.git",
+    "directory": "packages/core"
+  },
   "homepage": "https://tacet.smurov.com",
   "type": "module",
   "sideEffects": false,
@@ -16,11 +20,18 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepack": "tsc -p tsconfig.json"
   },
-  "keywords": ["icons", "svg", "icon-set", "animated-icons"]
+  "keywords": [
+    "icons",
+    "svg",
+    "icon-set",
+    "animated-icons"
+  ]
 }
