@@ -40,11 +40,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Types and tests before publishing, not after: a version pulled from npm
-      # cannot be taken back, only deprecated.
+      # Build first, and only then the checks. The wrappers import tacet-core by
+      # its package name, and it resolves to dist — on a fresh checkout there is
+      # none, so typecheck fails on an import rather than on the code. Locally
+      # this hides behind a dist left over from the previous build.
+      - run: pnpm build
+
+      # Checks before publishing, not after: a version pulled from npm cannot be
+      # taken back, only deprecated.
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
 
       # pnpm packs, npm publishes. Splitting them is not a whim: only pnpm knows
       # how to replace workspace:^ with a real version, and only npm can publish
