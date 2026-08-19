@@ -1,0 +1,66 @@
+# Publishing from CI, by tag.
+#
+# npm trusts this workflow through OIDC — no token, no one-time code. The
+# packages come out with provenance: for every version it is visible which
+# commit and which workflow built it.
+#
+# Each package has to name the trusted publisher on npmjs.com once: repository
+# ilyasmurov/tacet, workflow publish.yml.
+
+name: publish
+
+on:
+  push:
+    tags: ["v*"]
+  # A rerun without a tag: for when the tag is already in place and the run has
+  # to be repeated.
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Without this npm has nothing to check the workflow's identity by.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing appeared in npm 11.5.1, and Node 22 ships an older one.
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      # Types and tests before publishing, not after: a version pulled from npm
+      # cannot be taken back, only deprecated.
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      # pnpm packs, npm publishes. Splitting them is not a whim: only pnpm knows
+      # how to replace workspace:^ with a real version, and only npm can publish
+      # through OIDC.
+      - name: Pack
+        run: pnpm -r --filter './packages/*' exec pnpm pack --pack-destination "$RUNNER_TEMP"
+
+      - name: Publish
+        run: |
+          shopt -s nullglob
+          archives=("$RUNNER_TEMP"/*.tgz)
+          if [ ${#archives[@]} -eq 0 ]; then
+            echo "No archives — there is nothing to publish, and silence here would look like success."
+            exit 1
+          fi
+          for archive in "${archives[@]}"; do
+            echo "publishing $(basename "$archive")"
+            npm publish "$archive" --access public --provenance
+          done
