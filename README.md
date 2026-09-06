@@ -7,7 +7,8 @@ rendered through `stroke-dasharray`. Moving a cut is editing one number, not
 redrawing a path. From that single decision you get the draw-in animation, four
 cut densities and a solid mode — out of one source, with no second set of files.
 
-**320 glyphs.** Interface, 64 musical instruments and roles, 19 creative services.
+**362 glyphs.** Interface, 64 musical instruments and roles, 19 creative services.
+Every one of them carries a note on when to use it.
 
 - Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
 - MIT licensed
@@ -91,7 +92,7 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 | [`tacet-element`](packages/element) | `<tacet-icon>` custom element |
 
 The wrappers are thin: they call `renderSpec()` from the core and know nothing
-about geometry. A test compares the DOM the web ones produce across all 320
+about geometry. A test compares the DOM the web ones produce across all 362
 glyphs, so they cannot drift apart quietly.
 
 The React Native one is thin in the same way, but a phone differs in three
@@ -99,7 +100,7 @@ places, and each is handled in the wrapper rather than in the set: `pathLength`
 does not exist there, so cuts are measured into real units; `currentColor` has no
 cascade to inherit from, so the colour is passed in; and `overflow: visible` may
 not survive, so at the sharpest glyphs a tip can be clipped — `zoom={false}` is
-the way out. Its own tests run all 320 glyphs through the translation.
+the way out. Its own tests run all 362 glyphs through the translation.
 
 ## Animation
 
@@ -138,7 +139,7 @@ respects `prefers-reduced-motion`.
 pnpm svg
 ```
 
-Writes 320 standalone SVG files plus a sprite. Cuts survive — they are baked into
+Writes 362 standalone SVG files plus a sprite. Cuts survive — they are baked into
 `stroke-dasharray`. The animation does not: it lives at runtime and builds a mask
 from cloned shapes, which a file has nowhere to get.
 

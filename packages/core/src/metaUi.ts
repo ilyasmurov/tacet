@@ -40,10 +40,10 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["columns", "layers", "table"],
   },
   "grid": {
-    use: "Catalogue of services or sections as tiles.",
-    avoid: "For switching a list into grid view use `layout-grid`.",
-    synonyms: ["catalogue", "services", "tiles", "каталог", "услуги", "плитка"],
-    related: ["layout-grid", "columns"],
+    use: "Catalog of tiles of mixed size: services, a dashboard.",
+    avoid: "For four equal tiles or a view switcher use `layout-grid`; for a data grid use `table`.",
+    synonyms: ["grid", "catalog", "tiles", "dashboard", "сетка", "каталог", "плитки", "витрина"],
+    related: ["layout-grid", "table", "columns"],
   },
   "columns": {
     use: "Board or column layout, kanban-style.",
@@ -167,10 +167,10 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["loading", "rotate", "history"],
   },
   "rotate": {
-    use: "Rotating an object or returning it to the starting position.",
-    avoid: "For reloading data use `refresh`.",
-    synonyms: ["rotate", "turn", "reset", "повернуть", "вращать", "сброс"],
-    related: ["refresh", "history"],
+    use: "Turning an image or a cover by 90°.",
+    avoid: "For reloading data use `refresh`; for a camera flip use `switch-camera`.",
+    synonyms: ["rotate", "turn", "90 degrees", "повернуть", "вращать", "поворот"],
+    related: ["refresh", "image", "switch-camera"],
   },
   "link": {
     use: "A link or a connection between entities.",

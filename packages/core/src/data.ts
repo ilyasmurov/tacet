@@ -399,11 +399,11 @@ export const ICONS = {
     "map-pin": [p("M12 22s8-7 8-13a8 8 0 1 0-16 0c0 6 8 13 8 13Z", [[12, 9], [58, 9]]), c(12, 9, 3, null, { accent: true })],
     "ticket": [p("M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z", [[12, 8], [58, 8]]), p("M13 7.5v2M13 11v2M13 14.5v2", null, { accent: true })],
     "camera": [p("M9.2 4.5 7.5 7H4.5A1.5 1.5 0 0 0 3 8.5v9A1.5 1.5 0 0 0 4.5 19h15a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 19.5 7h-3l-1.7-2.5z", [[10, 8], [58, 8]]), c(12, 12.7, 3.4, [[20, 16]], { accent: true })],
-    "rotate": [p("M21 12a9 9 0 1 1-2.64-6.36", [[30, 12], [66, 12]]), p("M21 3v5.5h-5.5", null, { accent: true })],
+    "rotate": [rc(3.5, 10, 10.5, 10.5, 2, [[13, 9], [62, 9]]), p("M9 5.5h6a4.5 4.5 0 0 1 4.5 4.5v6.5", [[42, 14]]), p("M17 14 19.5 16.5 22 14", null, { accent: true })],
     "slash": [p("M15.5 4.5 8.5 19.5", [[42, 18]])],
     "post": [rc(3.5, 3.5, 17, 17, 2.5, [[13, 9], [62, 9]]), dot(7.7, 8.1, 1.35, { accent: true }), p("M11.2 8.1h6.3"), p("M7 12.9h10M7 16.4h6.5")],
     "headphones": [p("M4 15.5v-3.3a8 8 0 0 1 16 0v3.3", [[40, 16]]), rc(3.25, 14.5, 3.5, 6.5, 1.75, [[20, 14]], { accent: true }), rc(17.25, 14.5, 3.5, 6.5, 1.75, [[20, 14]])],
-    "grid": [rc(3.5, 3.5, 7.4, 7.4, 2, [[15, 12]]), rc(13.1, 3.5, 7.4, 7.4, 2, null, { accent: true }), rc(3.5, 13.1, 7.4, 7.4, 2, [[60, 12]]), rc(13.1, 13.1, 7.4, 7.4, 2, [[15, 12]])],
+    "grid": [rc(3, 3, 7.5, 9.5, 1.8, [[15, 12]]), rc(13.5, 3, 7.5, 5.5, 1.8, null, { accent: true }), rc(13.5, 11.5, 7.5, 9.5, 1.8, [[60, 12]]), rc(3, 15.5, 7.5, 5.5, 1.8, [[15, 12]])],
     "bolt": [p("M12.7 2.5 4.5 13.5h6.3l-1.5 8 8.2-11h-6.3z", [[14, 9], [58, 9]]), dot(19.2, 4.2, 1.1, { accent: true })],
     "cap": [p("M2.5 9.5 12 5l9.5 4.5L12 14z", [[12, 9], [58, 9]]), p("M6.5 11.7v4.2c0 1.5 2.5 2.6 5.5 2.6s5.5-1.1 5.5-2.6v-4.2", [[42, 14]]), p("M21.5 9.5v4.6", null, { accent: true }), dot(21.5, 15.4, 1, { accent: true })],
     "note": [c(7.9, 18.2, 2.9, [[22, 16]], { accent: true }), p("M10.8 18.2V4.5", [[38, 18]]), p("M10.8 4.5c3.1.8 5 2.5 5 5.4")],
@@ -412,6 +412,71 @@ export const ICONS = {
     "heart-active": [p("M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z", null, { activeFill: true })],
     "bookmark-active": [p("M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z", null, { activeFill: true })],
     "play-active": [p("M8 5.5v13a1 1 0 0 0 1.5.9l11-6.5a1 1 0 0 0 0-1.8l-11-6.5A1 1 0 0 0 8 5.5z", null, { activeFill: true })],
+    // ─────────────────────────────────────────────────────────────────
+    // September 2026 batch. Drawn for Taskless, the phone and Ansamblist;
+    // one family per source task (TACET-13, 16..23).
+    // ─────────────────────────────────────────────────────────────────
+
+    // ── audio routes (TACET-13) ──
+    "speaker": [rc(6.5, 2.5, 11, 19, 2.5, [[13, 9], [62, 9]]), c(12, 15, 3.6, [[22, 16]], { accent: true }), dot(12, 7, 1.1, { accent: true })],
+    "receiver": [p("M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0", [[14, 9], [60, 9]]), p("M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4", null, { accent: true })],
+    "bluetooth": [p("M12 2v20", [[45, 14]]), p("M7 7l10 10-5 5M7 17 17 7l-5-5", null, { accent: true })],
+
+    // ── calls and volume (TACET-16) ──
+    "phone-hang-up": [p("M2.6 14.4a1.6 1.6 0 0 1 .1-2.3A13.5 13.5 0 0 1 12 8.5a13.5 13.5 0 0 1 9.3 3.6 1.6 1.6 0 0 1 .1 2.3l-1.6 1.9a1.6 1.6 0 0 1-2 .3l-2.3-1.4a1.6 1.6 0 0 1-.8-1.7l.2-1.3a9 9 0 0 0-5.8 0l.2 1.3a1.6 1.6 0 0 1-.8 1.7l-2.3 1.4a1.6 1.6 0 0 1-2-.3z", [[13, 9], [62, 9]])],
+    "switch-camera": [p("M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5", [[42, 14]]), p("M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5", [[42, 14]]), c(12, 12, 3, [[22, 16]], { accent: true }), p("m18 22-3-3 3-3", null, { accent: true }), p("m6 2 3 3-3 3", null, { accent: true })],
+    "volume-off": [p("M11 5 6.5 9H3v6h3.5L11 19z", [[14, 9], [58, 9]]), p("M20 4 4 20", [[42, 16]], { accent: true })],
+    "volume-low": [p("M11 5 6.5 9H3v6h3.5L11 19z", [[14, 9], [58, 9]]), p("M15.5 8.5a5 5 0 0 1 0 7", null, { accent: true })],
+
+    // ── shield states (TACET-17) ──
+    "shield-off": [p("M12 2.5 4.5 5.5v6c0 5 3.5 8 7.5 10 4-2 7.5-5 7.5-10v-6z", [[13, 9], [60, 9]]), p("M20 4 4 20", [[42, 16]], { accent: true })],
+    "shield-alert": [p("M12 2.5 4.5 5.5v6c0 5 3.5 8 7.5 10 4-2 7.5-5 7.5-10v-6z", [[13, 9], [60, 9]]), p("M12 6.5v6", null, { accent: true }), dot(12, 16.2, 1.35, { accent: true })],
+
+    // ── folders and files (TACET-18) ──
+    "folder": [p("M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z", [[13, 9], [58, 9]])],
+    "file-code": [p(FB, [[13, 9], [58, 9]]), p(FF, [[42, 14]]), p("m10 13-2 2 2 2", null, { accent: true }), p("m14 13 2 2-2 2", null, { accent: true })],
+    "file-text": [p(FB, [[13, 9], [58, 9]]), p(FF, [[42, 14]]), p("M9 13h6"), p("M9 17h4", null, { accent: true })],
+    "type": [p("M4.5 7.5V4.5h15v3", [[42, 14]]), p("M12 4.5v15", [[45, 14]]), p("M8.5 19.5h7", null, { accent: true })],
+
+    // ── windows and actions (TACET-19) ──
+    "undo": [p("M4 9h10.5a5.5 5.5 0 0 1 0 11H11", [[42, 14]]), p("M9 14 4 9l5-5", null, { accent: true })],
+    "redo": [p("M20 9H9.5a5.5 5.5 0 0 0 0 11H13", [[42, 14]]), p("M15 14l5-5-5-5", null, { accent: true })],
+    "maximize": [p("M21 3l-7 7", [[42, 16]]), p("M3 21l7-7", [[42, 16]]), p("M15 3h6v6", null, { accent: true }), p("M9 21H3v-6", null, { accent: true })],
+    "minimize": [p("M14 10l7-7", [[42, 16]]), p("M3 21l7-7", [[42, 16]]), p("M20 10h-6V4", null, { accent: true }), p("M4 14h6v6", null, { accent: true })],
+    "panel-left": [rc(3, 4, 18, 16, 2, [[13, 9], [62, 9]]), p("M9 4v16", [[45, 14]], { accent: true })],
+    "panel-right": [rc(3, 4, 18, 16, 2, [[13, 9], [62, 9]]), p("M15 4v16", [[45, 14]], { accent: true })],
+    "chevrons-down-up": [p("m7 20 5-5 5 5", [[42, 14]]), p("m7 4 5 5 5-5", [[42, 14]])],
+    "arrow-down": [p("M12 5v14", [[30, 18]]), p("M12 19 6 13M12 19l6-6", null, { accent: true })],
+    // dashArray rather than gaps: with gaps the solid variant would turn it into `circle`.
+    "circle-dashed": [c(12, 12, 8.5, null, { dashArray: "7 5.5" })],
+
+    // ── sections and feed (TACET-20) ──
+    "gantt": [p("M3 3v16a2 2 0 0 0 2 2h16", [[42, 14]]), p("M8 7h6"), p("M11 11.5h7", null, { accent: true }), p("M6 16h6")],
+    "bar-chart": [p("M3 3v16a2 2 0 0 0 2 2h16", [[42, 14]]), p("M8 17v-3"), p("M13 17V6", null, { accent: true }), p("M18 17v-7")],
+    "flame": [p("M12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3", [[40, 14]]), p("M6 12a2.5 2.5 0 0 0 2.5 2.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6", null, { accent: true })],
+    "trophy": [p("M18 2.5H6v6.5a6 6 0 0 0 12 0z", [[13, 9], [62, 9]]), p("M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18"), p("M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 21.5M14 14.7V17c0 .6.5 1 1 1.2 1.1.6 2 2 2 3.3"), p("M4 21.5h16", null, { accent: true })],
+    "alarm-clock": [c(12, 13, 7.5, [[13, 9], [62, 9]]), p("M12 9.5v3.5l2.3 1.5", null, { accent: true }), p("M5.5 3.5 2.5 6M18.5 3.5l3 2.5"), p("M6 19.5 4.5 21.5M18 19.5l1.5 2")],
+
+    // ── editor headings (TACET-21) ──
+    "heading-4": [p("M4 6v12", [[45, 14]]), p("M12 6v12", [[45, 14]]), p("M4 12h8", [[52, 14]], { accent: true }), p("M19.4 18V9.6l-3.2 5.2h4.4", null, { accent: true })],
+    "heading-5": [p("M4 6v12", [[45, 14]]), p("M12 6v12", [[45, 14]]), p("M4 12h8", [[52, 14]], { accent: true }), p("M19.6 9.6h-3.1l-.4 3.7c.5-.4 1.1-.6 1.7-.6a2.5 2.5 0 0 1 0 5c-.7 0-1.3-.2-1.8-.7", null, { accent: true })],
+    "heading-6": [p("M4 6v12", [[45, 14]]), p("M12 6v12", [[45, 14]]), p("M4 12h8", [[52, 14]], { accent: true }), c(18, 15.5, 2.5, null, { accent: true }), p("M19.5 9.6l-3.5 4.5", null, { accent: true })],
+
+    // ── people and devices (TACET-22) ──
+    "qr-code": [rc(3, 3, 6, 6, 1.2, [[15, 12]]), rc(15, 3, 6, 6, 1.2, [[15, 12]]), rc(3, 15, 6, 6, 1.2, [[15, 12]]), dot(6, 6, 1), dot(18, 6, 1), dot(6, 18, 1), rc(14.5, 14.5, 3.5, 3.5, 0.8, null, { accent: true }), p("M21 14.5v3.5M21 21h-3.5M14.5 21v-1", null, { accent: true })],
+    "user-minus": [c(9, 7.5, 4, [[15, 14]]), p("M2.5 20.5v-1a5.5 5.5 0 0 1 5.5-5.5h2", [[42, 14]]), p("M14.5 16h6", null, { accent: true })],
+    "tablet": [rc(2, 4, 20, 16, 2.5, [[13, 9], [62, 9]]), dot(19, 12, 1, { accent: true })],
+    "terminal": [rc(3, 4, 18, 16, 2, [[13, 9], [62, 9]]), p("M7 9l3 3-3 3", null, { accent: true }), p("M12 15h5")],
+    "signal": [p("M4 20.5v-2", null, { accent: true }), p("M9 20.5v-5", null, { accent: true }), p("M14 20.5v-9", null, { accent: true }), p("M19 20.5v-14", null, { accent: true })],
+    "signal-off": [p("M4 20.5v-2"), p("M9 20.5v-5"), p("M14 20.5v-9"), p("M19 20.5v-14"), p("M3.5 3.5 8.5 8.5M8.5 3.5 3.5 8.5", null, { accent: true })],
+
+    // ── money and player (TACET-23) ──
+    "credit-card": [rc(2, 5, 20, 14, 2, [[13, 9], [62, 9]]), p("M2 10h20", [[42, 16]], { accent: true }), p("M6 15h4")],
+    "wallet": [p("M17 9.5v-4H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2", [[13, 9], [60, 9]]), dot(17.2, 15, 1.2, { accent: true })],
+    "skip-back": [p("M19 5.5v13a1 1 0 0 1-1.5.9l-9-6.5a1 1 0 0 1 0-1.8l9-6.5A1 1 0 0 1 19 5.5z", [[14, 10], [62, 10]]), p("M5 5.5v13", null, { accent: true })],
+    "skip-forward": [p("M5 5.5v13a1 1 0 0 0 1.5.9l9-6.5a1 1 0 0 0 0-1.8l-9-6.5A1 1 0 0 0 5 5.5z", [[14, 10], [62, 10]]), p("M19 5.5v13", null, { accent: true })],
+    "repeat": [p("M5 17.5V8a2 2 0 0 1 2-2h11", [[40, 16]]), p("m15 3 3 3-3 3", null, { accent: true }), p("M19 6.5V16a2 2 0 0 1-2 2H6", [[40, 16]]), p("m9 15-3 3 3 3", null, { accent: true })],
+    "shuffle": [p("M2.5 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7h5", [[42, 14]]), p("M18 2.5 21.5 6 18 9.5", null, { accent: true }), p("M2.5 6h1.9c1.5 0 2.9.9 3.6 2.2"), p("M21.6 18h-5.4c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"), p("M18 14.5 21.5 18 18 21.5", null, { accent: true })],
 } satisfies Record<string, IconDef>;
 
 export const ANIM: Record<string, AnimCfg> = {
@@ -468,5 +533,9 @@ export const SOLID_BY_DEFAULT: string[] = [
   "monitor-off", "captions", "signal-low", "hand", "volume", "disc", "play", "pause",
   // task statuses
   "status-backlog", "status-todo", "status-progress", "status-done", "status-canceled",
+  // September 2026: audio routes, call controls, signal bars, player transport
+  "speaker", "receiver", "bluetooth",
+  "phone-hang-up", "switch-camera", "volume-off", "volume-low",
+  "signal", "signal-off", "skip-back", "skip-forward",
 ];
 
