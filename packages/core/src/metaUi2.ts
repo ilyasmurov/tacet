@@ -575,7 +575,8 @@ export const UI_META_2: Record<string, IconMeta> = {
   },
   "chevrons-up-down": {
     use: "Sorting control or a select that opens both ways.",
-    synonyms: ["sort", "select", "expandable", "сортировка", "селект", "оба направления"],
+    avoid: "For sorting as a mode of the list use `sort`.",
+    synonyms: ["sort column", "select", "expandable", "сортировка колонки", "селект", "оба направления"],
     related: ["chevron-down", "chevron-up", "grip"],
   },
   "arrow-left": {

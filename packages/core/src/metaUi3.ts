@@ -267,4 +267,60 @@ export const UI_META_3: Record<string, IconMeta> = {
     synonyms: ["shuffle", "random", "mix", "перемешать", "случайный порядок", "вразнобой"],
     related: ["repeat", "play", "music"],
   },
+
+  // ── base interface glyphs (TACET-25) ──
+  "cog": {
+    use: "Gear: settings entry point when a gear is expected, not sliders.",
+    avoid: "The set's `settings` is three sliders — take it where sliders already live; for a person's account use `user-cog`; for tooling use `wrench`.",
+    synonyms: ["gear", "cog", "settings", "preferences", "шестерёнка", "настройки", "параметры"],
+    related: ["settings", "user-cog", "wrench"],
+  },
+  "printer": {
+    use: "Printing, export to paper, a print preview.",
+    avoid: "For saving a file use `save`; for a downloaded copy use `download`.",
+    synonyms: ["print", "printer", "hard copy", "печать", "принтер", "распечатать", "на бумагу"],
+    related: ["save", "download", "file-text"],
+  },
+  "clipboard": {
+    use: "Clipboard: copy a link or an id, paste into a form.",
+    avoid: "For duplicating an entity use `copy`; for a plain document use `file-text`.",
+    synonyms: ["clipboard", "copy link", "paste", "буфер обмена", "скопировать ссылку", "вставить"],
+    related: ["copy", "file-text", "link"],
+  },
+  "save": {
+    use: "Saving changes, keeping a draft.",
+    avoid: "For pulling a file to the device use `download`; for a paper copy use `printer`.",
+    synonyms: ["save", "keep", "store", "floppy", "сохранить", "запомнить", "сохранение"],
+    related: ["download", "printer", "check"],
+  },
+  "sort": {
+    use: "Sorting a list or a feed: the order mode itself.",
+    avoid: "For a sortable table header use `chevrons-up-down`; for narrowing a set use `filter`.",
+    synonyms: ["sort", "order", "arrange", "sort by", "сортировка", "порядок", "упорядочить"],
+    related: ["chevrons-up-down", "filter", "arrow-down"],
+  },
+  "move": {
+    use: "Moving an object freely: drag a card, a block, a shape.",
+    avoid: "For the drag handle itself use `grip`; for reordering rows use `chevrons-up-down`.",
+    synonyms: ["move", "drag", "reposition", "pan", "переместить", "перетащить", "двигать"],
+    related: ["grip", "chevrons-up-down", "maximize"],
+  },
+  "unlock": {
+    use: "Access opened: a public item, an unlocked field.",
+    avoid: "For the closed state use `lock`; for protection removed use `shield-off`.",
+    synonyms: ["unlock", "unlocked", "open access", "разблокировать", "открыть доступ", "снять замок"],
+    related: ["lock", "key", "shield-off"],
+  },
+  "scissors": {
+    use: "Cut: move a fragment out to the clipboard, trim a piece.",
+    avoid: "For copying use `copy`; for deleting use `trash`.",
+    synonyms: ["cut", "scissors", "trim", "вырезать", "ножницы", "обрезать"],
+    related: ["copy", "clipboard", "trash"],
+  },
+  "translate": {
+    use: "Translating text into another language.",
+    avoid: "For an interface language or a public item use `globe`; for typography use `type`.",
+    synonyms: ["translate", "translation", "language pair", "перевод", "перевести", "на другой язык"],
+    related: ["globe", "type", "composition"],
+  },
 };

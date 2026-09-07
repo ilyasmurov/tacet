@@ -116,8 +116,9 @@ export const UI_META: Record<string, IconMeta> = {
     related: ["user-pen", "highlighter", "clear-format"],
   },
   "copy": {
-    use: "Copying to clipboard or duplicating an entity.",
-    synonyms: ["copy", "duplicate", "clipboard", "копировать", "дубликат", "буфер"],
+    use: "Duplicating an entity or copying a value.",
+    avoid: "For the clipboard as a place use `clipboard`; for cutting a fragment out use `scissors`.",
+    synonyms: ["copy", "duplicate", "clone", "копировать", "дубликат", "продублировать"],
     related: ["paperclip", "file-add"],
   },
   "send": {
@@ -144,8 +145,8 @@ export const UI_META: Record<string, IconMeta> = {
   },
   "download": {
     use: "Getting a file from the service onto the device.",
-    avoid: "Direction matters: the arrow points at the receiver. Uploading to the service is `upload`.",
-    synonyms: ["download", "save file", "export", "скачать", "загрузить себе", "выгрузка"],
+    avoid: "Direction matters: the arrow points at the receiver. Uploading to the service is `upload`; saving changes is `save`.",
+    synonyms: ["download", "export", "скачать", "загрузить себе", "выгрузка"],
     related: ["upload", "desktop-download", "file-up"],
   },
   "upload": {
