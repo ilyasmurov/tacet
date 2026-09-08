@@ -27,6 +27,14 @@ describe("toNativeAttrs", () => {
     expect(out["fill"]).toBe("#ff2d55");
   });
 
+  it("resolves a hard-coded oklch colour: React Native reads null and draws nothing", () => {
+    // The priority arrows carry their own colour, written in oklch. Passed
+    // through as is, the stroke never lands and the glyph is absent on a phone
+    // — silently, which is how it shipped unnoticed.
+    const out = toNativeAttrs({ stroke: "oklch(0.8 0.15 84)" }, colors, null, dash);
+    expect(out["stroke"]).toBe("#ebb432");
+  });
+
   it("turns cuts into units", () => {
     const out = toNativeAttrs({ "stroke-dasharray": "50 50" }, colors, 200, dash);
     expect(out["strokeDasharray"]).toEqual([100, 100]);

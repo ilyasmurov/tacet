@@ -8,7 +8,9 @@
 //
 // `currentColor` does not exist either — there is no cascade to inherit from.
 // The engine writes it wherever the glyph should take the surrounding colour,
-// so the colour is substituted here, as is the accent variable.
+// so the colour is substituted here, as is the accent variable. The same goes
+// for `oklch()`, which a glyph with a colour of its own is written in: React
+// Native's parser returns null for it and the part is drawn with nothing.
 //
 // Everything else goes through, `vector-effect` included: react-native-svg does
 // support non-scaling-stroke on both platforms, and the engine relies on it —
@@ -17,6 +19,8 @@
 // times thicker than its own neck at 128px.
 
 import { toReactAttrName } from "tacet-core";
+
+import { resolveOklch } from "./oklch.js";
 
 /** Attributes the engine emits for the web and a phone has no use for. */
 const SKIP = new Set(["pathLength", "data-dash", "data-icon", "data-mk"]);
@@ -33,7 +37,9 @@ function paint(value: string, colors: NativeColors): string {
   if (value === "currentColor") return colors.color;
   // The accent arrives as a CSS variable with a fallback: var(--tacet-accent, currentColor).
   if (value.startsWith("var(")) return colors.accentColor;
-  return value;
+  // A glyph that carries its own colour writes it in oklch — see oklch.ts for
+  // why that has to be resolved here rather than passed through.
+  return resolveOklch(value);
 }
 
 export function toNativeAttrs(
