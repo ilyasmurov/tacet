@@ -61,6 +61,15 @@ export function toNativeAttrs(
       continue;
     }
 
+    if (name === "strokeDashoffset") {
+      // The shift of an accent span is in the same percent as its pattern and
+      // needs the same conversion, or the coloured stretch lands off its place.
+      if (length == null) continue;
+      const shift = (Number(value) * length) / 100;
+      if (Number.isFinite(shift)) out[name] = shift;
+      continue;
+    }
+
     if (name === "strokeDasharray") {
       // No length — no cuts. A solid glyph is a whole glyph; percentages taken
       // for units would leave a dotted mess.

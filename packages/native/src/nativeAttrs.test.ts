@@ -40,6 +40,17 @@ describe("toNativeAttrs", () => {
     expect(out["strokeDasharray"]).toEqual([100, 100]);
   });
 
+  it("turns the shift of an accent span into units too", () => {
+    const out = toNativeAttrs({ "stroke-dasharray": "40 60", "stroke-dashoffset": -22 }, colors, 50, dash);
+    expect(out["strokeDasharray"]).toEqual([20, 30]);
+    expect(out["strokeDashoffset"]).toBe(-11);
+  });
+
+  it("drops the shift when the length is unknown, like the cuts", () => {
+    const out = toNativeAttrs({ "stroke-dashoffset": -22 }, colors, null, dash);
+    expect(out["strokeDashoffset"]).toBeUndefined();
+  });
+
   it("without a length draws the contour solid instead of a dotted mess", () => {
     // Percentages taken for units would cut a 24-unit glyph into fifty pieces.
     const out = toNativeAttrs({ "stroke-dasharray": "50 50" }, colors, null, dash);
