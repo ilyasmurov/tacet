@@ -118,6 +118,15 @@ function icon(name: string, size: number, extra = ""): string {
   return `<tacet-icon name="${name}" size="${size}"${extra ? " " + extra : ""}></tacet-icon>`;
 }
 
+/**
+ * A section heading that is also a link to its section. A click copies the
+ * address with the anchor rather than jumping: the reader is already there and
+ * wants something to paste. Without scripts it stays an ordinary link.
+ */
+function heading(id: string, text: string): string {
+  return `<h2><a class="anchor" href="#${id}" data-anchor>${text}<span class="anchor-mark" aria-hidden="true">${icon("link", 18)}</span></a></h2>`;
+}
+
 const bellGaps = JSON.stringify((ICONS as Record<string, Array<{ gaps?: unknown }>>)["bell"]?.[0]?.gaps ?? []);
 
 const metaRows = CONFUSED.map((name) => {
@@ -225,7 +234,7 @@ try {
 <section id="cuts">
   <div class="wrap">
     <p class="eyebrow">how it works</p>
-    <h2>A cut is data</h2>
+    ${heading("cuts", "A cut is data")}
     <p>Every stroke gets <code>pathLength=100</code>, and the breaks are described as start-and-width pairs
     in percent of the contour length. Moving a cut or removing it is editing one number, not redrawing the
     path. The animation comes out of the same record: it draws the contour while the cuts hold their place.</p>
@@ -250,7 +259,7 @@ try {
 <section id="stacks">
   <div class="wrap">
     <p class="eyebrow">any stack</p>
-    <h2>React is one of four ways</h2>
+    ${heading("stacks", "React is one of four ways")}
     <p>The engine has no idea React exists: it turns a glyph name into SVG attributes and
     animates a plain DOM element. React is a thin wrapper over it — and so are the custom
     element, which needs no framework at all, and the React Native one, which draws the
@@ -309,7 +318,7 @@ const spec = renderSpec("rocket", { size: 24 });
 <section id="density">
   <div class="wrap">
     <p class="eyebrow">four densities</p>
-    <h2>One glyph, four characters</h2>
+    ${heading("density", "One glyph, four characters")}
     <p>The same data reads four ways: with and without the accent, with one cut and with all of them.
     Plus a solid mode — for places where breaks get in the way, small status marks for instance.</p>
     <!-- The glyph is chosen with two cuts on its main contour: with a single
@@ -327,7 +336,7 @@ const spec = renderSpec("rocket", { size: 24 });
 <section id="stroke">
   <div class="wrap">
     <p class="eyebrow">stroke</p>
-    <h2>A large icon does not get fat</h2>
+    ${heading("stroke", "A large icon does not get fat")}
     <p>Stroke follows size by a power law rather than proportionally: an icon enlarged fourfold does not
     turn into a heavy blueprint. Need an even hairline at any size — there is
     <code>absoluteStroke</code>.</p>
@@ -343,7 +352,7 @@ const spec = renderSpec("rocket", { size: 24 });
 <section id="instruments">
   <div class="wrap">
     <p class="eyebrow">what others do not have</p>
-    <h2>64 instruments in one style</h2>
+    ${heading("instruments", "64 instruments in one style")}
     <p>Duduk, handpan, bayan, jaw harp, gusli, didgeridoo — drawn with the same stroke and the same cuts
     as the arrows and folders. Plus roles: producer, sound engineer, conductor, beatmaker.</p>
     <div class="card">
@@ -357,7 +366,7 @@ const spec = renderSpec("rocket", { size: 24 });
 <section id="agents">
   <div class="wrap">
     <p class="eyebrow">for agents</p>
-    <h2>It is written down when to use which icon</h2>
+    ${heading("agents", "It is written down when to use which icon")}
     <p>Interfaces are increasingly written by an AI agent that picks an icon by name — which is how
     <code>trash</code> ends up where <code>archive</code> was meant. Each of the ${names.length} glyphs carries
     what it is for, what it gets confused with and what to take instead. Search tags exist in every set;
@@ -374,7 +383,7 @@ const spec = renderSpec("rocket", { size: 24 });
 <section id="gallery">
   <div class="wrap">
     <p class="eyebrow">the whole set</p>
-    <h2>${names.length} icons</h2>
+    ${heading("gallery", `${names.length} icons`)}
     <p>Search understands synonyms, and it speaks Russian as well as English: "delete" finds
     <code>trash</code>, "success" finds <code>check-circle</code>. A click copies a ready JSX line.</p>
 
@@ -580,6 +589,18 @@ document.getElementById("q").addEventListener("input", (e) => {
 });
 
 renderGallery();
+
+// Section links: a click copies the address of the section and puts the anchor
+// into the address bar without a jump — the page is already there.
+document.querySelectorAll("a[data-anchor]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const hash = link.getAttribute("href");
+    history.replaceState(null, "", hash);
+    navigator.clipboard?.writeText(location.origin + location.pathname + hash);
+    say("Link copied");
+  });
+});
 
 // The first screen draws in sequence — otherwise twelve icons flash at once and
 // the motion reads as flicker.

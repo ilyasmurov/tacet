@@ -347,3 +347,14 @@ footer a:hover { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ── section links ── */
+/* Headings double as links to their section: the mark shows on hover, and on a
+   phone, where there is no hover, it stays faintly visible. */
+h2 .anchor { color: inherit; text-decoration: none; }
+.anchor-mark {
+  display: inline-flex; vertical-align: middle; margin-left: 10px; color: var(--ink-3);
+  opacity: 0; transition: opacity 0.15s ease;
+}
+.anchor:hover .anchor-mark, .anchor:focus-visible .anchor-mark { opacity: 1; }
+@media (hover: none) { .anchor-mark { opacity: 0.45; } }
