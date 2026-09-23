@@ -19,3 +19,8 @@ export {
   canAnimateOnMount, prefersReducedMotion,
 } from "./animate.js";
 export type { AnimateCfg, ResolvedAnimateCfg } from "./animate.js";
+
+export {
+  digitsMarkup, parseDigits, slotSpec, DIGIT_ADVANCE, COLON_ADVANCE, SLOT_CLASS,
+} from "./digitsLayout.js";
+export type { DigitsRenderOpts, DigitsTransition, SlotSpec } from "./digitsLayout.js";
