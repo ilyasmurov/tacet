@@ -1,6 +1,6 @@
 # tacet-element
 
-`<tacet-icon>` — the Tacet icon set for projects without React. 320 outline
+`<tacet-icon>` — the Tacet icon set for projects without React. 381 outline
 glyphs where the **cut is data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -93,7 +93,7 @@ Without the variable the icon is monochrome. Per icon: `accent-color="#c94a17"`.
 ## Styling from outside
 
 The element draws into **light DOM**, so the markup matches what the React
-wrapper produces — an equivalence covered by a test across all 320 glyphs — and
+wrapper produces — an equivalence covered by a test across all 381 glyphs — and
 the icon can be styled with ordinary CSS:
 
 ```css
@@ -102,6 +102,18 @@ tacet-icon:hover { color: var(--ink); }
 ```
 
 The stroke uses `currentColor`, so setting `color` is usually all you need.
+
+## `<tacet-digits>`
+
+```html
+<tacet-digits value="1248" size="40" transition="morph"></tacet-digits>
+```
+
+A new `value` animates the digits that changed. The other attributes — `size`,
+`variant`, `solid`, `stroke-width`, `absolute-stroke`, `accent-color`,
+`transition` — redraw the number at once; `label` sets what a screen reader
+hears, the value by default. Importing the package registers the element; for
+another tag call `defineTacetDigits("my-number")`.
 
 ## In code
 
