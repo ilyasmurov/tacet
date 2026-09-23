@@ -7,7 +7,7 @@ rendered through `stroke-dasharray`. Moving a cut is editing one number, not
 redrawing a path. From that single decision you get the draw-in animation, four
 cut densities and a solid mode — out of one source, with no second set of files.
 
-**371 glyphs.** Interface, 64 musical instruments and roles, 19 creative services.
+**381 glyphs.** Interface, ten digits, 64 musical instruments and roles, 19 creative services.
 Every one of them carries a note on when to use it.
 
 - Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -86,13 +86,13 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 
 | Package | What for |
 |---|---|
-| [`tacet-react`](packages/react) | React component. React stays a peer dependency |
+| [`tacet-react`](packages/react) | React components, `Icon` and `Digits`. React stays a peer dependency |
 | [`tacet-native`](packages/native) | React Native component, drawn with react-native-svg |
 | [`tacet-core`](packages/core) | Data and engine. No dependencies at all |
-| [`tacet-element`](packages/element) | `<tacet-icon>` custom element |
+| [`tacet-element`](packages/element) | `<tacet-icon>` and `<tacet-digits>` custom elements |
 
 The wrappers are thin: they call `renderSpec()` from the core and know nothing
-about geometry. A test compares the DOM the web ones produce across all 371
+about geometry. A test compares the DOM the web ones produce across all 381
 glyphs, so they cannot drift apart quietly.
 
 The React Native one is thin in the same way, but a phone differs in three
@@ -100,7 +100,7 @@ places, and each is handled in the wrapper rather than in the set: `pathLength`
 does not exist there, so cuts are measured into real units; `currentColor` has no
 cascade to inherit from, so the colour is passed in; and `overflow: visible` may
 not survive, so at the sharpest glyphs a tip can be clipped — `zoom={false}` is
-the way out. Its own tests run all 371 glyphs through the translation.
+the way out. Its own tests run all 381 glyphs through the translation.
 
 ## Animation
 
@@ -133,13 +133,48 @@ The same works in the custom element (`animate`, `animate-on-hover`) and on bare
 DOM through `animate()` / `prepare()` / `reverse()` from the core. Everything
 respects `prefers-reduced-motion`.
 
+## Digits
+
+Ten digits, `digit-0` … `digit-9`, each drawn as a single stroke the way a hand
+writes it. As icons they behave like any other glyph:
+
+```jsx
+<Icon name="digit-7" />
+```
+
+A number that changes has a component of its own. Only the digits that changed
+move, the ones place first; a number that grows draws its new digits in, one
+that shrinks erases the old ones and gives the room back.
+
+```jsx
+import { Digits } from "tacet-react";
+
+<Digits value={unread} size={16} />
+<Digits value="12:30" transition="relay" />
+```
+
+```html
+<tacet-digits value="1248" size="40"></tacet-digits>
+```
+
+Three transitions: `morph`, the default, flows one contour into the other;
+`relay` runs the old digit off while the new one draws in; `erase` rewinds the
+old digit and writes the new one. A number shows 0–9 and `:`, and its digits sit
+on a tabular grid, so a counter does not jiggle as it ticks.
+
+The accent of a digit is a stretch of its contour — `accentSpans`, the same
+`[start%, width%]` pairs as cuts — painted in variants C and D.
+
+React Native has the digit glyphs, accent included. The animated number is web
+only for now.
+
 ## Static SVG
 
 ```bash
 pnpm svg
 ```
 
-Writes 371 standalone SVG files plus a sprite. Cuts survive — they are baked into
+Writes 381 standalone SVG files plus a sprite. Cuts survive — they are baked into
 `stroke-dasharray`. The animation does not: it lives at runtime and builds a mask
 from cloned shapes, which a file has nowhere to get.
 
@@ -169,8 +204,8 @@ is monochrome, so the set drops into any palette as is:
 
 ```bash
 pnpm install
-pnpm build       # all three packages
-pnpm test        # 86 tests
+pnpm build       # all four packages
+pnpm test        # the whole suite
 pnpm svg         # static files
 pnpm meta        # icons.json and llms.txt
 pnpm gallery     # a self-contained gallery page

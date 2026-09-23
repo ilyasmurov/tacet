@@ -1,6 +1,6 @@
 # tacet-core
 
-Data and engine of the Tacet icon set — 320 outline glyphs where the **cut is
+Data and engine of the Tacet icon set — 381 outline glyphs where the **cut is
 data, not geometry**. **No dependencies at all**, not even a peer one.
 
 Use it to build your own wrapper, to generate files, or to reach the glyph data
@@ -107,12 +107,34 @@ On a phone icons appear during scrolling: the animation is barely seen and costs
 a lot — on a bench of 360 icons it measured 1718 ms against 857 ms without it,
 plus a thousand extra nodes in the DOM.
 
+## Digits
+
+`createDigits` takes over an element and shows a number in it; `set()` animates
+the digits that changed.
+
+```js
+import { createDigits } from "tacet-core";
+
+const digits = createDigits(document.getElementById("counter"), 1248, {
+  size: 40,
+  transition: "morph", // or "relay", "erase"
+});
+digits.set(1249);
+digits.update({ variant: "A" }); // redraws at once
+digits.destroy();                // stops, leaves the number drawn
+```
+
+`digitsMarkup(value, opts)` returns the same number as static markup, for
+rendering on a server; `createDigits` takes it over without a flash. Without the
+Web Animations API, or under `prefers-reduced-motion`, a new value is drawn at
+once.
+
 ## Data and semantics
 
 ```js
 import { ICONS, ANIM, SOLID_BY_DEFAULT, META, iconNames, hasIcon, searchIcons } from "tacet-core";
 
-iconNames().length;                   // 320
+iconNames().length;                   // 381
 ICONS["bell"];                        // parts, with cuts as [start%, width%]
 ANIM["loading"];                      // the glyph's animation preset
 META["trash"].use;                    // "Permanent deletion, the item is gone."
@@ -124,6 +146,10 @@ searchIcons("удалить", iconNames());  // ["trash", …] — synonyms are 
 choosing, written for an agent that picks an icon by name and never sees the
 result. Same data as [icons.json](https://tacet.smurov.com/icons.json) and
 [llms.txt](https://tacet.smurov.com/llms.txt).
+
+A part can carry `accentSpans` — `[start%, width%]` pairs along the contour, like
+`gaps`. In variants C and D the engine paints them as a second path over the
+part, so an accent needs no geometry of its own.
 
 ## Stroke and geometry
 

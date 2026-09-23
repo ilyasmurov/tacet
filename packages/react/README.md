@@ -1,6 +1,6 @@
 # tacet-react
 
-React component for the Tacet icon set — 320 outline glyphs where the **cut is
+React component for the Tacet icon set — 381 outline glyphs where the **cut is
 data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -135,6 +135,27 @@ searchIcons("удалить", iconNames()); // ["trash", …] — synonyms are b
 
 Same data as [icons.json](https://tacet.smurov.com/icons.json) and
 [llms.txt](https://tacet.smurov.com/llms.txt).
+
+## Digits
+
+```jsx
+import { Digits } from "tacet-react";
+
+<Digits value={unread} size={16} />
+<Digits value="12:30" transition="relay" title="Time" />
+```
+
+| Prop | What it does |
+|---|---|
+| `value` | digits and `:`; anything else is dropped with a warning |
+| `size` | height in pixels, as for `Icon`; defaults to 24 |
+| `transition` | `morph` (default), `relay` or `erase` |
+| `variant`, `solid`, `accentColor`, `strokeWidth`, `absoluteStroke` | as for `Icon` |
+| `title` | label for screen readers; defaults to the value |
+
+The component renders the still number as markup, on the server too, and hands
+the DOM to the controller from `tacet-core` once mounted. New values go through
+the controller, not through a re-render.
 
 ## Also exported
 

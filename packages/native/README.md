@@ -1,6 +1,6 @@
 # tacet-native
 
-React Native component for the Tacet icon set — 320 outline glyphs where the
+React Native component for the Tacet icon set — 381 outline glyphs where the
 **cut is data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -74,5 +74,8 @@ cannot be seen. On a button press it costs one icon and half a second.
 Of the modes the set describes only `draw` is implemented here — `spin`, `pop`
 and `fade`, along with the per-glyph presets from `ANIM` and the `stagger`/`seq`
 timings, remain web-only for now.
+
+The digits `digit-0` … `digit-9` are glyphs here as well, accent spans included.
+The animated number (`Digits` on the web) has no React Native counterpart yet.
 
 MIT
