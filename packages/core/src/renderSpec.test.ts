@@ -151,3 +151,61 @@ describe("the whole set", () => {
     }
   });
 });
+
+describe("accent spans", () => {
+  // A stand-in glyph: one stroke, two cuts, the accent over its first 40%.
+  const NAME = "__test-accent-span";
+  const icons = ICONS as unknown as Record<string, IconDef>;
+  const withGlyph = (fn: () => void) => {
+    icons[NAME] = [{ t: "path", d: "M4 12h16", gaps: [[20, 10], [70, 10]], accentSpans: [[0, 40]] }];
+    try { fn(); } finally { delete icons[NAME]; }
+  };
+  const spans = (v: "A" | "B" | "C" | "D", solid?: boolean) =>
+    renderSpec(NAME, { variant: v, ...(solid !== undefined ? { solid } : {}) })!.parts.filter((p) => p.attrs["data-accent"]);
+
+  it("C and D add a second path, A and B do not", () => {
+    withGlyph(() => {
+      expect(spans("A")).toHaveLength(0);
+      expect(spans("B")).toHaveLength(0);
+      expect(spans("C")).toHaveLength(1);
+      expect(spans("D")).toHaveLength(1);
+    });
+  });
+
+  it("the second path follows the base one and keeps the same geometry", () => {
+    withGlyph(() => {
+      const parts = renderSpec(NAME, { variant: "D" })!.parts;
+      expect(parts).toHaveLength(2);
+      expect(parts[1]!.attrs["d"]).toBe(parts[0]!.attrs["d"]);
+      expect(parts[1]!.attrs["stroke-width"]).toBe(parts[0]!.attrs["stroke-width"]);
+    });
+  });
+
+  it("shows the span minus the cuts in effect", () => {
+    withGlyph(() => {
+      // D keeps both cuts, the one at 20 falls inside the span.
+      expect(spans("D")[0]!.attrs["stroke-dasharray"]).toBe("20 10 10 60");
+      // C keeps only the first cut — the same one here.
+      expect(spans("C")[0]!.attrs["stroke-dasharray"]).toBe("20 10 10 60");
+      // Solid draws no cuts, so the span is whole.
+      expect(spans("D", true)[0]!.attrs["stroke-dasharray"]).toBe("40 60");
+    });
+  });
+
+  it("is painted with the accent while the base stays currentColor", () => {
+    withGlyph(() => {
+      const parts = renderSpec(NAME, { variant: "D" })!.parts;
+      expect(parts[0]!.attrs["stroke"]).toBe("currentColor");
+      expect(String(parts[1]!.attrs["stroke"])).toContain("--tacet-accent");
+      expect(renderSpec(NAME, { variant: "D", accentColor: "#f00" })!.parts[1]!.attrs["stroke"]).toBe("#f00");
+    });
+  });
+
+  it("carries data-dash, so the animation restores it like any other stroke", () => {
+    withGlyph(() => {
+      const overlay = spans("D")[0]!;
+      expect(overlay.attrs["data-dash"]).toBe(overlay.attrs["stroke-dasharray"]);
+      expect(overlay.attrs["stroke-dashoffset"]).toBe(0);
+    });
+  });
+});

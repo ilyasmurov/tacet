@@ -1,7 +1,8 @@
 // "Glyph name in, ready SVG attributes out." A pure function: no DOM, no React.
 // Both wrappers lean on it, which is why the set has exactly one engine.
 
-import { ICONS, SOLID_BY_DEFAULT, type IconDef, type IconName, type Part } from "./data.js";
+import { ICONS, SOLID_BY_DEFAULT, type Gap, type IconDef, type IconName, type Part } from "./data.js";
+import { accentDash } from "./accent.js";
 import { dashFor, insetFor, normalizeSize, strokeOnScreen, type StrokeOpts } from "./stroke.js";
 
 /** A — one cut · B — all cuts · C — one cut and accent · D — all cuts and accent. */
@@ -186,14 +187,16 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
     }
     if (part.masked && mask) attrs["mask"] = `url(#${mask.id})`;
 
+    // The cuts actually drawn: the accent span has to skip exactly these.
+    let cuts: Gap[] = [];
     if (part.fill || part.activeFill) {
       attrs["fill"] = color;
     } else {
       let dash = "100 0";
       if (part.dashArray) dash = part.dashArray;
       else if (!solid && part.gaps && part.gaps.length) {
-        const used = variant === "B" || variant === "D" ? part.gaps : part.gaps.slice(0, 1);
-        dash = dashFor(used);
+        cuts = variant === "B" || variant === "D" ? part.gaps : part.gaps.slice(0, 1);
+        dash = dashFor(cuts);
       }
       Object.assign(attrs, {
         fill: "none",
@@ -207,6 +210,28 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
       });
     }
     parts.push({ tag, attrs });
+
+    // Accent on a stretch of the contour: a second path of the same geometry,
+    // dashed down to the spans. It sits inside the body right after its part, so
+    // the draw-in clones it into the reveal mask like any other shape and the
+    // coloured stretch draws itself in step with the rest of the stroke.
+    const stroked = !part.fill && !part.activeFill;
+    if (stroked && part.accentSpans?.length && (variant === "C" || variant === "D")) {
+      const span = accentDash(part.accentSpans, cuts);
+      if (span) {
+        parts.push({
+          tag,
+          attrs: {
+            ...attrs,
+            stroke: accent,
+            "stroke-dasharray": span.dash,
+            "stroke-dashoffset": span.offset,
+            "data-dash": span.dash,
+            "data-accent": 1,
+          },
+        });
+      }
+    }
   }
 
   return {
