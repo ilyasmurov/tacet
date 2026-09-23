@@ -109,6 +109,18 @@ function bodySignature(svg: SVGSVGElement, body: SVGGElement): string {
   return (svg.getAttribute("data-icon") ?? "") + ":" + body.children.length;
 }
 
+/**
+ * The reveal dash, in `pathLength` units. Chromium turns those units into
+ * lengths with one measure of the path and cuts the dash along another, and on
+ * curved paths with rounded corners the two differ by more than 1%. With a
+ * plain "100 100" the next dash then starts just short of the path's end: a
+ * stroke still waiting for its turn shows a dot there, and a finished one falls
+ * short of its tip until the mask comes off. A dash longer than the path and a
+ * gap far longer than that leave the error nowhere to show.
+ */
+const REVEAL_DASH = 105;
+const REVEAL_DASHARRAY = `${REVEAL_DASH} 300`;
+
 function dropReveal(svg: SVGSVGElement, body: SVGGElement): void {
   const id = body.dataset["revealId"];
   if (!id) return;
@@ -165,8 +177,8 @@ function buildReveal(svg: SVGSVGElement, body: SVGGElement): NodeListOf<SVGEleme
       clone.setAttribute("stroke-linecap", "round");
       clone.setAttribute("stroke-linejoin", "round");
       clone.setAttribute("pathLength", "100");
-      clone.setAttribute("stroke-dasharray", "100 100");
-      clone.setAttribute("stroke-dashoffset", "100");
+      clone.setAttribute("stroke-dasharray", REVEAL_DASHARRAY);
+      clone.setAttribute("stroke-dashoffset", String(REVEAL_DASH));
       clone.setAttribute("data-rev", "1");
     } else if (smallRing) {
       const width = parseFloat(el.getAttribute("stroke-width") ?? "2");
@@ -200,7 +212,7 @@ function buildReveal(svg: SVGSVGElement, body: SVGGElement): NodeListOf<SVGEleme
 function restoreLive(svg: SVGSVGElement): void {
   // Body shapes only: clones inside the mask also carry data-dash, and handing
   // them back their "original" dasharray would break the reveal — theirs is a
-  // different, working one ("100 100" plus an offset).
+  // different, working one (REVEAL_DASHARRAY plus an offset).
   svg.querySelectorAll<SVGElement>(`g.${BODY_CLASS} [data-dash]`).forEach((el) => {
     el.style.transition = "none";
     el.style.opacity = "";
@@ -267,7 +279,7 @@ export function prepare(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
 
   const revs = buildReveal(svg, body);
   body.setAttribute("mask", `url(#${body.dataset["revealId"]})`);
-  revs.forEach((el) => { el.style.transition = "none"; el.style.strokeDashoffset = "100"; });
+  revs.forEach((el) => { el.style.transition = "none"; el.style.strokeDashoffset = String(REVEAL_DASH); });
   svg.querySelectorAll<SVGElement>(SCALE_SELECTOR).forEach((el) => {
     el.style.transformBox = "fill-box";
     el.style.transformOrigin = "center";
@@ -330,10 +342,10 @@ export function animate(svg: SVGSVGElement, cfg: ResolvedAnimateCfg): void {
       ? i * seq
       : stagger ? (order[i] ?? 0) * stagger * (0.6 + Math.random() * 0.6) : 0;
     if (extra > maxExtra) maxExtra = extra;
-    el.style.strokeDashoffset = "100";
+    el.style.strokeDashoffset = String(REVEAL_DASH);
     play(
       el,
-      [{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }],
+      [{ strokeDashoffset: REVEAL_DASH }, { strokeDashoffset: 0 }],
       { duration, delay: delay + extra, easing: "cubic-bezier(.45,0,.2,1)" },
       (node) => { (node as SVGElement).style.strokeDashoffset = "0"; },
     );
