@@ -387,6 +387,7 @@ const spec = renderSpec("rocket", { size: 24 });
 <Digits value="12:30" transition="relay" />
 <tacet-digits value="1248" size="40"></tacet-digits>`, "html")}</code></pre>
   </div>
+  <div class="digit-wall" id="digit-wall" aria-hidden="true"></div>
 </section>
 
 <section id="stroke">
@@ -470,7 +471,12 @@ const spec = renderSpec("rocket", { size: 24 });
 
 <script type="module">
 import "${modulesPath}/element/index.js";
-import { META, iconNames } from "tacet-core";
+import { DIGIT_TIMING, META, iconNames, slotSpec } from "tacet-core";
+// The digit wall draws its morphs with the controller's own helpers. They are
+// internal modules of the core, served next to its index and loaded by it anyway.
+import { accentDash } from "${modulesPath}/core/accent.js";
+import { digitGeometry } from "${modulesPath}/core/digitsLayout.js";
+import { easeInOutCubic, lerpInto, pairUp, sampleContour, unpair } from "${modulesPath}/core/morph.js";
 
 const GROUPS = ${JSON.stringify(groups)};
 let size = 24, variant = "D", query = "";
@@ -764,6 +770,314 @@ const toEnd = () => field.setSelectionRange(field.value.length, field.value.leng
 ["click", "keyup", "select"].forEach((type) => field.addEventListener(type, toEnd));
 field.addEventListener("focus", () => { fieldBox.classList.add("focus"); toEnd(); });
 field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
+
+// ── digit wall ──
+// A band of faint digits under the section. The digits near the pointer light
+// up, each one whole and by its distance, and the digit under the pointer
+// changes together with its four neighbours. Without a pointer the light
+// wanders by itself.
+//
+// The band is one canvas. As six hundred SVGs it took a sixth of a core and
+// dropped the page to 42 fps (measured 23.09.2026): every change repainted the
+// dashed contours around it and rebuilt the compositing layers. Here a digit at
+// rest is a sprite drawn once per figure, and a morph is drawn frame by frame
+// with the helpers the digits controller itself uses: sampled contours, cuts
+// and accent spans interpolated, the exact glyph put back at the end.
+//
+// The band fills in only when it comes near the viewport, and nothing runs
+// while it is off screen or the tab is hidden. It sits in a block of its own,
+// so that its names cannot clash with the rest of the page script.
+{
+  const wall = document.getElementById("digit-wall");
+  // The resting opacity, the light's radius in rows, the fade time constant in s.
+  const WALL_SIZE = 24, WALL_FLOOR = 0.18, WALL_RADIUS = 2.6, WALL_FADE = 0.12;
+  const calm = matchMedia("(prefers-reduced-motion: reduce)");
+  const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
+  // Dash patterns are stored in percent of the contour; the canvas wants lengths.
+  const rulerBox = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const ruler = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  rulerBox.style.cssText = "position:absolute;width:0;height:0;visibility:hidden";
+  rulerBox.appendChild(ruler);
+  wall.append(canvas, rulerBox);
+
+  // Every digit shares the slot's frame: the same view box and stroke width.
+  const frameSpec = slotSpec("0", { size: WALL_SIZE });
+  const cellW = Number(frameSpec.svgAttrs.width);
+  const [VX, VY, , VH] = String(frameSpec.svgAttrs.viewBox).split(" ").map(Number);
+  const SCALE = WALL_SIZE / VH, STROKE = Number(frameSpec.parts[0].attrs["stroke-width"]);
+
+  let W = 0, H = 0, dpr = 1, cols = 0, rows = 0, left = 0, top = 0, cellPx = 0, rowPx = 0, ink = "", accentInk = "";
+  let chars = [], level = new Float32Array(0), goal = new Float32Array(0);
+  let glowing = new Set(), aimAt = "", cellAt = "", movedAt = -Infinity;
+  let near = false, inside = false, frame = 0, lastNow = 0, flownAt = 0, idleTimer = 0, refillTimer = 0;
+  const active = new Set(), flights = new Map(), sprites = new Map(), shapes = new Map();
+  const anyDigit = () => String(Math.floor(Math.random() * 10));
+  const otherDigit = (c) => { let n; do n = anyDigit(); while (n === c); return n; };
+  const cellX = (c) => Math.round((left + c * cellW) * dpr), cellY = (r) => Math.round((top + r * WALL_SIZE) * dpr);
+  const lengths = (list, unit) => String(list).split(" ").filter(Boolean).map((v) => Number(v) * unit);
+  const roams = () => !inside && !calm.matches;
+
+  // Strokes a contour in glyph units: the body in ink, then the accent. Each is
+  // a dash pattern with an offset, in percent of the contour, as the core gives
+  // them; unit turns percent into length.
+  function stroke(p, path, unit, body, accent) {
+    p.lineCap = "round";
+    p.lineJoin = "round";
+    p.lineWidth = STROKE;
+    for (const [pattern, colour] of [[body, ink], [accent, accentInk]]) {
+      if (!pattern) continue;
+      p.strokeStyle = colour;
+      p.setLineDash(lengths(pattern.dash, unit));
+      p.lineDashOffset = pattern.offset * unit;
+      p.stroke(path);
+    }
+  }
+
+  // A digit at rest, drawn once per figure from the same spec an SVG slot uses,
+  // at full strength. A cell puts the sprite down at its light, so the digit
+  // fades as a whole, the way an opacity on an SVG slot fades it.
+  function sprite(ch) {
+    let sheet = sprites.get(ch);
+    if (sheet) return sheet;
+    const parts = slotSpec(ch, { size: WALL_SIZE }).parts;
+    const main = parts[0].attrs, span = parts.find((part) => part.attrs["data-accent"]);
+    ruler.setAttribute("d", main.d);
+    sheet = document.createElement("canvas");
+    sheet.width = cellPx;
+    sheet.height = rowPx;
+    const pen = sheet.getContext("2d");
+    pen.setTransform(dpr * SCALE, 0, 0, dpr * SCALE, -dpr * VX * SCALE, -dpr * VY * SCALE);
+    stroke(pen, new Path2D(main.d), ruler.getTotalLength() / 100, { dash: main["stroke-dasharray"] ?? "100 0", offset: 0 },
+      span ? { dash: span.attrs["stroke-dasharray"], offset: Number(span.attrs["stroke-dashoffset"] ?? 0) } : null);
+    sprites.set(ch, sheet);
+    return sheet;
+  }
+
+  // A digit's contour sampled for a morph, with its cuts and spans as pairs.
+  function shape(ch) {
+    let form = shapes.get(ch);
+    if (!form) {
+      const geometry = digitGeometry(ch);
+      form = { points: sampleContour(geometry.d), cuts: pairUp(geometry.cuts), spans: geometry.spans ? pairUp(geometry.spans) : null };
+      shapes.set(ch, form);
+    }
+    return form;
+  }
+
+  // One frame of a morph, drawn straight onto the band at the cell's light:
+  // the polyline between two sampled contours, with the cuts and the accent
+  // where the interpolation has them now. The body leaves out the stretch under
+  // the accent, so the two strokes never overlap and the low alpha does not
+  // darken where they would. Measured 23.09.2026, the other ways cost frames:
+  // a small sheet per digit meant a texture upload each (15 fps), a clip with
+  // destination-in a change of render target each (19 fps).
+  function paintFlight(i, f, x, y) {
+    // Every other sample, and always the last one: at 24 px the contour is as
+    // smooth, and the path costs half.
+    const pts = f.now.points, path = new Path2D(), last = pts.length - 2;
+    let length = 0, px = pts[0], py = pts[1];
+    path.moveTo(px, py);
+    for (let k = 4; ; k += 4) {
+      if (k > last) k = last;
+      const dx = pts[k] - px, dy = pts[k + 1] - py;
+      length += Math.sqrt(dx * dx + dy * dy);
+      px = pts[k]; py = pts[k + 1];
+      path.lineTo(px, py);
+      if (k === last) break;
+    }
+    const cuts = unpair(f.now.cuts), spans = f.now.spans ? unpair(f.now.spans) : [];
+    ctx.save();
+    ctx.globalAlpha = level[i];
+    ctx.setTransform(dpr * SCALE, 0, 0, dpr * SCALE, x - dpr * VX * SCALE, y - dpr * VY * SCALE);
+    stroke(ctx, path, length / 100, accentDash([[0, 100]], [...cuts, ...spans]), spans.length ? accentDash(spans, cuts) : null);
+    ctx.restore();
+  }
+
+  function readInk() {
+    const style = getComputedStyle(wall);
+    ink = style.color;
+    accentInk = style.getPropertyValue("--tacet-accent").trim() || ink;
+    sprites.clear();
+  }
+
+  // Redraws one cell at its current light, in device pixels.
+  function paint(i) {
+    const x = cellX(i % cols), y = cellY(Math.floor(i / cols)), f = flights.get(i);
+    ctx.clearRect(x, y, cellPx, rowPx);
+    if (f) return paintFlight(i, f, x, y);
+    ctx.globalAlpha = level[i];
+    ctx.drawImage(sprite(chars[i]), x, y);
+  }
+
+  function fillWall() {
+    const width = wall.clientWidth;
+    if (!width || (width === W && (devicePixelRatio || 1) === dpr)) return;
+    W = width; H = wall.clientHeight; dpr = devicePixelRatio || 1;
+    cols = Math.floor(W / cellW); rows = Math.floor(H / WALL_SIZE);
+    left = (W - cols * cellW) / 2; top = (H - rows * WALL_SIZE) / 2;
+    cellPx = Math.ceil(cellW * dpr); rowPx = Math.ceil(WALL_SIZE * dpr);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    chars = Array.from({ length: rows * cols }, anyDigit);
+    level = new Float32Array(rows * cols).fill(WALL_FLOOR);
+    goal = new Float32Array(rows * cols).fill(WALL_FLOOR);
+    active.clear(); flights.clear(); glowing = new Set(); aimAt = ""; cellAt = "";
+    readInk();
+    for (let i = 0; i < chars.length; i++) paint(i);
+  }
+
+  // A digit changes. A change that comes mid-morph starts from where the
+  // contour is now, like set() on the controller.
+  function change(r, c) {
+    if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+    const i = r * cols + c, from = chars[i];
+    chars[i] = otherDigit(from);
+    const target = shape(chars[i]), current = flights.get(i)?.now ?? shape(from);
+    if (calm.matches || !target.points || !current.points) {
+      flights.delete(i);
+      paint(i);
+      return;
+    }
+    const copy = (form) => ({ points: form.points.slice(), cuts: form.cuts.slice(), spans: form.spans ? form.spans.slice() : null });
+    const start = copy(current);
+    if (!start.spans && target.spans) start.spans = target.spans.slice();
+    flights.set(i, { from: start, goal: target, now: copy(start), start: performance.now() });
+    kick();
+  }
+
+  function fly(now) {
+    for (const [i, f] of flights) {
+      const k = Math.min(1, Math.max(0, (now - f.start) / DIGIT_TIMING.morph)), e = easeInOutCubic(k);
+      lerpInto(f.now.points, f.from.points, f.goal.points, e);
+      lerpInto(f.now.cuts, f.from.cuts, f.goal.cuts, e);
+      if (f.now.spans && f.goal.spans) lerpInto(f.now.spans, f.from.spans, f.goal.spans, e);
+      // The polyline lives only in flight: at rest the cell holds the exact glyph.
+      if (k >= 1) flights.delete(i);
+      paint(i);
+    }
+  }
+
+  // Where the light is aimed: the nearest digit gets full brightness, the ones
+  // around it less, down to the floor at WALL_RADIUS rows. Nothing is recomputed
+  // while the light stays within the same quarter of a cell.
+  function aim(x, y) {
+    const at = x === null ? "" : Math.round((y - top) / WALL_SIZE * 4) + ":" + Math.round((x - left) / cellW * 4);
+    if (at === aimAt) return;
+    aimAt = at;
+    const next = new Set();
+    if (x !== null) {
+      const fr = (y - top) / WALL_SIZE - 0.5, fc = (x - left) / cellW - 0.5;
+      const r0 = Math.round(fr), c0 = Math.round(fc);
+      const dr = Math.ceil(WALL_RADIUS), dc = Math.ceil(WALL_RADIUS * WALL_SIZE / cellW);
+      for (let r = Math.max(0, r0 - dr); r <= Math.min(rows - 1, r0 + dr); r++) {
+        for (let c = Math.max(0, c0 - dc); c <= Math.min(cols - 1, c0 + dc); c++) {
+          const d = Math.hypot((c - fc) * cellW, (r - fr) * WALL_SIZE) / WALL_SIZE;
+          if (d >= WALL_RADIUS) continue;
+          const t = 1 - d / WALL_RADIUS, i = r * cols + c;
+          goal[i] = WALL_FLOOR + (1 - WALL_FLOOR) * t * t * (3 - 2 * t);
+          next.add(i);
+          active.add(i);
+        }
+      }
+    }
+    for (const i of glowing) if (!next.has(i)) { goal[i] = WALL_FLOOR; active.add(i); }
+    glowing = next;
+  }
+
+  // Every digit whose light is on its way somewhere moves towards it, the way a
+  // CSS transition would, and is redrawn when the change is visible. Digits in
+  // flight are redrawn by fly() anyway.
+  function step(dt) {
+    const k = 1 - Math.exp(-dt / WALL_FADE);
+    for (const i of active) {
+      const before = Math.round(level[i] * 40);
+      level[i] += (goal[i] - level[i]) * k;
+      if (Math.abs(goal[i] - level[i]) < 0.005) level[i] = goal[i];
+      if (Math.round(level[i] * 40) !== before && !flights.has(i)) paint(i);
+      if (level[i] === goal[i]) active.delete(i);
+    }
+  }
+
+  // The light entered a new cell: its digit changes, the four neighbours follow.
+  function pass(x, y) {
+    const r = Math.floor((y - top) / WALL_SIZE), c = Math.floor((x - left) / cellW), at = r + ":" + c;
+    if (at === cellAt) return;
+    cellAt = at;
+    change(r, c);
+    setTimeout(() => { change(r, c - 1); change(r, c + 1); change(r - 1, c); change(r + 1, c); }, 90);
+  }
+
+  // Without a pointer the light wanders at about 110 px a second, whatever the width.
+  function tick(now) {
+    frame = 0;
+    if (!near || document.hidden) return;
+    const dt = Math.min(0.1, (now - lastNow) / 1000);
+    lastNow = now;
+    if (roams()) {
+      const t = now / 1000, ax = Math.max(40, W / 2 - 30);
+      const x = W / 2 + ax * Math.sin(t * 110 / ax), y = H / 2 + 70 * Math.sin(t * 0.57 + 1);
+      aim(x, y);
+      pass(x, y);
+    }
+    step(dt);
+    // Morphs move at thirty frames a second: a 480 ms morph still takes some
+    // fourteen, and there are a dozen or more in flight at once.
+    if (now - flownAt >= 30) {
+      flownAt = now;
+      fly(now);
+    }
+    if (roams() || active.size || flights.size) frame = requestAnimationFrame(tick);
+  }
+
+  function kick() {
+    if (frame || !near || document.hidden || !rows) return;
+    lastNow = performance.now();
+    frame = requestAnimationFrame(tick);
+  }
+
+  function idle() {
+    if (performance.now() - movedAt < 1500 || !rows) return;
+    change(Math.floor(Math.random() * rows), Math.floor(Math.random() * cols));
+  }
+
+  function wake() {
+    const on = near && rows > 0 && !document.hidden && !calm.matches;
+    if (on && !idleTimer) idleTimer = setInterval(idle, 350);
+    if (!on && idleTimer) { clearInterval(idleTimer); idleTimer = 0; }
+    kick();
+  }
+
+  wall.addEventListener("pointerenter", () => { inside = true; });
+  wall.addEventListener("pointerleave", () => { inside = false; cellAt = ""; aim(null, null); kick(); });
+  wall.addEventListener("pointermove", (event) => {
+    if (!rows) return;
+    const box = wall.getBoundingClientRect();
+    const x = event.clientX - box.left, y = event.clientY - box.top;
+    movedAt = performance.now();
+    aim(x, y);
+    pass(x, y);
+    kick();
+  });
+  new IntersectionObserver(([entry]) => {
+    near = entry.isIntersecting;
+    if (near) fillWall();
+    wake();
+  }, { rootMargin: "200px 0px" }).observe(wall);
+  new ResizeObserver(() => {
+    clearTimeout(refillTimer);
+    refillTimer = setTimeout(() => { if (near) { fillWall(); kick(); } }, 150);
+  }).observe(wall);
+  document.addEventListener("visibilitychange", wake);
+  calm.addEventListener("change", wake);
+  // The canvas keeps the colours it was painted with; the theme lives in an
+  // attribute on <html> and in the system setting, so both repaint it.
+  const repaint = () => {
+    if (!rows) return;
+    readInk();
+    for (let i = 0; i < chars.length; i++) paint(i);
+  };
+  new MutationObserver(repaint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", repaint);
+}
 
 // The first screen draws in sequence — otherwise twelve icons flash at once and
 // the motion reads as flicker.
