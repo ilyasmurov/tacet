@@ -24,3 +24,6 @@ export {
   digitsMarkup, parseDigits, slotSpec, DIGIT_ADVANCE, COLON_ADVANCE, SLOT_CLASS,
 } from "./digitsLayout.js";
 export type { DigitsRenderOpts, DigitsTransition, SlotSpec } from "./digitsLayout.js";
+
+export { createDigits, DIGIT_TIMING } from "./digits.js";
+export type { DigitsController, DigitsOptions } from "./digits.js";
