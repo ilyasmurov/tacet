@@ -57,6 +57,33 @@ describe("glyph data", () => {
     }
   });
 
+  it("accent spans stay inside the contour", () => {
+    for (const [name, def] of entries) {
+      for (const raw of def) {
+        const spans = (raw as Part | null)?.accentSpans;
+        if (!spans?.length) continue;
+        for (const [start, width] of spans) {
+          expect(start, name).toBeGreaterThanOrEqual(0);
+          expect(width, name).toBeGreaterThan(0);
+          expect(start + width, name).toBeLessThanOrEqual(100);
+        }
+      }
+    }
+  });
+
+  it("each digit is a single stroke", () => {
+    // One path with one subpath: the draw-in follows the pen, and a transition
+    // between two digits needs exactly one contour on each side.
+    const icons = ICONS as unknown as Record<string, IconDef>;
+    for (let n = 0; n <= 9; n++) {
+      const def = icons[`digit-${n}`];
+      expect(def, `digit-${n}`).toBeDefined();
+      expect(def!.length, `digit-${n}`).toBe(1);
+      expect(def![0]!.t, `digit-${n}`).toBe("path");
+      expect(def![0]!.d!.match(/M/gi)!.length, `digit-${n}`).toBe(1);
+    }
+  });
+
   it("dashFor always covers exactly the contour length", () => {
     for (const [name, def] of entries) {
       for (const raw of def) {

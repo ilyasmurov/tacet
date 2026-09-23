@@ -495,6 +495,24 @@ export const ICONS = {
     "unlock": [rc(4, 11, 16, 10, 2, [[16, 11], [64, 11]]), p("M8 11V7a4 4 0 0 1 7.5-1.9", [[42, 14]]), dot(12, 16, 1.4, { accent: true })],
     "scissors": [p("M8.2 15.8 18.5 4", [[42, 14]]), p("M15.8 15.8 5.5 4", [[42, 14]]), c(6.5, 18, 2.8, [[20, 16]], { accent: true }), c(17.5, 18, 2.8, [[20, 16]], { accent: true })],
     "translate": [p("M3.5 6h9", [[50, 14]]), p("M8 4v2"), p("M10.5 6c0 4.5-2.5 7.5-6 9.5", [[42, 14]]), p("M5.5 11c1.2 2.2 3 3.8 5.5 4.8"), p("M13 20.5 17 11l4 9.5", null, { accent: true }), p("M14.4 17.5h5.2", null, { accent: true })],
+
+    // ── digits (TACET-28) ──
+    // One stroke each, in the order a hand writes the figure: the draw-in follows
+    // the pen, and a transition from one digit to another has exactly one contour
+    // to flow along. The first cut in each list is the one variants A and C keep.
+    // 6 and 9 carry no cuts: the loop stops short of the stem by shape, because a
+    // cut reaching the end of a contour leaves dashFor's 0.01 dash there as a dot.
+    // 9 is 6 turned by 180° with the path reversed.
+    "digit-0": [p("M12 4C9.24 4 7 7.58 7 12C7 16.42 9.24 20 12 20C14.76 20 17 16.42 17 12C17 7.58 14.76 4 12 4", [[13, 9], [62, 9]], { accentSpans: [[22, 40]] })],
+    "digit-1": [p("M8.4 8.3C10.2 7.3 11.8 5.8 13 4V20", [[70, 8]], { accentSpans: [[0, 29]] })],
+    "digit-2": [p("M7.2 8.3C7.4 5.8 9.5 4 12 4C14.6 4 16.8 5.9 16.8 8.4C16.8 12.2 12.8 15.3 7.5 19.7C7.17 19.97 7.3 20 7.9 20H16.8", [[26, 7]], { accentSpans: [[77, 23]] })],
+    "digit-3": [p("M7.4 6.3C8.4 4.9 10 4 11.9 4C14.4 4 16.3 5.6 16.3 7.8C16.3 10 14.4 11.6 11 11.6C14.9 11.6 17.1 13.4 17.1 15.8C17.1 18.3 14.9 20 12 20C9.8 20 8 19.2 6.9 17.8", [[22, 7], [73, 7]], { accentSpans: [[0, 47]] })],
+    "digit-4": [p("M14.9 20V4.3L7.2 13.9C6.8 14.4 7 14.8 7.6 14.8H17.6", [[24, 8]], { accentSpans: [[74, 26]] })],
+    "digit-5": [p("M16.4 4H9.2C8.7 4 8.5 4.3 8.4 4.8L7.9 10.4C9 9.7 10.3 9.4 11.7 9.4C14.8 9.4 17 11.7 17 14.7C17 17.8 14.7 20 11.7 20C9.8 20 8.1 19.2 6.9 17.9", [[58, 8]], { accentSpans: [[0, 20]] })],
+    "digit-6": [p("M16 5.6C15 4.6 13.7 4 12.3 4C9.2 4 7 7.6 7 15C7 17.76 9.24 20 12 20C14.76 20 17 17.76 17 15C17 12.24 14.76 10 12 10C11.4 10 10.76 10.1 10.15 10.29", null, { accentSpans: [[86, 14]] })],
+    "digit-7": [p("M7 4H17C14.4 7.5 12.3 13 11.3 20", [[62, 9]], { accentSpans: [[0, 37]] })],
+    "digit-8": [p("M12 4C9.8 4 8.2 5.5 8.2 7.6C8.2 9.7 10 10.9 12 11.6C14.5 12.4 16.4 13.8 16.4 16C16.4 18.4 14.4 20 12 20C9.6 20 7.6 18.4 7.6 16C7.6 13.8 9.5 12.4 12 11.6C14 10.9 15.8 9.7 15.8 7.6C15.8 5.5 14.2 4 12 4", [[88, 6], [56, 6]], { accentSpans: [[0, 23], [94, 6]] })],
+    "digit-9": [p("M13.85 13.71C13.24 13.9 12.6 14 12 14C9.24 14 7 11.76 7 9C7 6.24 9.24 4 12 4C14.76 4 17 6.24 17 9C17 16.4 14.8 20 11.7 20C10.3 20 9 19.4 8 18.4", null, { accentSpans: [[0, 14]] })],
 } satisfies Record<string, IconDef>;
 
 export const ANIM: Record<string, AnimCfg> = {
