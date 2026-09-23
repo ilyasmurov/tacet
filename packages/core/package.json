@@ -1,7 +1,7 @@
 {
   "name": "tacet-core",
-  "version": "0.1.3",
-  "description": "Data and engine of the Tacet icon set: 320 outline glyphs where the cut is data, plus per-glyph guidance for AI agents. No dependencies.",
+  "version": "0.2.0",
+  "description": "Data and engine of the Tacet icon set: 381 outline glyphs where the cut is data, plus per-glyph guidance for AI agents. No dependencies.",
   "license": "MIT",
   "author": "Ilya Smurov",
   "repository": {
