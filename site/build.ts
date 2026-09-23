@@ -337,6 +337,7 @@ const spec = renderSpec("rocket", { size: 24 });
 </section>
 
 <section id="digits">
+  <div class="digit-wall" id="digit-wall" aria-hidden="true"></div>
   <div class="wrap">
     <p class="eyebrow">digits</p>
     ${heading("digits", "Ten digits that draw themselves")}
@@ -387,7 +388,6 @@ const spec = renderSpec("rocket", { size: 24 });
 <Digits value="12:30" transition="relay" />
 <tacet-digits value="1248" size="40"></tacet-digits>`, "html")}</code></pre>
   </div>
-  <div class="digit-wall" id="digit-wall" aria-hidden="true"></div>
 </section>
 
 <section id="stroke">
@@ -772,10 +772,12 @@ field.addEventListener("focus", () => { fieldBox.classList.add("focus"); toEnd()
 field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
 
 // ── digit wall ──
-// A band of faint digits under the section. The digits near the pointer light
-// up, each one whole and by its distance, and the digit under the pointer
-// changes together with its four neighbours. Without a pointer the light
-// wanders by itself.
+// The background of the digits section: faint digits under the heading, the
+// text and the demos. The digits near the pointer light up, each one whole and
+// by its distance, and the digit under the pointer changes together with its
+// four neighbours. Without a pointer the light wanders by itself. The wall
+// takes no pointer events itself; the section listens, so the demos on top
+// keep working.
 //
 // The band is one canvas. As six hundred SVGs it took a sixth of a core and
 // dropped the page to 42 fps (measured 23.09.2026): every change repainted the
@@ -784,13 +786,14 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
 // with the helpers the digits controller itself uses: sampled contours, cuts
 // and accent spans interpolated, the exact glyph put back at the end.
 //
-// The band fills in only when it comes near the viewport, and nothing runs
+// The wall fills in only when it comes near the viewport, and nothing runs
 // while it is off screen or the tab is hidden. It sits in a block of its own,
 // so that its names cannot clash with the rest of the page script.
 {
-  const wall = document.getElementById("digit-wall");
+  const wall = document.getElementById("digit-wall"), zone = wall.parentElement;
   // The resting opacity, the light's radius in rows, the fade time constant in s.
-  const WALL_SIZE = 24, WALL_FLOOR = 0.18, WALL_RADIUS = 2.6, WALL_FADE = 0.12;
+  // Under text the floor is lower than it was as a band of its own (0.18).
+  const WALL_SIZE = 24, WALL_FLOOR = 0.12, WALL_RADIUS = 2.6, WALL_FADE = 0.12;
   const calm = matchMedia("(prefers-reduced-motion: reduce)");
   const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
   // Dash patterns are stored in percent of the contour; the canvas wants lengths.
@@ -909,10 +912,14 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
     ctx.drawImage(sprite(chars[i]), x, y);
   }
 
+  // A section-sized canvas at a phone's 3x would take tens of megabytes; faint
+  // digits in the background look the same at 2x.
+  const density = () => Math.min(2, devicePixelRatio || 1);
+
   function fillWall() {
-    const width = wall.clientWidth;
-    if (!width || (width === W && (devicePixelRatio || 1) === dpr)) return;
-    W = width; H = wall.clientHeight; dpr = devicePixelRatio || 1;
+    const width = wall.clientWidth, height = wall.clientHeight;
+    if (!width || (width === W && height === H && density() === dpr)) return;
+    W = width; H = height; dpr = density();
     cols = Math.floor(W / cellW); rows = Math.floor(H / WALL_SIZE);
     left = (W - cols * cellW) / 2; top = (H - rows * WALL_SIZE) / 2;
     cellPx = Math.ceil(cellW * dpr); rowPx = Math.ceil(WALL_SIZE * dpr);
@@ -1006,15 +1013,16 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
     setTimeout(() => { change(r, c - 1); change(r, c + 1); change(r - 1, c); change(r + 1, c); }, 90);
   }
 
-  // Without a pointer the light wanders at about 110 px a second, whatever the width.
+  // Without a pointer the light wanders over the whole section, at about 110 px
+  // a second across and 70 down, whatever its size.
   function tick(now) {
     frame = 0;
     if (!near || document.hidden) return;
     const dt = Math.min(0.1, (now - lastNow) / 1000);
     lastNow = now;
     if (roams()) {
-      const t = now / 1000, ax = Math.max(40, W / 2 - 30);
-      const x = W / 2 + ax * Math.sin(t * 110 / ax), y = H / 2 + 70 * Math.sin(t * 0.57 + 1);
+      const t = now / 1000, ax = Math.max(40, W / 2 - 30), ay = Math.max(20, H / 2 - 60);
+      const x = W / 2 + ax * Math.sin(t * 110 / ax), y = H / 2 + ay * Math.sin(t * 70 / ay + 1);
       aim(x, y);
       pass(x, y);
     }
@@ -1046,9 +1054,9 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
     kick();
   }
 
-  wall.addEventListener("pointerenter", () => { inside = true; });
-  wall.addEventListener("pointerleave", () => { inside = false; cellAt = ""; aim(null, null); kick(); });
-  wall.addEventListener("pointermove", (event) => {
+  zone.addEventListener("pointerenter", () => { inside = true; });
+  zone.addEventListener("pointerleave", () => { inside = false; cellAt = ""; aim(null, null); kick(); });
+  zone.addEventListener("pointermove", (event) => {
     if (!rows) return;
     const box = wall.getBoundingClientRect();
     const x = event.clientX - box.left, y = event.clientY - box.top;

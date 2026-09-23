@@ -407,13 +407,15 @@ h2 .anchor { color: inherit; text-decoration: none; }
 }
 
 /* ── digit wall ── */
-/* A full-bleed band of faint digits under the digits section, drawn on a
-   canvas by the page script. The height is set here, not by the script: the
-   band fills in only when it comes near the viewport, and a band that grew
-   then would push every anchor below it. */
+/* The background of the digits section: faint digits drawn on a canvas by the
+   page script, lit near the pointer. It lies under the content and takes no
+   pointer events, the section listens instead. The top and the bottom fade
+   out, so the section has no hard edge. */
+#digits { position: relative; }
+#digits > .wrap { position: relative; z-index: 1; }
 .digit-wall {
-  position: relative; height: 200px; margin-top: 56px; overflow: hidden;
-  touch-action: pan-y;
+  position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 96px, #000 calc(100% - 96px), transparent);
+  mask-image: linear-gradient(transparent, #000 96px, #000 calc(100% - 96px), transparent);
 }
 .digit-wall canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-@media (max-width: 760px) { .digit-wall { margin-top: 40px; } }
