@@ -13,6 +13,7 @@ import { UI_META_2 } from "./metaUi2.js";
 import { UI_META_3 } from "./metaUi3.js";
 import { INSTRUMENT_META } from "./metaInstruments.js";
 import { SERVICE_META } from "./metaServices.js";
+import { DIGIT_META } from "./metaDigits.js";
 import type { IconMeta } from "./metaTypes.js";
 
 export type { IconMeta } from "./metaTypes.js";
@@ -23,6 +24,7 @@ export const META: Record<string, IconMeta> = {
   ...UI_META_3,
   ...INSTRUMENT_META,
   ...SERVICE_META,
+  ...DIGIT_META,
 };
 
 /** Whether the glyph has a description. */
