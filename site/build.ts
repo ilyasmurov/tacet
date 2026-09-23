@@ -51,10 +51,12 @@ const modulesPath = `./tacet/${buildId}`;
 const names = iconNames();
 const instruments = new Set<string>(INSTRUMENT_NAMES);
 const services = new Set<string>(SERVICE_NAMES);
-const uiNames = names.filter((n) => !instruments.has(n) && !services.has(n));
+const isDigit = (n: string) => n.startsWith("digit-");
+const uiNames = names.filter((n) => !instruments.has(n) && !services.has(n) && !isDigit(n));
 
 const groups = [
   { title: "Interface", names: uiNames },
+  { title: "Digits", names: names.filter(isDigit) },
   { title: "Instruments and roles", names: names.filter((n) => instruments.has(n)) },
   { title: "Creators and services", names: names.filter((n) => services.has(n)) },
 ];
@@ -209,6 +211,7 @@ try {
     </a>
     <nav>
       <a href="#gallery">Icons</a>
+      <a href="#digits">Digits</a>
       <a href="#agents">For agents</a>
       <a href="./llms.txt">llms.txt</a>
       <a href="https://github.com/ilyasmurov/tacet">GitHub</a>
@@ -330,6 +333,59 @@ const spec = renderSpec("rocket", { size: 24 });
       <div class="demo-item">${icon("rocket", 56, 'variant="D"')}<span class="label"><b>D</b> all and accent</span></div>
       <div class="demo-item">${icon("rocket", 56, 'solid=""')}<span class="label"><b>solid</b> unbroken</span></div>
     </div>
+  </div>
+</section>
+
+<section id="digits">
+  <div class="wrap">
+    <p class="eyebrow">digits</p>
+    ${heading("digits", "Ten digits that draw themselves")}
+    <p>Each digit is one stroke, laid down the way a hand writes it. When a number changes, only the
+    digits that changed move: they flow into the new shape, hand over to it, or erase and write it
+    again. The accent is data too — a stretch of the contour, stored the way a cut is.</p>
+    <div class="digits-bar">
+      <span class="chips" id="digits-transition"></span>
+      <span class="chips" id="digits-variant"></span>
+    </div>
+    <div class="card digits-row">
+      <tacet-digits id="d-row" value="0123456789" size="48"></tacet-digits>
+      <div class="digits-actions">
+        <button class="replay" type="button" id="d-shift">Shift</button>
+        <button class="replay" type="button" id="d-shuffle">Shuffle</button>
+      </div>
+    </div>
+    <div class="digits-grid">
+      <div class="card digits-demo">
+        <span class="label">clock</span>
+        <tacet-digits id="d-clock" size="40"></tacet-digits>
+      </div>
+      <div class="card digits-demo">
+        <span class="label">counter</span>
+        <div class="digits-inbox">Inbox <tacet-digits id="d-badge" class="badge" value="3" size="16"></tacet-digits></div>
+        <div class="digits-actions">
+          <button class="replay" type="button" data-count="-1">−1</button>
+          <button class="replay" type="button" data-count="1">+1</button>
+          <button class="replay" type="button" data-count="9">+9</button>
+        </div>
+      </div>
+      <div class="card digits-demo">
+        <span class="label">verification code</span>
+        <label class="otp">
+          <span class="otp-cells">${Array.from({ length: 6 }, () => '<span class="otp-cell"><tacet-digits size="28"></tacet-digits></span>').join("")}</span>
+          <input id="d-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="Verification code">
+        </label>
+      </div>
+      <div class="card digits-demo">
+        <span class="label">quantity</span>
+        <label class="field">
+          <span class="field-digits" id="d-field-digits"></span><span class="field-caret"></span>
+          <input id="d-field" type="text" inputmode="numeric" maxlength="6" aria-label="Quantity">
+        </label>
+      </div>
+    </div>
+    <pre class="digits-code"><code>${highlight(`<Digits value={unread} size={16} />
+<Digits value="12:30" transition="relay" />
+<tacet-digits value="1248" size="40"></tacet-digits>`, "html")}</code></pre>
   </div>
 </section>
 
@@ -562,7 +618,7 @@ function renderGallery() {
   document.getElementById("counter").textContent = shown + " of " + iconNames().length;
 }
 
-function chips(id, values, get, set, label) {
+function chips(id, values, get, set, label, onPick = renderGallery) {
   const box = document.getElementById(id);
   box.textContent = "";
   for (const value of values) {
@@ -572,8 +628,8 @@ function chips(id, values, get, set, label) {
     button.setAttribute("aria-pressed", String(value === get()));
     button.addEventListener("click", () => {
       set(value);
-      chips(id, values, get, set, label);
-      renderGallery();
+      chips(id, values, get, set, label, onPick);
+      onPick();
     });
     box.appendChild(button);
   }
@@ -601,6 +657,113 @@ document.querySelectorAll("a[data-anchor]").forEach((link) => {
     say("Link copied");
   });
 });
+
+// ── digits ──
+let digitsTransition = "morph", digitsLook = "D";
+function dress(el) {
+  el.setAttribute("transition", digitsTransition);
+  el.setAttribute("variant", digitsLook === "solid" ? "D" : digitsLook);
+  el.toggleAttribute("solid", digitsLook === "solid");
+}
+const dressAll = () => document.querySelectorAll("#digits tacet-digits").forEach(dress);
+chips("digits-transition", ["morph", "relay", "erase"], () => digitsTransition, (v) => { digitsTransition = v; }, null, dressAll);
+chips("digits-variant", ["A", "B", "C", "D", "solid"], () => digitsLook, (v) => { digitsLook = v; }, null, dressAll);
+dressAll();
+
+const row = document.getElementById("d-row");
+// Ten digits at 48px need 330px; a phone card has about 290. At 40 they fit.
+const narrow = matchMedia("(max-width: 760px)");
+const fitRow = () => row.setAttribute("size", narrow.matches ? "40" : "48");
+fitRow();
+narrow.addEventListener("change", fitRow);
+document.getElementById("d-shift").addEventListener("click", () => {
+  row.setAttribute("value", [...row.getAttribute("value")].map((c) => String((Number(c) + 1) % 10)).join(""));
+});
+document.getElementById("d-shuffle").addEventListener("click", () => {
+  const all = [...row.getAttribute("value")];
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  row.setAttribute("value", all.join(""));
+});
+
+const clock = document.getElementById("d-clock");
+const two = (n) => String(n).padStart(2, "0");
+const tick = () => {
+  const now = new Date();
+  clock.setAttribute("value", two(now.getHours()) + ":" + two(now.getMinutes()) + ":" + two(now.getSeconds()));
+};
+tick();
+setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - new Date().getMilliseconds());
+
+const badge = document.getElementById("d-badge");
+let unread = 3;
+document.querySelectorAll("[data-count]").forEach((button) => {
+  button.addEventListener("click", () => {
+    unread = Math.max(0, unread + Number(button.dataset.count));
+    badge.setAttribute("value", String(unread));
+  });
+});
+
+// The code field: a real input under the cells, so a phone shows its digit
+// keyboard and fills a code from a message. Each cell is a number of its own.
+const otp = document.getElementById("d-otp");
+const otpBox = otp.closest(".otp");
+const cells = [...otpBox.querySelectorAll(".otp-cell")];
+let shown = "";
+const markCell = () => {
+  const at = Math.min(otp.value.length, cells.length - 1);
+  cells.forEach((cell, i) => cell.classList.toggle("on", i === at));
+};
+otp.addEventListener("input", () => {
+  const value = otp.value.replace(/\D/g, "").slice(0, cells.length);
+  otp.value = value;
+  // A pasted code fills the cells one after another rather than all at once.
+  let order = 0;
+  cells.forEach((cell, i) => {
+    const digit = value[i] ?? "";
+    if (digit === (shown[i] ?? "")) return;
+    clearTimeout(cell.pending);
+    const number = cell.firstElementChild;
+    cell.pending = setTimeout(() => number.setAttribute("value", digit), 80 * order++);
+  });
+  shown = value;
+  markCell();
+});
+otp.addEventListener("focus", () => { otpBox.classList.add("focus"); markCell(); });
+otp.addEventListener("blur", () => otpBox.classList.remove("focus"));
+
+// The quantity field: every typed digit is a number of its own, appended on the
+// right — a counter grows on the left, a field grows where the caret is.
+const field = document.getElementById("d-field");
+const fieldBox = field.closest(".field");
+const fieldDigits = document.getElementById("d-field-digits");
+let typed = "";
+field.addEventListener("input", () => {
+  const value = field.value.replace(/\D/g, "").slice(0, 6);
+  field.value = value;
+  let same = 0;
+  while (same < typed.length && same < value.length && typed[same] === value[same]) same++;
+  const staying = [...fieldDigits.children].filter((el) => !el.dataset.leaving);
+  staying.slice(same).reverse().forEach((el) => {
+    el.dataset.leaving = "1";
+    el.setAttribute("value", "");
+    setTimeout(() => el.remove(), 600);
+  });
+  [...value.slice(same)].forEach((digit, i) => {
+    const el = document.createElement("tacet-digits");
+    el.setAttribute("size", "30");
+    dress(el);
+    fieldDigits.appendChild(el);
+    setTimeout(() => el.setAttribute("value", digit), 60 * i);
+  });
+  typed = value;
+});
+const toEnd = () => field.setSelectionRange(field.value.length, field.value.length);
+["click", "keyup", "select"].forEach((type) => field.addEventListener(type, toEnd));
+field.addEventListener("focus", () => { fieldBox.classList.add("focus"); toEnd(); });
+field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
 
 // The first screen draws in sequence — otherwise twelve icons flash at once and
 // the motion reads as flicker.
