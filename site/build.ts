@@ -775,9 +775,10 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
 // The background of the digits section: faint digits under the heading, the
 // text and the demos. The digits near the pointer light up, each one whole and
 // by its distance, and the digit under the pointer changes together with its
-// four neighbours. Without a pointer the light wanders by itself. The wall
-// takes no pointer events itself; the section listens, so the demos on top
-// keep working.
+// four neighbours. Without a pointer the light wanders by itself, and so it
+// does while the pointer is over a card that hides the wall: it sets off from
+// where the pointer left it. The wall takes no pointer events itself; the
+// section listens, so the demos on top keep working.
 //
 // The band is one canvas. As six hundred SVGs it took a sixth of a core and
 // dropped the page to 42 fps (measured 23.09.2026): every change repainted the
@@ -792,8 +793,8 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
 {
   const wall = document.getElementById("digit-wall"), zone = wall.parentElement;
   // The resting opacity, the light's radius in rows, the fade time constant in s.
-  // Under text the floor is lower than it was as a band of its own (0.18).
-  const WALL_SIZE = 24, WALL_FLOOR = 0.12, WALL_RADIUS = 2.6, WALL_FADE = 0.12;
+  // Under text the floor is far lower than it was as a band of its own (0.18).
+  const WALL_SIZE = 24, WALL_FLOOR = 0.07, WALL_RADIUS = 2.6, WALL_FADE = 0.12;
   const calm = matchMedia("(prefers-reduced-motion: reduce)");
   const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
   // Dash patterns are stored in percent of the contour; the canvas wants lengths.
@@ -812,13 +813,17 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
   let W = 0, H = 0, dpr = 1, cols = 0, rows = 0, left = 0, top = 0, cellPx = 0, rowPx = 0, ink = "", accentInk = "";
   let chars = [], level = new Float32Array(0), goal = new Float32Array(0);
   let glowing = new Set(), aimAt = "", cellAt = "", movedAt = -Infinity;
-  let near = false, inside = false, frame = 0, lastNow = 0, flownAt = 0, idleTimer = 0, refillTimer = 0;
+  let near = false, inside = false, covered = false, frame = 0, lastNow = 0, flownAt = 0, idleTimer = 0, refillTimer = 0;
+  // Where the light is and where it heads when it wanders on its own.
+  let lightX = null, lightY = null, heading = Math.random() * Math.PI * 2, turn = 0;
   const active = new Set(), flights = new Map(), sprites = new Map(), shapes = new Map();
   const anyDigit = () => String(Math.floor(Math.random() * 10));
   const otherDigit = (c) => { let n; do n = anyDigit(); while (n === c); return n; };
   const cellX = (c) => Math.round((left + c * cellW) * dpr), cellY = (r) => Math.round((top + r * WALL_SIZE) * dpr);
   const lengths = (list, unit) => String(list).split(" ").filter(Boolean).map((v) => Number(v) * unit);
-  const roams = () => !inside && !calm.matches;
+  const roams = () => (!inside || covered) && !calm.matches;
+  // What lies over the wall and hides it: under these the pointer lights nothing.
+  const COVERS = ".card, .digits-code, .chips";
 
   // Strokes a contour in glyph units: the body in ink, then the accent. Each is
   // a dash pattern with an offset, in percent of the contour, as the core gives
@@ -1013,19 +1018,28 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
     setTimeout(() => { change(r, c - 1); change(r, c + 1); change(r - 1, c); change(r + 1, c); }, 90);
   }
 
-  // Without a pointer the light wanders over the whole section, at about 110 px
-  // a second across and 70 down, whatever its size.
+  // Without a pointer the light wanders: about 110 px a second across and 70
+  // down, turning a little at random and turning back at the edges, clear of
+  // the fade at the top and the bottom. It sets off from wherever the light
+  // is, so taking over from the pointer shows no jump.
+  function wander(dt) {
+    if (lightX === null) { lightX = W / 2; lightY = H / 2; }
+    turn = Math.max(-1.2, Math.min(1.2, turn + (Math.random() - 0.5) * 6 * dt));
+    heading += turn * dt;
+    lightX += Math.cos(heading) * 110 * dt;
+    lightY += Math.sin(heading) * 70 * dt;
+    if (lightX < 30 || lightX > W - 30) { heading = Math.PI - heading; lightX = Math.max(30, Math.min(W - 30, lightX)); }
+    if (lightY < 90 || lightY > H - 90) { heading = -heading; lightY = Math.max(90, Math.min(H - 90, lightY)); }
+    aim(lightX, lightY);
+    pass(lightX, lightY);
+  }
+
   function tick(now) {
     frame = 0;
     if (!near || document.hidden) return;
     const dt = Math.min(0.1, (now - lastNow) / 1000);
     lastNow = now;
-    if (roams()) {
-      const t = now / 1000, ax = Math.max(40, W / 2 - 30), ay = Math.max(20, H / 2 - 60);
-      const x = W / 2 + ax * Math.sin(t * 110 / ax), y = H / 2 + ay * Math.sin(t * 70 / ay + 1);
-      aim(x, y);
-      pass(x, y);
-    }
+    if (roams()) wander(dt);
     step(dt);
     // Morphs move at thirty frames a second: a 480 ms morph still takes some
     // fourteen, and there are a dozen or more in flight at once.
@@ -1054,15 +1068,24 @@ field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
     kick();
   }
 
+  // The pointer leaving the section, or going over a card, hands the light over
+  // to wander(), which carries on from the spot the pointer lit last.
   zone.addEventListener("pointerenter", () => { inside = true; });
-  zone.addEventListener("pointerleave", () => { inside = false; cellAt = ""; aim(null, null); kick(); });
+  zone.addEventListener("pointerleave", () => { inside = false; covered = false; cellAt = ""; kick(); });
   zone.addEventListener("pointermove", (event) => {
     if (!rows) return;
+    covered = event.target instanceof Element && !!event.target.closest(COVERS);
+    if (covered) {
+      cellAt = "";
+      kick();
+      return;
+    }
     const box = wall.getBoundingClientRect();
-    const x = event.clientX - box.left, y = event.clientY - box.top;
+    lightX = event.clientX - box.left;
+    lightY = event.clientY - box.top;
     movedAt = performance.now();
-    aim(x, y);
-    pass(x, y);
+    aim(lightX, lightY);
+    pass(lightX, lightY);
     kick();
   });
   new IntersectionObserver(([entry]) => {
