@@ -4,12 +4,14 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Icon } from "tacet-react";
+import { Digits, Icon } from "tacet-react";
 import { iconNames } from "tacet-core";
 import { defineTacetIcon } from "./TacetIconElement.js";
+import { defineTacetDigits } from "./TacetDigitsElement.js";
 
 beforeAll(() => {
   defineTacetIcon();
+  defineTacetDigits();
 });
 
 /** Markup of the React wrapper, parsed into DOM. */
@@ -102,5 +104,54 @@ describe("the custom element", () => {
     el.setAttribute("name", "no-such-glyph");
     expect(() => document.body.appendChild(el)).not.toThrow();
     expect(el.querySelector("svg")).toBeNull();
+  });
+});
+
+/** A number from the React wrapper, rendered to static markup and parsed. */
+function digitsFromReact(props: Record<string, unknown>): Element {
+  const host = document.createElement("div");
+  host.innerHTML = renderToStaticMarkup(createElement(Digits, props as never));
+  return host.firstElementChild!;
+}
+
+/** A number from the custom element. */
+function digitsFromElement(attrs: Record<string, string>): Element {
+  const el = document.createElement("tacet-digits");
+  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+  document.body.appendChild(el);
+  return el;
+}
+
+describe("parity of numbers", () => {
+  it.each([
+    [{ value: "12:30", size: 32 }, { value: "12:30", size: "32" }],
+    [{ value: "1248", variant: "A" }, { value: "1248", variant: "A" }],
+    [{ value: "907", size: 18, solid: true }, { value: "907", size: "18", solid: "" }],
+  ])("%o produces identical slots", (reactProps, elementAttrs) => {
+    const a = Array.from(digitsFromReact(reactProps).children).map(shape);
+    const b = Array.from(digitsFromElement(elementAttrs as Record<string, string>).children).map(shape);
+    expect(b).toEqual(a);
+  });
+
+  it("both label the number with its value", () => {
+    expect(digitsFromReact({ value: "42" }).getAttribute("aria-label")).toBe("42");
+    expect(digitsFromElement({ value: "42" }).getAttribute("aria-label")).toBe("42");
+    expect(digitsFromElement({ value: "42" }).getAttribute("role")).toBe("img");
+  });
+});
+
+describe("<tacet-digits>", () => {
+  it("a new value updates the digits and the label", () => {
+    const el = digitsFromElement({ value: "9" });
+    el.setAttribute("value", "10");
+    expect(Array.from(el.children).map((c) => c.getAttribute("data-char"))).toEqual(["1", "0"]);
+    expect(el.getAttribute("aria-label")).toBe("10");
+  });
+
+  it("a removed attribute gives the option back", () => {
+    const el = digitsFromElement({ value: "8", variant: "A" });
+    expect(el.querySelectorAll("path").length).toBe(1);
+    el.removeAttribute("variant");
+    expect(el.querySelectorAll("path").length).toBe(2);
   });
 });
