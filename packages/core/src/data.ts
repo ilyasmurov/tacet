@@ -19,6 +19,13 @@ export interface Part {
   x?: number; y?: number; w?: number; h?: number; rx?: number;
   gaps?: Gap[] | null | undefined;
   accent?: boolean;
+  /**
+   * Accent on a stretch of the contour rather than on the whole part: the same
+   * [start%, width%] pairs as `gaps`. Painted in variants C and D as a second
+   * path over this one, so a glyph drawn as a single stroke keeps its single
+   * stroke and still carries a coloured detail.
+   */
+  accentSpans?: Gap[] | undefined;
   fill?: boolean;
   activeFill?: boolean;
   masked?: boolean;

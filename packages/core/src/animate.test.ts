@@ -4,6 +4,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { animate, prepare, resetAnimation, resolveAnimateCfg, reverse } from "./animate.js";
 import { BODY_CLASS, renderSpec } from "./renderSpec.js";
+import { ICONS, type IconDef } from "./data.js";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 
@@ -172,5 +173,27 @@ describe("modes", () => {
     const svg = document.createElementNS(SVGNS, "svg") as SVGSVGElement;
     expect(() => animate(svg, cfg)).not.toThrow();
     expect(() => resetAnimation(svg)).not.toThrow();
+  });
+});
+
+describe("accent spans", () => {
+  it("come back with their own pattern after reverse, and draw in with the rest", () => {
+    const icons = ICONS as unknown as Record<string, IconDef>;
+    icons["__test-accent-anim"] = [{ t: "path", d: "M4 12h16", gaps: [[20, 10]], accentSpans: [[0, 40]] }];
+    try {
+      const svg = draw("__test-accent-anim");
+      const overlay = svg.querySelector<SVGElement>(`g.${BODY_CLASS} [data-accent]`)!;
+      expect(overlay).not.toBeNull();
+
+      reverse(svg);
+      animate(svg, cfg);
+
+      expect(overlay.style.opacity).not.toBe("0");
+      expect(overlay.style.strokeDasharray).toBe(overlay.dataset["dash"]);
+      // The reveal mask clones the span path too, so the colour draws in step.
+      expect(svg.querySelectorAll("mask [data-rev]").length).toBe(2);
+    } finally {
+      delete icons["__test-accent-anim"];
+    }
   });
 });
