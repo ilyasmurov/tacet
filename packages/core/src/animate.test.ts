@@ -102,8 +102,26 @@ describe("reverse and re-entrance", () => {
     animate(svg, cfg);
     // Clones have their own working dasharray; overwrite it and the reveal stalls.
     for (const clone of svg.querySelectorAll<SVGElement>("mask [data-rev]")) {
-      expect(clone.getAttribute("stroke-dasharray")).toBe("100 100");
+      expect(clone.getAttribute("stroke-dasharray")).toBe("105 300");
       expect(clone.hasAttribute("data-dash")).toBe(false);
+    }
+  });
+});
+
+describe("strokes waiting for their turn", () => {
+  // Chromium maps pathLength units to lengths with a measure that differs from
+  // the one it dashes by; on curved paths the gap is over 1%. A reveal dash of
+  // exactly 100 then leaves a dot at the end of a stroke that has not started.
+  it("start hidden behind a dash longer than the path and a gap longer still", () => {
+    const svg = draw("layout-grid");
+    prepare(svg, cfg);
+    const clones = [...svg.querySelectorAll<SVGElement>("mask [data-rev]")];
+    expect(clones.length).toBeGreaterThan(0);
+    for (const clone of clones) {
+      const [dash, gap] = clone.getAttribute("stroke-dasharray")!.split(" ").map(Number);
+      expect(dash).toBeGreaterThan(100);
+      expect(gap).toBeGreaterThan(2 * dash!);
+      expect(Number(clone.style.strokeDashoffset)).toBe(dash);
     }
   });
 });
