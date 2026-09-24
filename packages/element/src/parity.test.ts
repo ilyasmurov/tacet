@@ -6,18 +6,20 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { Digits, Icon, Text, TextField } from "tacet-react";
+import { Digits, DigitsField, Icon, Text, TextField } from "tacet-react";
 import { iconNames } from "tacet-core";
 import { defineTacetIcon } from "./TacetIconElement.js";
 import { defineTacetDigits } from "./TacetDigitsElement.js";
 import { defineTacetText } from "./TacetTextElement.js";
 import { defineTacetTextField } from "./TacetTextFieldElement.js";
+import { defineTacetDigitsField } from "./TacetDigitsFieldElement.js";
 
 beforeAll(() => {
   defineTacetIcon();
   defineTacetDigits();
   defineTacetText();
   defineTacetTextField();
+  defineTacetDigitsField();
 });
 
 /** Markup of the React wrapper, parsed into DOM. */
@@ -256,6 +258,57 @@ describe("<tacet-text-field>", () => {
     act(() => root.render(createElement(TextField, { defaultValue: "Ёж и Щука", size: 32 })));
     const el = fieldOf({ value: "Ёж и Щука", size: "32" });
     const layer = (host: Element) => Array.from(host.querySelectorAll(".tc-field svg")).map(shape);
+    expect(layer(el)).toEqual(layer(container));
+    act(() => root.unmount());
+  });
+});
+
+describe("<tacet-digits-field>", () => {
+  const fieldOf = (attrs: Record<string, string>) => {
+    const el = document.createElement("tacet-digits-field");
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+    document.body.appendChild(el);
+    return el as HTMLElement & { value: string; input: HTMLInputElement };
+  };
+  const drawn = (el: Element) =>
+    Array.from(el.querySelectorAll(".tc-field svg[data-char]")).map((svg) => svg.getAttribute("data-char")).join("");
+
+  it("holds a real input with the mirrored attributes", () => {
+    const el = fieldOf({ value: "12:30", inputmode: "numeric", name: "at", label: "Time" });
+    const input = el.querySelector("input")!;
+    expect(input.value).toBe("12:30");
+    expect(input.getAttribute("inputmode")).toBe("numeric");
+    expect(input.getAttribute("name")).toBe("at");
+    expect(input.getAttribute("aria-label")).toBe("Time");
+    expect(drawn(el)).toBe("12:30");
+  });
+
+  it("the input keeps the digits and the colon, and the event bubbles out with them", () => {
+    const el = fieldOf({ value: "" });
+    let heard = "";
+    el.addEventListener("input", () => { heard = el.value; });
+    el.input.value = "4 шт.";
+    el.input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(heard).toBe("4");
+    expect(drawn(el)).toBe("4");
+  });
+
+  it("value reads and writes the input, and the digits follow", () => {
+    const el = fieldOf({ value: "1" });
+    el.value = "10:45";
+    expect(el.input.value).toBe("10:45");
+    expect(drawn(el)).toBe("10:45");
+  });
+
+  it("draws what the React field draws", () => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() => root.render(createElement(DigitsField, { defaultValue: "09:41", size: 32 })));
+    const el = fieldOf({ value: "09:41", size: "32" });
+    const layer = (host: Element) => Array.from(host.querySelectorAll(".tc-field svg")).map(shape);
+    expect(layer(el)).toHaveLength(5);
     expect(layer(el)).toEqual(layer(container));
     act(() => root.unmount());
   });
