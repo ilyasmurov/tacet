@@ -1,21 +1,22 @@
-// A text field that draws what is typed in the Tacet capitals, for React. The
-// box, the input and the mounting are the ones every field shares (field.tsx).
+// A field for numbers, drawn in the Tacet digits, for React — TextField's twin
+// on the same box, input and mounting (field.tsx). The input keeps the digits
+// and the colon only, whatever is typed or pasted.
 
 import { forwardRef } from "react";
-import { createTextField, type TextTransition } from "tacet-core";
+import { createDigitsField, type DigitsTransition } from "tacet-core";
 import { useField, type FieldProps } from "./field.js";
 
-export interface TextFieldProps extends FieldProps {
-  /** How the text changes as it is typed. Defaults to "erase". */
-  transition?: TextTransition | undefined;
+export interface DigitsFieldProps extends FieldProps {
+  /** How a digit turns into another. Defaults to "morph". */
+  transition?: DigitsTransition | undefined;
 }
 
-export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
+export const DigitsField = forwardRef<HTMLInputElement, DigitsFieldProps>(function DigitsField(
   { size = 24, variant, solid, accentColor, strokeWidth, absoluteStroke, transition, className, style, ...inputProps },
   ref,
 ) {
   const { field, input } = useField(
-    createTextField,
+    createDigitsField,
     { size, variant, solid, accentColor, strokeWidth, absoluteStroke, transition },
     [size, variant, solid, accentColor, strokeWidth, absoluteStroke, transition],
     ref,

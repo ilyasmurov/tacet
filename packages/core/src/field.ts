@@ -455,7 +455,12 @@ export function createField<O extends FieldOptions>(field: HTMLElement, opts: O,
     const value = kind.clean(raw);
     if (value === raw) return value;
     const at = kind.clean(raw.slice(0, input.selectionStart ?? raw.length)).length;
-    input.value = value;
+    // Written the way typing writes it, past a framework's own watch on the
+    // property: React compares the value with the last one it saw and would
+    // take a cleaned value for no change at all.
+    const write = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    if (write) write.call(input, value);
+    else input.value = value;
     if (document.activeElement === input) input.setSelectionRange(at, at);
     return value;
   };
