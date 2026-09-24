@@ -1,6 +1,7 @@
 // <tacet-digits-field> — a field for numbers, drawn in the Tacet digits, for
 // projects without React: <tacet-text-field>'s twin (TacetFieldElement.ts).
-// The input keeps the digits and the colon only, whatever is typed or pasted.
+// The input keeps the digits and the colon only, whatever is typed or pasted,
+// and asks a phone for its numeric keypad unless `inputmode` says otherwise.
 
 import { createDigitsField, type DigitsFieldController, type DigitsOptions, type DigitsTransition } from "tacet-core";
 import { TacetFieldElement } from "./TacetFieldElement.js";
@@ -12,6 +13,10 @@ export class TacetDigitsFieldElement extends TacetFieldElement<DigitsOptions> {
 
   protected options(): DigitsOptions {
     return { ...this.commonOptions(), transition: (this.getAttribute("transition") as DigitsTransition | null) ?? undefined };
+  }
+
+  protected override inputDefaults(): Record<string, string> {
+    return { inputmode: "numeric" };
   }
 }
 

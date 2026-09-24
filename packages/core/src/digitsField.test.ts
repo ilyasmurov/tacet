@@ -88,6 +88,21 @@ describe("createDigitsField", () => {
     expect(field.querySelector(".tc-caret")).toBeNull();
   });
 
+  it("a selection is a plate from boundary to boundary of the slots", () => {
+    const { field, input } = newField("12:30");
+    const control = createDigitsField(field, { size: 24 });
+    input.focus();
+    input.setSelectionRange(3, 5);
+    control.refresh();
+    const cells = cellsOf(field);
+    const start = left(cells[3]!);
+    const end = left(cells[4]!) + Number(slotSpec("0", { size: 24 }).svgAttrs["width"]);
+    const plate = field.querySelector<HTMLElement>(".tc-selection")!;
+    expect(parseFloat(plate.style.left)).toBeCloseTo(start - 2, 1);
+    expect(parseFloat(plate.style.width)).toBeCloseTo(end - start + 4, 1);
+    expect(field.querySelector(".tc-caret")).toBeNull();
+  });
+
   it("a click lands on the nearest boundary", () => {
     const { field, input } = newField("123");
     createDigitsField(field);

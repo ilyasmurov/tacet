@@ -42,6 +42,16 @@ describe("DigitsField", () => {
     expect(input.getAttribute("value")).toBe("12");
   });
 
+  it("asks a phone for the numeric keypad unless told otherwise", () => {
+    const keypad = (props: Record<string, unknown>) => {
+      const host = document.createElement("div");
+      host.innerHTML = renderToStaticMarkup(createElement(DigitsField, props));
+      return host.querySelector("input")!.getAttribute("inputmode");
+    };
+    expect(keypad({ defaultValue: "1" })).toBe("numeric");
+    expect(keypad({ defaultValue: "12:30", inputMode: "text" })).toBe("text");
+  });
+
   it("draws the value once mounted and hands the ref to the input", () => {
     const ref = createRef<HTMLInputElement>();
     const container = mount(createElement(DigitsField, { defaultValue: "12:30", ref }));

@@ -152,12 +152,12 @@ import { Digits, DigitsField } from "tacet-react";
 
 <Digits value={unread} size={16} />
 <Digits value="12:30" transition="relay" />
-<DigitsField defaultValue="1" inputMode="numeric" />
+<DigitsField defaultValue="1" />
 ```
 
 ```html
 <tacet-digits value="1248" size="40"></tacet-digits>
-<tacet-digits-field name="qty" inputmode="numeric"></tacet-digits-field>
+<tacet-digits-field name="qty"></tacet-digits-field>
 ```
 
 Three transitions: `morph`, the default, flows one contour into the other;
@@ -169,8 +169,9 @@ on a tabular grid, so a counter does not jiggle as it ticks.
 inside, the same caret and selection. The input keeps the digits and the colon
 only, and whatever else is typed or pasted is taken out at once. A digit that
 gives way to a digit turns into it by the field's transition; a digit that goes
-erases where it stands, and only then the rest moves up. For a phone keypad set
-`inputmode="numeric"` — it has no colon, so a time needs the full keyboard.
+erases where it stands, and only then the rest moves up. On a phone the field
+asks for the numeric keypad (`inputmode="numeric"` by default); that keypad has
+no colon, so for a time pass `inputMode="text"`.
 
 The accent of a digit is a stretch of its contour — `accentSpans`, the same
 `[start%, width%]` pairs as cuts — painted in variants C and D.

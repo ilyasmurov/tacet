@@ -195,12 +195,14 @@ letters look. Until the script runs the field is a plain input.
 ```jsx
 import { DigitsField } from "tacet-react";
 
-<DigitsField value={qty} onChange={(e) => setQty(e.target.value)} inputMode="numeric" />
+<DigitsField value={qty} onChange={(e) => setQty(e.target.value)} />
 ```
 
 `TextField` for numbers, with the same props; `transition` is that of `Digits`:
 `morph`, `relay` or `erase`. The input keeps the digits and the colon only, so
-`onChange` gets what the field kept of what was typed.
+`onChange` gets what the field kept of what was typed. `inputMode` defaults to
+`numeric`; a phone's numeric keypad has no colon, so pass `inputMode="text"` for
+a time.
 
 ## Also exported
 

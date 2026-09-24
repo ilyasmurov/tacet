@@ -142,12 +142,14 @@ the input. For another tag call `defineTacetTextField("my-field")`.
 ## `<tacet-digits-field>`
 
 ```html
-<tacet-digits-field name="qty" inputmode="numeric" size="30"></tacet-digits-field>
+<tacet-digits-field name="qty" size="30"></tacet-digits-field>
 ```
 
 `<tacet-text-field>` for numbers, with the same attributes; `transition` is that
 of `<tacet-digits>`. The input keeps the digits and the colon only, and its
-`input` event bubbles out with what the field kept. For another tag call
+`input` event bubbles out with what the field kept. Without an `inputmode` of
+its own the input gets `inputmode="numeric"`; a phone's numeric keypad has no
+colon, so set `inputmode="text"` for a time. For another tag call
 `defineTacetDigitsField("my-count")`.
 
 ## In code
