@@ -4,6 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { strokeOnScreen } from "./stroke.js";
+import { TEXT_TIMING } from "./text.js";
 import { createTextField, fieldChars } from "./textField.js";
 import { layoutGlyph } from "./textLayout.js";
 
@@ -138,5 +139,84 @@ describe("createTextField", () => {
   it("an input is required", () => {
     const field = document.createElement("span");
     expect(() => createTextField(field)).toThrow(/input/);
+  });
+});
+
+type Loose = Record<string, unknown>;
+
+/** One call of the fake `animate`: on what, which keyframes, with which timing. */
+interface Played {
+  el: Element;
+  frames: Keyframe[];
+  options: KeyframeAnimationOptions;
+}
+
+/** Stands in for a browser, as in text.test.ts: animations finish on the next tick, a stroke measures 10 units. */
+function installMotion(played: Played[]): () => void {
+  const element = Element.prototype as unknown as Loose;
+  const svg = SVGElement.prototype as unknown as Loose;
+  const saved = element["animate"];
+  element["animate"] = function fakeAnimate(this: Element, frames: Keyframe[], options: KeyframeAnimationOptions) {
+    played.push({ el: this, frames, options });
+    const listeners: Array<() => void> = [];
+    let cancelled = false;
+    setTimeout(() => {
+      if (!cancelled) for (const fn of listeners) fn();
+    }, 0);
+    return {
+      cancel() { cancelled = true; },
+      addEventListener(_type: string, fn: () => void) { listeners.push(fn); },
+    };
+  };
+  svg["getTotalLength"] = () => 10;
+  return () => {
+    if (saved) element["animate"] = saved;
+    else delete element["animate"];
+    delete svg["getTotalLength"];
+  };
+}
+
+describe("transitions", () => {
+  const played: Played[] = [];
+  let restore: () => void;
+  beforeEach(() => {
+    played.length = 0;
+    restore = installMotion(played);
+  });
+  afterEach(() => restore());
+
+  const type = (input: HTMLInputElement, value: string) => {
+    input.value = value;
+    input.dispatchEvent(new Event("input"));
+  };
+  const delays = (calls: Played[]) => calls.map((call) => Number(call.options.delay));
+  const strokesIn = (svgs: Element[]) =>
+    played.filter((call) => svgs.some((svg) => svg.contains(call.el)) && call.frames.some((frame) => "strokeDashoffset" in frame));
+
+  it("what went erases where it stands, and only then the tail moves and the new glyphs write in", () => {
+    // TACET-65: the tail used to slide at once, over the glyphs still erasing.
+    const { field, input } = newField("Привет, мир!");
+    createTextField(field);
+    const before = cellsOf(field);
+    const bang = before[before.length - 1]!;
+    type(input, "Привет, свет!");
+    const fresh = cellsOf(field).filter((svg) => !before.includes(svg));
+    const erasing = strokesIn(before.filter((svg) => svg !== bang));
+    const slide = played.find((call) => call.el === bang && call.frames.some((frame) => "left" in frame));
+
+    expect(erasing.length).toBeGreaterThan(0);
+    for (const delay of delays(erasing)) expect(delay, "erase").toBe(0);
+    expect(slide?.options.delay, "slide").toBe(TEXT_TIMING.erase);
+    expect(Math.min(...delays(strokesIn(fresh))), "write").toBe(TEXT_TIMING.erase + TEXT_TIMING.lag);
+  });
+
+  it("a glyph typed at the end writes in at once", () => {
+    const { field, input } = newField("Приве");
+    createTextField(field);
+    const before = cellsOf(field);
+    type(input, "Привет");
+    const fresh = cellsOf(field).filter((svg) => !before.includes(svg));
+    expect(fresh).toHaveLength(1);
+    expect(Math.min(...delays(strokesIn(fresh)))).toBe(0);
   });
 });
