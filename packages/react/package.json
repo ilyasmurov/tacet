@@ -1,6 +1,6 @@
 {
   "name": "tacet-react",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Tacet icon set for React: 454 outline glyphs where the cut is data, self-drawing animation, four cut densities, 64 musical instruments, digits and a text line that write themselves, and input fields drawn in the same glyphs.",
   "license": "MIT",
   "author": "Ilya Smurov",
