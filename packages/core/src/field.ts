@@ -10,10 +10,10 @@
 //
 // One character of the input is one cell of the field: the caret index in the
 // input is the index in the layout. The kind says which characters the input
-// may hold, how wide each one is and how it is drawn, and how a glyph comes
-// and goes. The order of a change belongs to the field and is the same for
-// every kind: what went erases where it stands, then the tail moves, then the
-// new glyphs come — the order TACET-63 settled for a line.
+// may hold, how wide each one is and how it is drawn, and how a glyph comes,
+// goes and turns into another. The order of a change belongs to the field and
+// is the same for every kind: what went erases where it stands, then the tail
+// moves, then the new glyphs come — the order TACET-63 settled for a line.
 //
 // Chosen on the demo of 24.09.2026: the caret is a stroke in the accent colour,
 // as thick as the glyphs; the selection is a plate of the accent at 20%.
@@ -78,6 +78,11 @@ export interface FieldKind<O extends FieldOptions> {
   leave(flight: Flight, el: SVGSVGElement, opts: O): Promise<unknown>;
   /** Brings a new glyph in, starting after `delay`. */
   enter(flight: Flight, el: SVGSVGElement, delay: number, opts: O): Promise<unknown>;
+  /**
+   * Turns the glyph where it stands into another, as a digit turns into a
+   * digit; null where it cannot, and then the old one goes and the new one comes.
+   */
+  turn?(flight: Flight, el: SVGSVGElement, from: string, to: string, opts: O): Promise<unknown> | null;
   /** Leaves a drawing still, whatever runs on it. */
   still(el: SVGSVGElement, opts: O): void;
 }
@@ -246,8 +251,23 @@ export function createField<O extends FieldOptions>(field: HTMLElement, opts: O,
     flights.add(flight);
     const landing: Promise<unknown>[] = [];
 
+    // Where a glyph gives way to another at the same place, the kind may turn one into the other.
+    const turned: (Cell | undefined)[] = [];
+    if (kind.turn && mode !== "append") {
+      const pairs = Math.min(gone.length, keys.length - head - tail);
+      for (let j = 0; j < pairs; j++) {
+        const cell = gone[j]!;
+        const el = cell.el;
+        const landed = el && kind.turn(flight, el, cell.key, keys[head + j]!, options);
+        if (!el || !landed) continue;
+        turned[j] = cell;
+        landing.push(landed);
+        cleanups.push(() => kind.still(el, options));
+      }
+    }
+
     // What went erases where it stands; the tail and the new glyphs wait for it.
-    const leaving = gone.filter((cell) => cell.el);
+    const leaving = gone.filter((cell, j) => cell.el && !turned[j]);
     const erased = mode !== "append" && leaving.length ? kind.leaveTime : 0;
     for (const cell of leaving) {
       const el = cell.el!;
@@ -273,6 +293,11 @@ export function createField<O extends FieldOptions>(field: HTMLElement, opts: O,
           slide(kept.el, kept.x, xs[i]!);
         }
         return { key, el: kept.el, x: xs[i]!, w: ws[i]! };
+      }
+      const was = turned[i - head];
+      if (was) {
+        slide(was.el!, was.x, xs[i]!);
+        return { key, el: was.el, x: xs[i]!, w: ws[i]! };
       }
       const el = laid.draw(i);
       if (el) {

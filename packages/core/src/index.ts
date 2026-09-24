@@ -39,3 +39,5 @@ export type { TextController, TextOptions } from "./text.js";
 
 export { createTextField, fieldChars, CARET_TIMING } from "./textField.js";
 export type { TextFieldController } from "./textField.js";
+export { createDigitsField } from "./digitsField.js";
+export type { DigitsFieldController } from "./digitsField.js";
