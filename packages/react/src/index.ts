@@ -10,6 +10,8 @@ export type { TextProps } from "./Text.js";
 export type { TextTransition } from "tacet-core";
 export { TextField } from "./TextField.js";
 export type { TextFieldProps } from "./TextField.js";
+export { DigitsField } from "./DigitsField.js";
+export type { DigitsFieldProps } from "./DigitsField.js";
 
 // Core data and helpers, so a gallery or a generator needs no second package.
 export { iconNames, hasIcon, strokeOnScreen, STROKE_AT_24, ACCENT_VAR } from "tacet-core";
