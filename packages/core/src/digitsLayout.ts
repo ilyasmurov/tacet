@@ -3,6 +3,7 @@
 // the live controller in digits.ts are both built on it, so they cannot drift.
 
 import { ICONS, type Gap, type IconDef } from "./data.js";
+import { attrString, elementMarkup } from "./markup.js";
 import { BODY_CLASS, renderSpec, type ElementSpec, type IconVariant } from "./renderSpec.js";
 import { insetFor, normalizeSize, strokeOnScreen, type StrokeOpts } from "./stroke.js";
 
@@ -135,12 +136,6 @@ export function digitGeometry(char: string, opts: DigitsRenderOpts = {}): DigitG
   return { d: part.d, cuts, spans };
 }
 
-const escapeAttr = (value: string | number) =>
-  String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
-
-const attrString = (attrs: Record<string, string | number>) =>
-  Object.keys(attrs).map((key) => `${key}="${escapeAttr(attrs[key]!)}"`).join(" ");
-
 /** Attributes every slot svg carries besides its spec: hidden from readers, unclipped. */
 export const SLOT_ATTRS = { "aria-hidden": "true", class: SLOT_CLASS } as const;
 
@@ -153,7 +148,7 @@ export function digitsMarkup(value: string | number, opts: DigitsRenderOpts = {}
     .split("")
     .map((char) => {
       const slot = slotSpec(char, opts);
-      const body = slot.parts.map((el) => `<${el.tag} ${attrString(el.attrs)}></${el.tag}>`).join("");
+      const body = slot.parts.map(elementMarkup).join("");
       const svg = attrString({ ...slot.svgAttrs, ...SLOT_ATTRS, style: "overflow:visible" });
       return `<svg ${svg}><g class="${BODY_CLASS}">${body}</g></svg>`;
     })
