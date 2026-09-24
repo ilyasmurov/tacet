@@ -4,7 +4,7 @@
 // tick — enough to check which glyphs a transition keeps and where it lands.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createText } from "./text.js";
+import { TEXT_TIMING, createText } from "./text.js";
 import { textLayout, textMarkup } from "./textLayout.js";
 
 const flush = async () => {
@@ -21,12 +21,23 @@ function newHost(): HTMLElement {
 
 type Loose = Record<string, unknown>;
 
-/** Stands in for a browser: animations finish on the next tick, a stroke measures 10 units. */
-function installMotion(): () => void {
+/** One call of the fake `animate`: on what, which keyframes, with which timing. */
+interface Played {
+  el: Element;
+  frames: Keyframe[];
+  options: KeyframeAnimationOptions;
+}
+
+/**
+ * Stands in for a browser: animations finish on the next tick, a stroke measures 10 units.
+ * Every call lands in `played`, so a test can read the choreography.
+ */
+function installMotion(played: Played[] = []): () => void {
   const element = Element.prototype as unknown as Loose;
   const svg = SVGElement.prototype as unknown as Loose;
   const saved = element["animate"];
-  element["animate"] = function fakeAnimate() {
+  element["animate"] = function fakeAnimate(this: Element, frames: Keyframe[], options: KeyframeAnimationOptions) {
+    played.push({ el: this, frames, options });
     const listeners: Array<() => void> = [];
     let cancelled = false;
     setTimeout(() => {
@@ -100,6 +111,30 @@ describe("transitions", () => {
     text.set("ЗА");
     expect(chars(host).startsWith("ЗА")).toBe(true);
     expect(glyphs(host).length).toBeGreaterThan(2);
+  });
+
+  it("a whole word erases where it stands, and only then the gap closes and the new one writes in", () => {
+    // TACET-63: the gone glyphs used to collapse their width while still drawn;
+    // their drawing does not shrink with the box, so a whole word piled up.
+    const played: Played[] = [];
+    restore();
+    restore = installMotion(played);
+    const host = newHost();
+    const text = createText(host, "Черновик");
+    const old = glyphs(host);
+    text.set("Опубликовано");
+    const fresh = glyphs(host).filter((svg) => !old.includes(svg));
+    const widthOf = (svg: Element) => played.find((call) => call.el === svg && call.frames.some((frame) => "width" in frame));
+
+    for (const svg of old) expect(widthOf(svg)?.options.delay, "collapse").toBe(TEXT_TIMING.erase);
+    for (const svg of fresh) {
+      const grow = widthOf(svg);
+      expect(grow?.options.delay, "grow").toBe(TEXT_TIMING.erase);
+      // Held at zero while it waits: at full width the tail would jump out and back.
+      expect(grow?.options.fill).toBe("both");
+    }
+    const strokes = played.filter((call) => fresh.some((svg) => svg.contains(call.el)) && call.frames.some((frame) => "strokeDashoffset" in frame));
+    expect(Math.min(...strokes.map((call) => Number(call.options.delay)))).toBe(TEXT_TIMING.erase + TEXT_TIMING.lag);
   });
 
   it("append drops the gone glyphs at once", () => {
