@@ -591,6 +591,24 @@ export const ICONS = {
     "cyrillic-e": [p("M7.1 7.2C8.1 5.2 9.9 4 12.1 4C15 4 17.1 7.2 17.1 12C17.1 16.8 15 20 12.1 20C9.9 20 8.1 18.8 7.1 16.8", [[40, 7]]), p("M10.2 12H17", null, { accent: true })],
     "cyrillic-yu": [p("M5.6 4V20"), p("M5.6 12H9.4", null, { accent: true }), p("M13.9 4C11.3 4 9.4 7.6 9.4 12C9.4 16.4 11.3 20 13.9 20C16.5 20 18.4 16.4 18.4 12C18.4 7.6 16.5 4 13.9 4", [[30, 8], [80, 8]])],
     "cyrillic-ya": [p("M16.6 4H11.6C9.4 4 7.9 5.6 7.9 8C7.9 10.4 9.4 12 11.6 12H16.6", [[38, 8]]), p("M16.6 4V20"), p("M11.7 12L7.2 20", null, { accent: true })],
+    // Punctuation of the Text layout. Capitals only, so the hyphen, the dash,
+    // the guillemets and the brackets sit on the middle of the capitals; the full
+    // stop, the comma and the ellipsis sit on the baseline. No accent, save the
+    // dots of ! and ?.
+    "mark-period": [strokeDot(12, 19.8)],
+    "mark-comma": [p("M12.3 18.9V20.2C12.3 21.1 11.9 21.9 11.2 22.5")],
+    "mark-colon": [strokeDot(12, 10.8), strokeDot(12, 19.8)],
+    "mark-semicolon": [strokeDot(12, 10.8), p("M12.3 18.9V20.2C12.3 21.1 11.9 21.9 11.2 22.5")],
+    "mark-hyphen": [p("M9.8 12H14.2")],
+    "mark-dash": [p("M5.4 12H18.6", [[60, 8]])],
+    "mark-exclamation": [p("M12 4V14.4", [[58, 11]]), strokeDot(12, 19.8, { accent: true })],
+    "mark-question": [p("M8.3 7.5C8.7 5.5 10.3 4 12.2 4C14.5 4 16 5.6 16 7.5C16 9.4 14.9 10.4 13.6 11.2C12.6 11.8 12 12.7 12 13.9V14.4", [[36, 8]]), strokeDot(12, 19.8, { accent: true })],
+    "mark-quote-open": [p("M11.4 8.4L8.4 11.4C8.1 11.7 8.1 12.3 8.4 12.6L11.4 15.6"), p("M15.8 8.4L12.8 11.4C12.5 11.7 12.5 12.3 12.8 12.6L15.8 15.6")],
+    "mark-quote-close": [p("M8.2 8.4L11.2 11.4C11.5 11.7 11.5 12.3 11.2 12.6L8.2 15.6"), p("M12.6 8.4L15.6 11.4C15.9 11.7 15.9 12.3 15.6 12.6L12.6 15.6")],
+    "mark-paren-open": [p("M13.8 2.4C11.2 5.2 9.9 8.5 9.9 12C9.9 15.5 11.2 18.8 13.8 21.6", [[62, 9]])],
+    "mark-paren-close": [p("M10.2 2.4C12.8 5.2 14.1 8.5 14.1 12C14.1 15.5 12.8 18.8 10.2 21.6", [[29, 9]])],
+    "mark-apostrophe": [p("M12.3 4V5.3C12.3 6.2 11.9 7 11.2 7.6")],
+    "mark-ellipsis": [strokeDot(8.4, 19.8), strokeDot(12, 19.8), strokeDot(15.6, 19.8)],
 } satisfies Record<string, IconDef>;
 
 export const ANIM: Record<string, AnimCfg> = {
