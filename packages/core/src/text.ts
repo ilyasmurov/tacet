@@ -4,10 +4,11 @@
 // wrappers. At rest the host holds exactly what textMarkup produces: word spans
 // of glyph svgs with a spacer between the words. When the text changes, the
 // common head and tail stay the same elements. What changed in the middle
-// erases back along its strokes while its width collapses; the new glyphs grow
-// their width and write themselves in, stroke after stroke, in the order a hand
-// writes the letter. The tail slides along with those widths — no measuring and
-// no absolute positioning, so a text that wraps keeps wrapping like text.
+// erases back along its strokes where it stands; then its width collapses while
+// the new glyphs grow theirs, and the new glyphs write themselves in, stroke
+// after stroke, in the order a hand writes the letter. The tail slides along
+// with those widths — no measuring and no absolute positioning, so a text that
+// wraps keeps wrapping like text.
 
 import { prefersReducedMotion } from "./animate.js";
 import { BODY_CLASS } from "./renderSpec.js";
@@ -38,9 +39,9 @@ export interface TextController {
 export const TEXT_TIMING = {
   /** A glyph that goes away erases this fast. */
   erase: 220,
-  /** Widths collapse and grow over this long; the tail slides with them. */
+  /** Once the gone glyphs are erased, widths collapse and grow over this long; the tail slides with them. */
   slide: 320,
-  /** New glyphs start writing this long after the old ones start erasing. */
+  /** New glyphs start writing this long after the widths start moving. */
   lag: 200,
   /** A stroke writes itself in max(strokeMin, its length × perUnit). */
   strokeMin: 160,
@@ -104,10 +105,13 @@ function readItems(host: Element): Item[] {
   return items;
 }
 
-/** Plays a CSS property from one value to another; resolves when it lands, never if cancelled. */
+/**
+ * Plays a CSS property from one value to another; resolves when it lands, never if cancelled.
+ * The first frame holds through the delay too: a new glyph waiting to grow stays at zero width.
+ */
 export function run(flight: Flight, el: Element, frames: Keyframe[], duration: number, delay: number, easing: string): Promise<void> {
   return new Promise((resolve) => {
-    const animation = el.animate(frames, { duration, delay, easing, fill: "forwards" });
+    const animation = el.animate(frames, { duration, delay, easing, fill: "both" });
     flight.animations.push(animation);
     animation.addEventListener("finish", () => resolve(), { once: true });
   });
@@ -306,8 +310,12 @@ export function createText(host: Element, value: string | number, opts: TextOpti
     const slides = kind !== "append";
 
     const landing: Promise<unknown>[] = [];
+    // The gap moves only once the gone glyphs are erased. A glyph's drawing does
+    // not shrink with its box, so a glyph collapsing while still drawn slides
+    // over its neighbours — a whole word replaced at once piled up (TACET-63).
+    const erased = slides && gone.length ? TEXT_TIMING.erase : 0;
 
-    // What went away erases where it stood, at the edit, while its width collapses.
+    // What went away erases where it stood, at the edit; then its width collapses.
     if (slides && gone.length) {
       const anchor = nextItems[head]?.el ?? null;
       const parent = anchor?.parentNode ?? host.lastElementChild ?? host;
@@ -315,17 +323,17 @@ export function createText(host: Element, value: string | number, opts: TextOpti
         parent.insertBefore(item.el, anchor);
         const width = widthOf(item.el);
         if (item.el instanceof SVGSVGElement) landing.push(eraseOut(flight, item.el));
-        landing.push(run(flight, item.el, [{ width: `${width}px` }, { width: "0px" }], TEXT_TIMING.slide, 0, EASE_SLIDE));
+        landing.push(run(flight, item.el, [{ width: `${width}px` }, { width: "0px" }], TEXT_TIMING.slide, erased, EASE_SLIDE));
         cleanups.push(() => item.el.remove());
       }
     }
 
-    // What arrived grows its width and writes itself in.
-    const lag = slides && gone.length ? TEXT_TIMING.lag : 0;
+    // What arrived grows its width as the gone ones collapse, and writes itself in.
+    const lag = erased ? erased + TEXT_TIMING.lag : 0;
     for (const item of fresh) {
       if (slides) {
         const width = widthOf(item.el);
-        landing.push(run(flight, item.el, [{ width: "0px" }, { width: `${width}px` }], TEXT_TIMING.slide, 0, EASE_SLIDE));
+        landing.push(run(flight, item.el, [{ width: "0px" }, { width: `${width}px` }], TEXT_TIMING.slide, erased, EASE_SLIDE));
       }
       if (item.el instanceof SVGSVGElement) {
         const svg = item.el;
