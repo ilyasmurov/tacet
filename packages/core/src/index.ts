@@ -33,3 +33,6 @@ export {
 } from "./textLayout.js";
 export type { TextRenderOpts, TextTransition, TextGlyph, TextLayoutResult } from "./textLayout.js";
 export { glyphForChar } from "./textChars.js";
+
+export { createText, TEXT_TIMING } from "./text.js";
+export type { TextController, TextOptions } from "./text.js";
