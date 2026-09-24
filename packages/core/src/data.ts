@@ -26,6 +26,13 @@ export interface Part {
    * stroke and still carries a coloured detail.
    */
   accentSpans?: Gap[] | undefined;
+  /**
+   * Radius of a filled dot as a share of the stroke width. When set it replaces
+   * `r` at render time, so the dots of Ё, ! and ? keep their weight next to the
+   * strokes at any size, the way the colon of a number does. `r` stays in the
+   * data as the radius at size 24 for readers of the raw geometry.
+   */
+  rOfStroke?: number | undefined;
   fill?: boolean;
   activeFill?: boolean;
   masked?: boolean;
@@ -45,6 +52,8 @@ const p = (d: string, gaps?: Gap[] | null, o: Partial<Part> = {}): Part => ({ t:
 const c = (cx: number, cy: number, r: number, gaps?: Gap[] | null, o: Partial<Part> = {}): Part => ({ t: "circle", cx, cy, r, gaps, ...o });
 const rc = (x: number, y: number, w: number, h: number, rx: number, gaps?: Gap[] | null, o: Partial<Part> = {}): Part => ({ t: "rect", x, y, w, h, rx, gaps, ...o });
 const dot = (cx: number, cy: number, r: number, o: Partial<Part> = {}): Part => ({ t: "circle", cx, cy, r, fill: true, ...o });
+/** A dot of a letter or a mark: 0.62 of the stroke, the share the colon of a number uses. */
+const strokeDot = (cx: number, cy: number, o: Partial<Part> = {}): Part => ({ t: "circle", cx, cy, r: 0.8, fill: true, rOfStroke: 0.62, ...o });
 
 // shared "file" primitives (attachment family)
 const FB = "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z";
@@ -547,6 +556,41 @@ export const ICONS = {
     "latin-x": [p("M6.2 4L17.8 20", [[20, 8]]), p("M17.8 4L6.2 20", null, { accentSpans: [[55, 45]] })],
     "latin-y": [p("M5.8 4L12 12.2"), p("M18.2 4L12 12.2V20", [[20, 9]], { accentSpans: [[48, 52]] })],
     "latin-z": [p("M6.6 4H16.9C17.4 4 17.6 4.5 17.3 4.9L6.7 19.1C6.4 19.5 6.6 20 7.1 20H17.4", [[14, 6]], { accentSpans: [[80, 20]] })],
+    // Cyrillic. The eleven letters shaped like Latin ones (А В Е К М Н О Р С Т Х)
+    // repeat the Latin drawings under their own names; a test keeps them equal.
+    "cyrillic-a": [p("M6.4 20L11.2 4.9C11.46 4.1 12.54 4.1 12.8 4.9L17.6 20", [[64, 7]]), p("M8.6 14.3H15.4", null, { accent: true })],
+    "cyrillic-be": [p("M16.4 4H8.2C7.8 4 7.4 4.4 7.4 4.8V19.2C7.4 19.6 7.8 20 8.2 20H12.6C15 20 16.7 18.4 16.7 15.9C16.7 13.4 15 11.8 12.6 11.8H7.4", [[34, 7]], { accentSpans: [[0, 16]] })],
+    "cyrillic-ve": [p("M7.4 4V20"), p("M7.4 4H12.3C14.5 4 16 5.5 16 7.8C16 10.1 14.5 11.6 12.2 11.6C15 11.6 16.8 13.3 16.8 15.8C16.8 18.4 15 20 12.6 20H7.4", [[30, 6]], { accentSpans: [[56, 30]] })],
+    "cyrillic-ghe": [p("M16.4 4H8.2C7.8 4 7.4 4.4 7.4 4.8V20", [[62, 8]], { accentSpans: [[0, 33]] })],
+    "cyrillic-de": [p("M7.3 20C9 16.9 9.5 11.4 9.5 4H16.3V20", [[36, 8]]), p("M5.6 22.4V20.7C5.6 20.3 5.9 20 6.3 20H17.7C18.1 20 18.4 20.3 18.4 20.7V22.4", null, { accent: true })],
+    "cyrillic-ie": [p("M16.2 4H8.2C7.8 4 7.4 4.4 7.4 4.8V19.2C7.4 19.6 7.8 20 8.2 20H16.4", [[28, 7]]), p("M7.4 12H14.6", null, { accent: true })],
+    "cyrillic-io": [p("M16.2 4H8.2C7.8 4 7.4 4.4 7.4 4.8V19.2C7.4 19.6 7.8 20 8.2 20H16.4", [[28, 7]]), p("M7.4 12H14.6"), strokeDot(9.8, 1.9, { accent: true }), strokeDot(14, 1.9, { accent: true })],
+    "cyrillic-zhe": [p("M12 4V20", null, { accent: true }), p("M5.3 4L10.8 11.2C11.1 11.6 11.1 12.2 10.8 12.6L4.9 20", [[30, 9]]), p("M18.7 4L13.2 11.2C12.9 11.6 12.9 12.2 13.2 12.6L19.1 20", [[62, 9]])],
+    "cyrillic-ze": [p("M8.1 5.7C8.8 4.6 9.9 4 11.2 4C12.9 4 14.1 5.1 14.1 6.8C14.1 8.6 12.9 9.9 11.1 9.9H8.7", null, { accentSpans: [[85, 15]] }), p("M11.1 9.9C14.2 9.9 16.2 12 16.2 15C16.2 17.9 14.1 20 11.5 20C9.9 20 8.5 19.4 7.6 18.2", [[52, 9]])],
+    "cyrillic-i": [p("M7 4V18.9C7 19.7 8 20 8.5 19.4L15.5 4.6C16 4 17 4.3 17 5.1V20", [[14, 6]], { accentSpans: [[36, 28]] })],
+    "cyrillic-short-i": [p("M7 4V18.9C7 19.7 8 20 8.5 19.4L15.5 4.6C16 4 17 4.3 17 5.1V20", [[14, 6]]), p("M9.6 1.4C10.2 2.3 11 2.8 12 2.8C13 2.8 13.8 2.3 14.4 1.4", null, { accent: true })],
+    "cyrillic-ka": [p("M7.4 4V20", [[16, 11]]), p("M16.4 4L8.5 11.3C8.1 11.7 8.1 12.3 8.5 12.7L16.9 20", null, { accentSpans: [[52, 48]] })],
+    "cyrillic-el": [p("M6.2 19.8C7.9 17 8.8 12 8.8 4.8C8.8 4.4 9.2 4 9.6 4H16C16.4 4 16.8 4.4 16.8 4.8V20", [[62, 7]], { accentSpans: [[0, 34]] })],
+    "cyrillic-em": [p("M5.4 20V5.3C5.4 4.3 6.6 3.9 7.2 4.7L12 11.9L16.8 4.7C17.4 3.9 18.6 4.3 18.6 5.3V20", [[12, 6], [83, 6]], { accentSpans: [[38, 24]] })],
+    "cyrillic-en": [p("M7 4V20", [[20, 9]]), p("M17 4V20", [[64, 9]]), p("M7 12H17", null, { accent: true })],
+    "cyrillic-o": [p("M12 4C8.5 4 5.8 7.6 5.8 12C5.8 16.4 8.5 20 12 20C15.5 20 18.2 16.4 18.2 12C18.2 7.6 15.5 4 12 4", [[30, 8], [80, 8]], { accentSpans: [[40, 36]] })],
+    "cyrillic-pe": [p("M7 20V4.8C7 4.4 7.4 4 7.8 4H16.2C16.6 4 17 4.4 17 4.8V20", [[15, 7], [82, 7]], { accentSpans: [[40, 20]] })],
+    "cyrillic-er": [p("M7.4 4V20"), p("M7.4 4H12.4C14.6 4 16.1 5.6 16.1 8.2C16.1 10.8 14.6 12.4 12.4 12.4H7.4", [[52, 8]], { accentSpans: [[8, 36]] })],
+    "cyrillic-es": [p("M16.9 7.2C15.9 5.2 14.1 4 11.9 4C9 4 6.9 7.2 6.9 12C6.9 16.8 9 20 11.9 20C14.1 20 15.9 18.8 16.9 16.8", [[40, 7]], { accentSpans: [[82, 18]] })],
+    "cyrillic-te": [p("M5.8 4H18.2", null, { accent: true }), p("M12 4V20", [[48, 9]])],
+    "cyrillic-u": [p("M6.2 4L11.9 14.2", [[40, 12]]), p("M17.8 4L11 18.4C10.4 19.6 9.4 20.1 8 19.8", null, { accentSpans: [[70, 30]] })],
+    "cyrillic-ef": [p("M12 4V20", [[70, 10]]), p("M12 7.4C8.6 7.4 6.2 9.1 6.2 11.6C6.2 14.1 8.6 15.8 12 15.8C15.4 15.8 17.8 14.1 17.8 11.6C17.8 9.1 15.4 7.4 12 7.4", [[40, 8], [90, 6]], { accentSpans: [[48, 40]] })],
+    "cyrillic-ha": [p("M6.2 4L17.8 20", [[20, 8]]), p("M17.8 4L6.2 20", null, { accentSpans: [[55, 45]] })],
+    "cyrillic-tse": [p("M7 4V19.2C7 19.6 7.4 20 7.8 20H17.4C17.8 20 18.2 20.3 18.2 20.7V22.6", [[25, 8]], { accentSpans: [[88, 12]] }), p("M16.6 4V20")],
+    "cyrillic-che": [p("M7 4V9.4C7 11.6 8.6 13 11 13H16.8", [[20, 10]], { accentSpans: [[62, 38]] }), p("M16.8 4V20")],
+    "cyrillic-sha": [p("M6 4V19.2C6 19.6 6.4 20 6.8 20H17.2C17.6 20 18 19.6 18 19.2V4", [[20, 7], [80, 7]]), p("M12 4V20", null, { accent: true })],
+    "cyrillic-shcha": [p("M6 4V19.2C6 19.6 6.4 20 6.8 20H17.6C18.1 20 18.4 20.3 18.4 20.8V22.6", [[28, 8]], { accentSpans: [[89, 11]] }), p("M11.5 4V20"), p("M17 4V20")],
+    "cyrillic-hard-sign": [p("M5.2 4H8.2V19.2C8.2 19.6 8.6 20 9 20H12.8C15.1 20 16.8 18.4 16.8 16C16.8 13.6 15.1 12 12.8 12H8.2", [[40, 6]], { accentSpans: [[0, 12]] })],
+    "cyrillic-yeru": [p("M6.4 4V19.2C6.4 19.6 6.8 20 7.2 20H10.7C12.9 20 14.4 18.5 14.4 16.1C14.4 13.7 12.9 12.2 10.7 12.2H6.4", [[20, 8]]), p("M18 4V20", null, { accent: true })],
+    "cyrillic-soft-sign": [p("M7.4 4V19.2C7.4 19.6 7.8 20 8.2 20H12.6C15 20 16.7 18.4 16.7 16C16.7 13.6 15 12 12.6 12H7.4", [[20, 8]], { accentSpans: [[50, 30]] })],
+    "cyrillic-e": [p("M7.1 7.2C8.1 5.2 9.9 4 12.1 4C15 4 17.1 7.2 17.1 12C17.1 16.8 15 20 12.1 20C9.9 20 8.1 18.8 7.1 16.8", [[40, 7]]), p("M10.2 12H17", null, { accent: true })],
+    "cyrillic-yu": [p("M5.6 4V20"), p("M5.6 12H9.4", null, { accent: true }), p("M13.9 4C11.3 4 9.4 7.6 9.4 12C9.4 16.4 11.3 20 13.9 20C16.5 20 18.4 16.4 18.4 12C18.4 7.6 16.5 4 13.9 4", [[30, 8], [80, 8]])],
+    "cyrillic-ya": [p("M16.6 4H11.6C9.4 4 7.9 5.6 7.9 8C7.9 10.4 9.4 12 11.6 12H16.6", [[38, 8]]), p("M16.6 4V20"), p("M11.7 12L7.2 20", null, { accent: true })],
 } satisfies Record<string, IconDef>;
 
 export const ANIM: Record<string, AnimCfg> = {

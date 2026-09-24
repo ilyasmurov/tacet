@@ -209,3 +209,20 @@ describe("accent spans", () => {
     });
   });
 });
+
+describe("dots sized by the stroke", () => {
+  it("a dot of Ё is 0.62 of the stroke at any size", () => {
+    for (const size of [16, 24, 96]) {
+      const spec = renderSpec("cyrillic-io", { size })!;
+      const dots = spec.parts.filter((part) => part.tag === "circle");
+      expect(dots).toHaveLength(2);
+      for (const dot of dots) expect(Number(dot.attrs["r"])).toBeCloseTo(spec.strokeAttr * 0.62, 2);
+    }
+  });
+
+  it("a dot follows an explicit stroke width too", () => {
+    const spec = renderSpec("cyrillic-io", { size: 24, strokeWidth: 3 })!;
+    const dot = spec.parts.find((part) => part.tag === "circle")!;
+    expect(Number(dot.attrs["r"])).toBeCloseTo(spec.strokeAttr * 0.62, 2);
+  });
+});

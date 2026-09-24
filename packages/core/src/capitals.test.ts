@@ -49,3 +49,49 @@ describe("Latin capitals", () => {
     }
   });
 });
+
+/** Cyrillic capitals by their Unicode names, and the Latin letter each twin repeats. */
+const CYRILLIC = [
+  "a", "be", "ve", "ghe", "de", "ie", "io", "zhe", "ze", "i", "short-i", "ka", "el", "em", "en", "o", "pe",
+  "er", "es", "te", "u", "ef", "ha", "tse", "che", "sha", "shcha", "hard-sign", "yeru", "soft-sign", "e", "yu", "ya",
+].map((name) => `cyrillic-${name}`);
+const TWINS: Record<string, string> = {
+  "cyrillic-a": "latin-a", "cyrillic-ve": "latin-b", "cyrillic-ie": "latin-e", "cyrillic-ka": "latin-k",
+  "cyrillic-em": "latin-m", "cyrillic-en": "latin-h", "cyrillic-o": "latin-o", "cyrillic-er": "latin-p",
+  "cyrillic-es": "latin-c", "cyrillic-te": "latin-t", "cyrillic-ha": "latin-x",
+};
+
+describe("Cyrillic capitals", () => {
+  it("all 33 letters are in the set", () => {
+    expect(CYRILLIC).toHaveLength(33);
+    for (const name of CYRILLIC) expect(DEFS[name], name).toBeDefined();
+  });
+
+  it("the eleven twins repeat their Latin letters exactly", () => {
+    for (const [cyrillic, latin] of Object.entries(TWINS)) expect(DEFS[cyrillic], cyrillic).toEqual(DEFS[latin]);
+  });
+
+  it("each letter carries exactly one accent element", () => {
+    for (const name of CYRILLIC) expect(accentElements(DEFS[name]!), name).toBe(1);
+  });
+
+  it("no letter is painted whole", () => {
+    for (const name of CYRILLIC) expect(paintedWhole(DEFS[name]!), name).toBe(false);
+  });
+
+  it("the accent sits on what tells a letter from its look-alike", () => {
+    // Ц and Щ — the tail; Й — the breve; Ё — the dots; Ы — the stick; Ъ — the flag.
+    const tail = DEFS["cyrillic-shcha"]![0]!;
+    expect(tail.accentSpans).toEqual([[89, 11]]);
+    expect(DEFS["cyrillic-shcha"]!.slice(1).every((part) => !part?.accent)).toBe(true);
+    expect(DEFS["cyrillic-short-i"]![0]!.accentSpans).toBeUndefined();
+    expect(DEFS["cyrillic-short-i"]![1]!.accent).toBe(true);
+    expect(DEFS["cyrillic-io"]!.filter((part) => part?.t === "circle").every((part) => part!.accent)).toBe(true);
+  });
+
+  it("the dots of Ё follow the stroke", () => {
+    const dots = DEFS["cyrillic-io"]!.filter((part) => part?.t === "circle");
+    expect(dots).toHaveLength(2);
+    for (const dot of dots) expect(dot!.rOfStroke).toBe(0.62);
+  });
+});
