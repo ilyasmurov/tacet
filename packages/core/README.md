@@ -1,6 +1,6 @@
 # tacet-core
 
-Data and engine of the Tacet icon set — 381 outline glyphs where the **cut is
+Data and engine of the Tacet icon set — 454 outline glyphs where the **cut is
 data, not geometry**. **No dependencies at all**, not even a peer one.
 
 Use it to build your own wrapper, to generate files, or to reach the glyph data
@@ -129,12 +129,43 @@ rendering on a server; `createDigits` takes it over without a flash. Without the
 Web Animations API, or under `prefers-reduced-motion`, a new value is drawn at
 once.
 
+## Text
+
+`createText` takes over an element and shows a line of text in it; `set()`
+animates what changed.
+
+```js
+import { createText, glyphForChar } from "tacet-core";
+
+const line = createText(document.getElementById("status"), "Сохраняю…", {
+  size: 24,
+  transition: "erase", // or "append", "rewrite"
+});
+line.set("Сохранено");
+line.update({ variant: "A" }); // redraws at once
+line.destroy();                 // stops, leaves the line drawn
+
+glyphForChar("З");              // "cyrillic-ze"
+```
+
+`textMarkup(value, opts)` returns the same line as static markup, for rendering
+on a server; `createText` takes it over without a flash. The host's own
+attributes stay yours: give it `role="img"` and an `aria-label` with the text as
+written, since a reader may spell out capitals letter by letter. Widths and
+kerning are measured from the glyphs at build time — `pnpm kerning` writes
+`kerning.ts` — so the layout needs no DOM.
+
+`createTextField(field, opts)` turns an element holding an `<input>` into a
+field drawn in the same letters: the input keeps the focus, the caret, the
+selection and its place in a form, and the field draws the letters, a caret and
+a selection over it. Call `refresh()` after setting `input.value` from code.
+
 ## Data and semantics
 
 ```js
 import { ICONS, ANIM, SOLID_BY_DEFAULT, META, iconNames, hasIcon, searchIcons } from "tacet-core";
 
-iconNames().length;                   // 381
+iconNames().length;                   // 454
 ICONS["bell"];                        // parts, with cuts as [start%, width%]
 ANIM["loading"];                      // the glyph's animation preset
 META["trash"].use;                    // "Permanent deletion, the item is gone."

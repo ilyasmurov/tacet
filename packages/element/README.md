@@ -1,6 +1,6 @@
 # tacet-element
 
-`<tacet-icon>` — the Tacet icon set for projects without React. 381 outline
+`<tacet-icon>` — the Tacet icon set for projects without React. 454 outline
 glyphs where the **cut is data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -93,7 +93,7 @@ Without the variable the icon is monochrome. Per icon: `accent-color="#c94a17"`.
 ## Styling from outside
 
 The element draws into **light DOM**, so the markup matches what the React
-wrapper produces — an equivalence covered by a test across all 381 glyphs — and
+wrapper produces — an equivalence covered by a test across all 454 glyphs — and
 the icon can be styled with ordinary CSS:
 
 ```css
@@ -114,6 +114,30 @@ A new `value` animates the digits that changed. The other attributes — `size`,
 `transition` — redraw the number at once; `label` sets what a screen reader
 hears, the value by default. Importing the package registers the element; for
 another tag call `defineTacetDigits("my-number")`.
+
+## `<tacet-text>`
+
+```html
+<tacet-text value="Сохраняю…" size="24" transition="erase"></tacet-text>
+```
+
+A new `value` animates what changed. The other attributes — `size`, `variant`,
+`solid`, `stroke-width`, `absolute-stroke`, `accent-color`, `transition` — redraw
+the line at once; `label` sets what a screen reader hears, the value as written
+by default. For another tag call `defineTacetText("my-text")`.
+
+## `<tacet-text-field>`
+
+```html
+<tacet-text-field name="title" placeholder="Title" size="28"></tacet-text-field>
+```
+
+A real `<input>` lives inside, in the light DOM: it takes part in forms, and its
+`input` and `change` events bubble out of the element. `value`, `placeholder`,
+`name`, `maxlength`, `disabled`, `readonly`, `autocomplete`, `inputmode` and
+`required` go to the input, `label` becomes its `aria-label`, and the look
+attributes are those of `<tacet-text>`. The `value` property reads and writes
+the input. For another tag call `defineTacetTextField("my-field")`.
 
 ## In code
 

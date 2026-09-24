@@ -7,7 +7,8 @@ rendered through `stroke-dasharray`. Moving a cut is editing one number, not
 redrawing a path. From that single decision you get the draw-in animation, four
 cut densities and a solid mode — out of one source, with no second set of files.
 
-**381 glyphs.** Interface, ten digits, 64 musical instruments and roles, 19 creative services.
+**454 glyphs.** Interface, ten digits, Latin and Cyrillic capitals with punctuation, 64 musical
+instruments and roles, 19 creative services.
 Every one of them carries a note on when to use it.
 
 - Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -89,10 +90,10 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 | [`tacet-react`](packages/react) | React components, `Icon` and `Digits`. React stays a peer dependency |
 | [`tacet-native`](packages/native) | React Native component, drawn with react-native-svg |
 | [`tacet-core`](packages/core) | Data and engine. No dependencies at all |
-| [`tacet-element`](packages/element) | `<tacet-icon>` and `<tacet-digits>` custom elements |
+| [`tacet-element`](packages/element) | `<tacet-icon>`, `<tacet-digits>`, `<tacet-text>` and `<tacet-text-field>` custom elements |
 
 The wrappers are thin: they call `renderSpec()` from the core and know nothing
-about geometry. A test compares the DOM the web ones produce across all 381
+about geometry. A test compares the DOM the web ones produce across all 454
 glyphs, so they cannot drift apart quietly.
 
 The React Native one is thin in the same way, but a phone differs in three
@@ -100,7 +101,7 @@ places, and each is handled in the wrapper rather than in the set: `pathLength`
 does not exist there, so cuts are measured into real units; `currentColor` has no
 cascade to inherit from, so the colour is passed in; and `overflow: visible` may
 not survive, so at the sharpest glyphs a tip can be clipped — `zoom={false}` is
-the way out. Its own tests run all 381 glyphs through the translation.
+the way out. Its own tests run all 454 glyphs through the translation.
 
 ## Animation
 
@@ -168,13 +169,55 @@ The accent of a digit is a stretch of its contour — `accentSpans`, the same
 React Native has the digit glyphs, accent included. The animated number is web
 only for now.
 
+## Letters
+
+Latin and Cyrillic capitals — `latin-a` … `latin-z`, and `cyrillic-a` …
+`cyrillic-ya` by their Unicode names — with the punctuation of a line,
+`mark-period` … `mark-ellipsis`. Each letter is drawn in pen strokes, in the
+order a hand writes it, and draws itself in that order. As icons they behave
+like any other glyph:
+
+```jsx
+<Icon name="cyrillic-ze" />
+```
+
+A line of text has a component of its own. Widths are proportional and the
+kerning is measured from the outlines. When the text changes, the common start
+and end stay put, what changed erases back along its strokes, and the new part
+writes itself in.
+
+```jsx
+import { Text, TextField } from "tacet-react";
+
+<Text value="Сохранено" size={24} />
+<TextField defaultValue="Привет" placeholder="Name" />
+```
+
+```html
+<tacet-text value="10:30 — «TACET»" size="32"></tacet-text>
+<tacet-text-field name="title" placeholder="Title"></tacet-text-field>
+```
+
+A line is set in capitals: a straight quote turns into a guillemet, an
+apostrophe into ’, and a character the set has no glyph for is dropped. Three
+transitions: `erase`, the default; `append`, which drops the old part at once
+and writes the new one; `rewrite`, which writes the whole line anew. Between two
+digits a colon stands centred, the way a clock has it.
+
+`TextField` draws what is typed in the same letters. A real `<input>` sits
+inside and keeps the focus, the caret, the selection, copy and paste and its
+place in a form; without scripts the field is a plain input. The caret is a
+stroke in the accent colour, a selection is a plate of the accent.
+
+React Native has the letter glyphs; the line and the field are web only for now.
+
 ## Static SVG
 
 ```bash
 pnpm svg
 ```
 
-Writes 381 standalone SVG files plus a sprite. Cuts survive — they are baked into
+Writes 454 standalone SVG files plus a sprite. Cuts survive — they are baked into
 `stroke-dasharray`. The animation does not: it lives at runtime and builds a mask
 from cloned shapes, which a file has nowhere to get.
 

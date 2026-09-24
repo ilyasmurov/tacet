@@ -1,6 +1,6 @@
 # tacet-native
 
-React Native component for the Tacet icon set — 381 outline glyphs where the
+React Native component for the Tacet icon set — 454 outline glyphs where the
 **cut is data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
