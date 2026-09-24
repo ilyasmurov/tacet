@@ -5,6 +5,8 @@
 import { describe, expect, it } from "vitest";
 import { ICONS, type IconDef } from "./data.js";
 import { MARK_SIDES } from "./textSpacing.js";
+import { META, hasMeta, searchIcons } from "./meta.js";
+import { iconNames } from "./renderSpec.js";
 
 const DEFS = ICONS as unknown as Record<string, IconDef>;
 const LATIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((ch) => `latin-${ch.toLowerCase()}`);
@@ -129,5 +131,23 @@ describe("punctuation", () => {
       for (const part of DEFS[name]!) expect(part!.cy, name).toBe(19.8);
     }
     expect(DEFS["mark-ellipsis"]).toHaveLength(3);
+  });
+});
+
+describe("semantics", () => {
+  it("every capital and mark is described", () => {
+    for (const name of [...LATIN, ...CYRILLIC, ...MARKS]) expect(hasMeta(name), name).toBe(true);
+  });
+
+  it("the look-alikes point at each other", () => {
+    expect(META["cyrillic-ze"]!.avoid).toContain("`digit-3`");
+    expect(META["latin-o"]!.avoid).toContain("`digit-0`");
+    expect(META["cyrillic-a"]!.related).toContain("latin-a");
+    expect(META["latin-a"]!.related).toContain("cyrillic-a");
+  });
+
+  it("search finds a letter by its Russian name", () => {
+    expect(searchIcons("и краткое", iconNames())).toContain("cyrillic-short-i");
+    expect(searchIcons("многоточие", iconNames())).toContain("mark-ellipsis");
   });
 });
