@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ICONS, type IconDef } from "./data.js";
+import { MARK_SIDES } from "./textSpacing.js";
 
 const DEFS = ICONS as unknown as Record<string, IconDef>;
 const LATIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((ch) => `latin-${ch.toLowerCase()}`);
@@ -93,5 +94,40 @@ describe("Cyrillic capitals", () => {
     const dots = DEFS["cyrillic-io"]!.filter((part) => part?.t === "circle");
     expect(dots).toHaveLength(2);
     for (const dot of dots) expect(dot!.rOfStroke).toBe(0.62);
+  });
+});
+
+const MARKS = [
+  "period", "comma", "colon", "semicolon", "hyphen", "dash", "exclamation", "question",
+  "quote-open", "quote-close", "paren-open", "paren-close", "apostrophe", "ellipsis",
+].map((name) => `mark-${name}`);
+
+describe("punctuation", () => {
+  it("all 14 marks are in the set, each with its bearings", () => {
+    for (const name of MARKS) {
+      expect(DEFS[name], name).toBeDefined();
+      expect(MARK_SIDES[name], name).toHaveLength(2);
+    }
+    expect(Object.keys(MARK_SIDES).sort()).toEqual([...MARKS].sort());
+  });
+
+  it("only the dots of ! and ? carry the accent", () => {
+    for (const name of MARKS) {
+      const accents = accentElements(DEFS[name]!);
+      expect(accents, name).toBe(name === "mark-exclamation" || name === "mark-question" ? 1 : 0);
+    }
+  });
+
+  it("every dot follows the stroke", () => {
+    for (const name of MARKS) {
+      for (const part of DEFS[name]!) if (part?.t === "circle") expect(part.rOfStroke, name).toBe(0.62);
+    }
+  });
+
+  it("the full stop, the comma and the ellipsis sit on the baseline", () => {
+    for (const name of ["mark-period", "mark-ellipsis"]) {
+      for (const part of DEFS[name]!) expect(part!.cy, name).toBe(19.8);
+    }
+    expect(DEFS["mark-ellipsis"]).toHaveLength(3);
   });
 });
