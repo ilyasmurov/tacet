@@ -171,6 +171,10 @@ export function renderSpec(name: string, opts: RenderOpts = {}): RenderResult | 
     if (!part || part.t === "hole") continue;
     const { tag, attrs } = shapeAttrs(part);
     const color = colorFor(part, variant, accent);
+    // A dot sized by the stroke: the same weight at 16px as at 96px.
+    if (part.t === "circle" && part.rOfStroke != null) {
+      attrs["r"] = Math.round(strokeAttr * part.rOfStroke * 1000) / 1000;
+    }
 
     // Under non-scaling-stroke the width is measured in viewport coordinates,
     // so the viewBox scale does not apply and there is nothing to compensate.
