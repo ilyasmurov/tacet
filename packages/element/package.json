@@ -1,6 +1,6 @@
 {
   "name": "tacet-element",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Tacet icon set as custom elements: <tacet-icon>, <tacet-digits>, <tacet-text> and <tacet-text-field> for any stack without React. 454 outline glyphs with self-drawing animation.",
   "license": "MIT",
   "author": "Ilya Smurov",
