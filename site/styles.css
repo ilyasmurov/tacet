@@ -320,7 +320,9 @@ footer a:hover { color: var(--ink); }
   /* Navigation moves under the logo: it does not fit on one line, and the last
      links were cut off by the edge of the screen. */
   .top .inner { flex-wrap: wrap; gap: 12px 16px; }
-  .top nav { margin-left: 0; width: 100%; gap: 16px; }
+  /* Six links and the theme toggle do not fit one line of a phone: the toggle
+     pushed the page sideways. They wrap onto a second line instead. */
+  .top nav { margin-left: 0; width: 100%; gap: 8px 16px; flex-wrap: wrap; }
   .top nav a { font-size: 14px; }
   .hero { padding-block: 34px 10px; }
   .hero p { font-size: 18px; }
@@ -404,6 +406,35 @@ h2 .anchor { color: inherit; text-decoration: none; }
   /* One column: a card only has to hold its own demo. */
   .digits-demo { min-height: 132px; }
   .otp-cell { width: 38px; height: 50px; }
+}
+
+/* ── letters ── */
+/* As with the digits, every demo has its height set here: the letters are drawn
+   by JS, and a block that grew after the fact would push every anchor below it. */
+tacet-text { display: inline-block; line-height: 0; max-width: 100%; }
+.letters-alphabet { display: flex; flex-direction: column; gap: 16px; min-height: 176px; }
+/* A wrapped alphabet: rows of letters need air that a sentence would get from its line height. */
+.letters-alphabet .tc-word { margin-block: 4px; }
+.letters-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.letters-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 18px; }
+.letters-demo { display: flex; flex-direction: column; gap: 14px; min-height: 196px; }
+.letters-demo .label { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); }
+.letters-demo .chips { align-self: flex-start; }
+.letters-field { display: block; width: 100%; border-radius: 10px; background: var(--sunken); }
+.letters-field[data-focused] { box-shadow: 0 0 0 2px var(--accent); }
+.letters-code {
+  margin-top: 18px; background: var(--sunken); border-radius: 10px; padding: 13px 15px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.letters-code code i { font-style: normal; }
+.letters-code code .t { color: var(--viz); }
+.letters-code code .a { color: var(--ok); }
+.letters-code code .s { color: var(--warm); }
+
+@media (max-width: 760px) {
+  .letters-alphabet { min-height: 360px; }
+  .letters-grid { grid-template-columns: 1fr; }
+  .letters-demo { min-height: 168px; }
 }
 
 /* ── digit wall ── */

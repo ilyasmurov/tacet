@@ -52,11 +52,15 @@ const names = iconNames();
 const instruments = new Set<string>(INSTRUMENT_NAMES);
 const services = new Set<string>(SERVICE_NAMES);
 const isDigit = (n: string) => n.startsWith("digit-");
-const uiNames = names.filter((n) => !instruments.has(n) && !services.has(n) && !isDigit(n));
+const isLetter = (n: string) => n.startsWith("latin-") || n.startsWith("cyrillic-") || n.startsWith("mark-");
+const uiNames = names.filter((n) => !instruments.has(n) && !services.has(n) && !isDigit(n) && !isLetter(n));
 
 const groups = [
   { title: "Interface", names: uiNames },
   { title: "Digits", names: names.filter(isDigit) },
+  { title: "Latin capitals", names: names.filter((n) => n.startsWith("latin-")) },
+  { title: "Cyrillic capitals", names: names.filter((n) => n.startsWith("cyrillic-")) },
+  { title: "Punctuation", names: names.filter((n) => n.startsWith("mark-")) },
   { title: "Instruments and roles", names: names.filter((n) => instruments.has(n)) },
   { title: "Creators and services", names: names.filter((n) => services.has(n)) },
 ];
@@ -212,6 +216,7 @@ try {
     <nav>
       <a href="#gallery">Icons</a>
       <a href="#digits">Digits</a>
+      <a href="#letters">Letters</a>
       <a href="#agents">For agents</a>
       <a href="./llms.txt">llms.txt</a>
       <a href="https://github.com/ilyasmurov/tacet">GitHub</a>
@@ -387,6 +392,38 @@ const spec = renderSpec("rocket", { size: 24 });
     <pre class="digits-code"><code>${highlight(`<Digits value={unread} size={16} />
 <Digits value="12:30" transition="relay" />
 <tacet-digits value="1248" size="40"></tacet-digits>`, "html")}</code></pre>
+  </div>
+</section>
+
+<section id="letters">
+  <div class="wrap">
+    <p class="eyebrow">letters</p>
+    ${heading("letters", "Capitals that write themselves")}
+    <p>Latin and Cyrillic capitals, digits and punctuation, set in lines with kerning measured from the
+    outlines. Every letter is written stroke by stroke, in the order a hand writes it. When the text
+    changes, what stays stays put; what changed erases back along its strokes, and the new part writes
+    itself in.</p>
+    <div class="card letters-alphabet">
+      <tacet-text id="l-latin" size="32" transition="append" value="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"></tacet-text>
+      <tacet-text id="l-cyrillic" size="32" transition="append" value="А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я"></tacet-text>
+      <div class="letters-actions"><button class="replay" type="button" id="l-write">Write again</button></div>
+    </div>
+    <div class="letters-grid">
+      <div class="card letters-demo">
+        <span class="label">text field</span>
+        <tacet-text-field id="l-field" class="letters-field" size="28" value="Привет, мир!" placeholder="Type here" label="Text"></tacet-text-field>
+      </div>
+      <div class="card letters-demo">
+        <span class="label">a line that changes</span>
+        <span class="chips" id="letters-transition"></span>
+        <tacet-text id="l-line" size="28" value="Сохраняю…"></tacet-text>
+        <div class="letters-actions" id="l-pairs"></div>
+      </div>
+    </div>
+    <pre class="letters-code"><code>${highlight(`<Text value="Сохранено" size={24} />
+<TextField defaultValue="Привет" placeholder="Name" />
+<tacet-text value="10:30 — «TACET»" size="32"></tacet-text>
+<tacet-text-field name="title" placeholder="Title"></tacet-text-field>`, "html")}</code></pre>
   </div>
 </section>
 
@@ -702,6 +739,41 @@ const tick = () => {
 };
 tick();
 setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - new Date().getMilliseconds());
+
+// ── letters ──
+// The alphabet writes itself in the first time it comes into view, and again on
+// a click: "append" clears the line at once, then every letter draws in place.
+const alphabet = ["l-latin", "l-cyrillic"].map((id) => document.getElementById(id));
+const writeAlphabet = () => alphabet.forEach((line) => {
+  const value = line.getAttribute("value");
+  line.setAttribute("value", "");
+  line.setAttribute("value", value);
+});
+document.getElementById("l-write").addEventListener("click", writeAlphabet);
+const firstSight = new IntersectionObserver((entries) => {
+  if (!entries.some((entry) => entry.isIntersecting)) return;
+  firstSight.disconnect();
+  writeAlphabet();
+}, { threshold: 0.4 });
+firstSight.observe(document.querySelector(".letters-alphabet"));
+
+const line = document.getElementById("l-line");
+let lettersTransition = "erase";
+chips("letters-transition", ["erase", "append", "rewrite"], () => lettersTransition, (v) => { lettersTransition = v; }, null,
+  () => line.setAttribute("transition", lettersTransition));
+const PAIRS = [["Черновик", "Опубликовано"], ["Сохраняю…", "Сохранено"], ["10:30", "10:45"]];
+const pairs = document.getElementById("l-pairs");
+for (const [a, b] of PAIRS) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "replay";
+  button.textContent = a + " ⇄ " + b;
+  button.addEventListener("click", () => {
+    const now = line.getAttribute("value");
+    line.setAttribute("value", now === a ? b : a);
+  });
+  pairs.appendChild(button);
+}
 
 const badge = document.getElementById("d-badge");
 let unread = 3;
