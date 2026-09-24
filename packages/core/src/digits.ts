@@ -73,7 +73,8 @@ interface MorphState {
   spans: Pair4 | null;
 }
 
-interface Slot {
+/** One character of a number: its svg, and whatever runs on it. The digits field animates the same slots. */
+export interface Slot {
   char: string;
   svg: SVGSVGElement;
   /** Bumped by every new operation: a stale continuation compares and drops out. */
@@ -107,6 +108,11 @@ function buildSlot(spec: SlotSpec): SVGSVGElement {
   return svg;
 }
 
+/** A slot drawing `char` still. */
+export function makeSlot(char: string, opts: DigitsOptions): Slot {
+  return { char, svg: buildSlot(slotSpec(char, opts)), token: 0, animations: [], frame: 0, live: null };
+}
+
 /** Whether transitions can play: motion is welcome and the Web Animations API is there. */
 function canAnimate(): boolean {
   return !prefersReducedMotion()
@@ -131,7 +137,7 @@ function drawStill(slot: Slot, opts: DigitsOptions): void {
 }
 
 /** Stops whatever runs on the slot and leaves its character drawn still. */
-function settle(slot: Slot, opts: DigitsOptions): void {
+export function settle(slot: Slot, opts: DigitsOptions): void {
   stop(slot);
   slot.live = null;
   drawStill(slot, opts);
@@ -217,7 +223,8 @@ function retarget(slot: Slot, char: string): void {
   slot.svg.setAttribute("data-char", char);
 }
 
-function morph(slot: Slot, char: string, delay: number, opts: DigitsOptions): void {
+/** Turns the slot's contour into the one of `char`; resolves when it lands, never if cut short. */
+export function morph(slot: Slot, char: string, delay: number, opts: DigitsOptions): Promise<void> {
   const target = digitGeometry(char, opts);
   const goalPoints = sampleContour(target.d);
   const current = slot.live ?? (() => {
@@ -231,7 +238,7 @@ function morph(slot: Slot, char: string, delay: number, opts: DigitsOptions): vo
     // No way to measure a contour here: the digit simply changes.
     retarget(slot, char);
     settle(slot, opts);
-    return;
+    return Promise.resolve();
   }
 
   stop(slot);
@@ -277,23 +284,26 @@ function morph(slot: Slot, char: string, delay: number, opts: DigitsOptions): vo
 
   paint(0);
   const start = performance.now() + delay;
-  const step = (time: number) => {
-    if (token !== slot.token) return;
-    const k = Math.min(1, Math.max(0, (time - start) / DIGIT_TIMING.morph));
-    paint(easeInOutCubic(k));
-    if (k < 1) {
-      slot.frame = requestAnimationFrame(step);
-      return;
-    }
-    // The polyline lives only in flight: at rest the slot holds the exact glyph.
-    slot.frame = 0;
-    slot.live = null;
-    drawStill(slot, opts);
-  };
-  slot.frame = requestAnimationFrame(step);
+  return new Promise((resolve) => {
+    const step = (time: number) => {
+      if (token !== slot.token) return;
+      const k = Math.min(1, Math.max(0, (time - start) / DIGIT_TIMING.morph));
+      paint(easeInOutCubic(k));
+      if (k < 1) {
+        slot.frame = requestAnimationFrame(step);
+        return;
+      }
+      // The polyline lives only in flight: at rest the slot holds the exact glyph.
+      slot.frame = 0;
+      slot.live = null;
+      drawStill(slot, opts);
+      resolve();
+    };
+    slot.frame = requestAnimationFrame(step);
+  });
 }
 
-async function relay(slot: Slot, char: string, delay: number, opts: DigitsOptions): Promise<void> {
+export async function relay(slot: Slot, char: string, delay: number, opts: DigitsOptions): Promise<void> {
   // A relay mid-flight finishes at once: the new one starts from a still digit.
   settle(slot, opts);
   const token = slot.token;
@@ -317,7 +327,7 @@ async function relay(slot: Slot, char: string, delay: number, opts: DigitsOption
   inn.drop();
 }
 
-async function erase(slot: Slot, char: string, delay: number, opts: DigitsOptions): Promise<void> {
+export async function erase(slot: Slot, char: string, delay: number, opts: DigitsOptions): Promise<void> {
   settle(slot, opts);
   const token = slot.token;
   const old = bodyOf(slot);
@@ -338,13 +348,20 @@ async function erase(slot: Slot, char: string, delay: number, opts: DigitsOption
 }
 
 /** A new leading digit draws itself in. The colon has no contour to draw and just appears. */
-async function appear(slot: Slot, delay: number): Promise<void> {
+export async function appear(slot: Slot, delay: number): Promise<void> {
   if (slot.char === ":") return;
   const token = slot.token;
   const inn = reveal(slot.svg, bodyOf(slot), HIDDEN);
   await Promise.all(inn.strokes.map((s) => run(slot, s, HIDDEN, 0, DIGIT_TIMING.appear, delay, EASE_DRAW)));
   if (token !== slot.token) return;
   inn.drop();
+}
+
+/** Erases the slot's strokes where it stands. The colon has no contour to erase. */
+export async function eraseStrokes(slot: Slot): Promise<void> {
+  if (slot.char === ":") return;
+  const out = reveal(slot.svg, bodyOf(slot), 0);
+  await Promise.all(out.strokes.map((s) => run(slot, s, 0, HIDDEN, DIGIT_TIMING.vanish, 0, EASE_OUT)));
 }
 
 /** A leading digit that is no longer needed erases itself and gives its room back. */
@@ -359,10 +376,7 @@ async function vanish(slot: Slot, opts: DigitsOptions): Promise<void> {
   slot.animations.push(collapse);
   const collapsed = new Promise<void>((resolve) => collapse.addEventListener("finish", () => resolve(), { once: true }));
 
-  if (slot.char !== ":") {
-    const out = reveal(slot.svg, bodyOf(slot), 0);
-    await Promise.all(out.strokes.map((s) => run(slot, s, 0, HIDDEN, DIGIT_TIMING.vanish, 0, EASE_OUT)));
-  }
+  await eraseStrokes(slot);
   await collapsed;
   if (token !== slot.token) return;
   slot.svg.remove();
@@ -384,9 +398,7 @@ export function createDigits(host: Element, value: string | number, opts: Digits
   let slots: Slot[] = [];
   const retiring = new Set<Slot>();
 
-  const newSlot = (char: string): Slot => ({
-    char, svg: buildSlot(slotSpec(char, options)), token: 0, animations: [], frame: 0, live: null,
-  });
+  const newSlot = (char: string): Slot => makeSlot(char, options);
 
   const rebuild = () => {
     for (const slot of [...slots, ...retiring]) stop(slot);
@@ -407,7 +419,7 @@ export function createDigits(host: Element, value: string | number, opts: Digits
     const kind = options.transition ?? "morph";
     if (kind === "relay") void relay(slot, char, delay, options);
     else if (kind === "erase") void erase(slot, char, delay, options);
-    else morph(slot, char, delay, options);
+    else void morph(slot, char, delay, options);
   };
 
   rebuild();

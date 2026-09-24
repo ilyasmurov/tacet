@@ -41,10 +41,15 @@ const COLON_DOT = 0.62;
 
 const round = (n: number) => Math.round(n * 100) / 100;
 
+/** What a number can show out of `value`: the digits and the colon. */
+export function keepDigits(value: string): string {
+  return value.replace(/[^0-9:]/g, "");
+}
+
 /** The characters a number can show. Anything else is dropped with a warning. */
 export function parseDigits(value: string | number): string {
   const raw = String(value);
-  const kept = raw.replace(/[^0-9:]/g, "");
+  const kept = keepDigits(raw);
   if (kept.length !== raw.length && typeof console !== "undefined") {
     console.warn(`tacet: a number shows 0–9 and ":" only, the rest of "${raw}" is dropped`);
   }
