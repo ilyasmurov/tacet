@@ -4,16 +4,20 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Digits, Icon, Text } from "tacet-react";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { Digits, Icon, Text, TextField } from "tacet-react";
 import { iconNames } from "tacet-core";
 import { defineTacetIcon } from "./TacetIconElement.js";
 import { defineTacetDigits } from "./TacetDigitsElement.js";
 import { defineTacetText } from "./TacetTextElement.js";
+import { defineTacetTextField } from "./TacetTextFieldElement.js";
 
 beforeAll(() => {
   defineTacetIcon();
   defineTacetDigits();
   defineTacetText();
+  defineTacetTextField();
 });
 
 /** Markup of the React wrapper, parsed into DOM. */
@@ -204,5 +208,55 @@ describe("<tacet-text>", () => {
     expect(el.querySelectorAll("path").length).toBe(2);
     el.removeAttribute("variant");
     expect(el.querySelectorAll("path").length).toBe(3);
+  });
+});
+
+describe("<tacet-text-field>", () => {
+  const fieldOf = (attrs: Record<string, string>) => {
+    const el = document.createElement("tacet-text-field");
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+    document.body.appendChild(el);
+    return el as HTMLElement & { value: string; input: HTMLInputElement };
+  };
+  const drawn = (el: Element) =>
+    Array.from(el.querySelectorAll(".tc-field svg[data-char]")).map((svg) => svg.getAttribute("data-char")).join("");
+
+  it("holds a real input with the mirrored attributes", () => {
+    const el = fieldOf({ value: "Привет", placeholder: "Имя", name: "who", label: "Your name" });
+    const input = el.querySelector("input")!;
+    expect(input.value).toBe("Привет");
+    expect(input.getAttribute("placeholder")).toBe("Имя");
+    expect(input.getAttribute("name")).toBe("who");
+    expect(input.getAttribute("aria-label")).toBe("Your name");
+    expect(drawn(el)).toBe("ПРИВЕТ");
+  });
+
+  it("value reads and writes the input, and the letters follow", () => {
+    const el = fieldOf({ value: "A" });
+    el.value = "Готово";
+    expect(el.input.value).toBe("Готово");
+    expect(drawn(el)).toBe("ГОТОВО");
+  });
+
+  it("the input's events bubble out of the element", () => {
+    const el = fieldOf({ value: "" });
+    let heard = "";
+    el.addEventListener("input", () => { heard = el.value; });
+    el.input.value = "ok";
+    el.input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(heard).toBe("ok");
+    expect(drawn(el)).toBe("OK");
+  });
+
+  it("draws what the React field draws", () => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() => root.render(createElement(TextField, { defaultValue: "Ёж и Щука", size: 32 })));
+    const el = fieldOf({ value: "Ёж и Щука", size: "32" });
+    const layer = (host: Element) => Array.from(host.querySelectorAll(".tc-field svg")).map(shape);
+    expect(layer(el)).toEqual(layer(container));
+    act(() => root.unmount());
   });
 });
