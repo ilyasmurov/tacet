@@ -36,3 +36,6 @@ export { glyphForChar } from "./textChars.js";
 
 export { createText, TEXT_TIMING } from "./text.js";
 export type { TextController, TextOptions } from "./text.js";
+
+export { createTextField, fieldChars, CARET_TIMING } from "./textField.js";
+export type { TextFieldController } from "./textField.js";

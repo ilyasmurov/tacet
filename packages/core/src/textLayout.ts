@@ -86,7 +86,8 @@ export interface TextLayoutResult {
   space: number;
 }
 
-function glyph(chars: string[], i: number, opts: TextRenderOpts): TextGlyph {
+/** The glyph at `i` of a run of characters: its pair with the next one, and a clock colon between digits. */
+export function layoutGlyph(chars: string[], i: number, opts: TextRenderOpts): TextGlyph {
   const char = chars[i]!;
   const name = glyphForChar(char)!;
   const size = normalizeSize(opts.size ?? 24);
@@ -133,7 +134,7 @@ export function textLayout(value: string | number, opts: TextRenderOpts = {}): T
   const text = normaliseText(value);
   const words = text ? text.split(" ").map((word) => {
     const chars = [...word];
-    return chars.map((_, i) => glyph(chars, i, opts));
+    return chars.map((_, i) => layoutGlyph(chars, i, opts));
   }) : [];
   return { text, words, space: round((SPACE_ADVANCE * size) / (24 - 2 * insetFor(size))) };
 }

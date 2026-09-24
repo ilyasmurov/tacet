@@ -73,20 +73,20 @@ interface Item {
 }
 
 /** One transition: its animations, and what has to happen when it ends or is cut short. */
-interface Flight {
+export interface Flight {
   animations: Animation[];
   finish(): void;
 }
 
 /** Whether transitions can play: motion is welcome and the Web Animations API is there. */
-function canAnimate(): boolean {
+export function canAnimate(): boolean {
   return !prefersReducedMotion()
     && typeof Element !== "undefined"
     && typeof Element.prototype.animate === "function";
 }
 
 /** Parses one element of markup — the controller builds exactly what textMarkup writes. */
-function fromMarkup(html: string): Element {
+export function fromMarkup(html: string): Element {
   const template = document.createElement("template");
   template.innerHTML = html;
   return template.content.firstElementChild!;
@@ -105,7 +105,7 @@ function readItems(host: Element): Item[] {
 }
 
 /** Plays a CSS property from one value to another; resolves when it lands, never if cancelled. */
-function run(flight: Flight, el: Element, frames: Keyframe[], duration: number, delay: number, easing: string): Promise<void> {
+export function run(flight: Flight, el: Element, frames: Keyframe[], duration: number, delay: number, easing: string): Promise<void> {
   return new Promise((resolve) => {
     const animation = el.animate(frames, { duration, delay, easing, fill: "forwards" });
     flight.animations.push(animation);
@@ -173,7 +173,7 @@ function reveal(svg: SVGSVGElement, shown: boolean): { steps: Step[]; drop(): vo
 }
 
 /** Writes a glyph in, stroke after stroke; resolves when the last one lands. */
-async function writeIn(flight: Flight, svg: SVGSVGElement, delay: number): Promise<void> {
+export async function writeIn(flight: Flight, svg: SVGSVGElement, delay: number): Promise<void> {
   const { steps, drop } = reveal(svg, false);
   const done: Promise<void>[] = [];
   let at = delay;
@@ -193,7 +193,7 @@ async function writeIn(flight: Flight, svg: SVGSVGElement, delay: number): Promi
 }
 
 /** Erases a glyph back along its strokes, all of them at once. */
-function eraseOut(flight: Flight, svg: SVGSVGElement): Promise<unknown> {
+export function eraseOut(flight: Flight, svg: SVGSVGElement): Promise<unknown> {
   const { steps } = reveal(svg, true);
   return Promise.all(steps.map((step) => step.dot
     ? run(flight, step.el, [{ opacity: 1 }, { opacity: 0 }], TEXT_TIMING.dot, 0, "ease")
