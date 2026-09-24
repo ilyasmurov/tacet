@@ -9,6 +9,7 @@
     "test": "vitest run",
     "svg": "pnpm build && node scripts/build-svg.ts",
     "meta": "pnpm build && node scripts/build-meta.ts meta",
+    "kerning": "pnpm build && node scripts/build-kerning.ts",
     "gallery": "pnpm build && node scripts/build-gallery.ts gallery.html",
     "deploy": "./scripts/deploy-site.sh"
   },
