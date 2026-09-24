@@ -4,14 +4,16 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Digits, Icon } from "tacet-react";
+import { Digits, Icon, Text } from "tacet-react";
 import { iconNames } from "tacet-core";
 import { defineTacetIcon } from "./TacetIconElement.js";
 import { defineTacetDigits } from "./TacetDigitsElement.js";
+import { defineTacetText } from "./TacetTextElement.js";
 
 beforeAll(() => {
   defineTacetIcon();
   defineTacetDigits();
+  defineTacetText();
 });
 
 /** Markup of the React wrapper, parsed into DOM. */
@@ -153,5 +155,54 @@ describe("<tacet-digits>", () => {
     expect(el.querySelectorAll("path").length).toBe(1);
     el.removeAttribute("variant");
     expect(el.querySelectorAll("path").length).toBe(2);
+  });
+});
+
+/** A line from the React wrapper, rendered to static markup and parsed. */
+function textFromReact(props: Record<string, unknown>): Element {
+  const host = document.createElement("div");
+  host.innerHTML = renderToStaticMarkup(createElement(Text, props as never));
+  return host.firstElementChild!;
+}
+
+/** A line from the custom element. */
+function textFromElement(attrs: Record<string, string>): Element {
+  const el = document.createElement("tacet-text");
+  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+  document.body.appendChild(el);
+  return el;
+}
+
+describe("parity of text", () => {
+  it.each([
+    [{ value: "Привет, мир!", size: 32 }, { value: "Привет, мир!", size: "32" }],
+    [{ value: "10:30 — «TACET»", variant: "A" }, { value: "10:30 — «TACET»", variant: "A" }],
+    [{ value: "Ёж и Щука", size: 18, solid: true }, { value: "Ёж и Щука", size: "18", solid: "" }],
+  ])("%o produces identical words", (reactProps, elementAttrs) => {
+    const a = Array.from(textFromReact(reactProps).children).map(shape);
+    const b = Array.from(textFromElement(elementAttrs as Record<string, string>).children).map(shape);
+    expect(b).toEqual(a);
+  });
+
+  it("both label the text with the value as given", () => {
+    expect(textFromReact({ value: "Сохранено" }).getAttribute("aria-label")).toBe("Сохранено");
+    expect(textFromElement({ value: "Сохранено" }).getAttribute("aria-label")).toBe("Сохранено");
+    expect(textFromElement({ value: "Сохранено" }).getAttribute("role")).toBe("img");
+  });
+});
+
+describe("<tacet-text>", () => {
+  it("a new value updates the letters and the label", () => {
+    const el = textFromElement({ value: "Черновик" });
+    el.setAttribute("value", "Готово");
+    expect(Array.from(el.querySelectorAll("svg")).map((svg) => svg.getAttribute("data-char")).join("")).toBe("ГОТОВО");
+    expect(el.getAttribute("aria-label")).toBe("Готово");
+  });
+
+  it("a removed attribute gives the option back", () => {
+    const el = textFromElement({ value: "B", variant: "A" });
+    expect(el.querySelectorAll("path").length).toBe(2);
+    el.removeAttribute("variant");
+    expect(el.querySelectorAll("path").length).toBe(3);
   });
 });
