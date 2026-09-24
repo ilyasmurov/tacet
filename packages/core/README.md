@@ -160,6 +160,20 @@ field drawn in the same letters: the input keeps the focus, the caret, the
 selection and its place in a form, and the field draws the letters, a caret and
 a selection over it. Call `refresh()` after setting `input.value` from code.
 
+`createDigitsField(field, opts)` is the same field with digits, and takes the
+options of `createDigits`. The input keeps the digits and the colon only: what
+else gets in is taken out at once, written the way typing writes it, so a
+framework watching the input sees the cleaned value.
+
+```js
+import { createDigitsField } from "tacet-core";
+
+const field = createDigitsField(document.getElementById("qty"), { size: 30 });
+field.refresh();                    // after setting input.value from code
+field.update({ transition: "relay" });
+field.destroy();                    // gives the input its own look back
+```
+
 ## Data and semantics
 
 ```js
