@@ -1,11 +1,17 @@
 // Gallery of the set: one self-contained page with every glyph.
 // Data and engine are inlined, so the file opens as it is.
 
-import { writeFileSync } from "node:fs";
-import { ICONS, META } from "../packages/core/dist/index.js";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { ICONS } from "../packages/core/dist/index.js";
 import { INSTRUMENT_NAMES, SERVICE_NAMES } from "./groups.ts";
 
 const names = Object.keys(ICONS);
+
+// The built engine, module by module, for the page to load.
+const coreDir = new URL("../packages/core/dist/", import.meta.url);
+const CORE = Object.fromEntries(
+  readdirSync(coreDir).filter((file) => file.endsWith(".js")).map((file) => [file, readFileSync(new URL(file, coreDir), "utf8")]),
+);
 const instruments = new Set(INSTRUMENT_NAMES);
 const services = new Set(SERVICE_NAMES);
 
@@ -84,68 +90,48 @@ const html = `<title>Tacet — icon set</title>
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
-const ICONS = ${JSON.stringify(ICONS)};
-const META = ${JSON.stringify(META)};
+<script type="module">
+// The engine itself draws the glyphs (TACET-62). The built modules of
+// tacet-core ride inside the page and load from blob URLs, so the file still
+// opens as it is and shows exactly what the packages draw: accent spans, dots
+// sized by the stroke, and whatever the engine learns next. A drawing of our
+// own here fell behind the moment the engine grew.
+const CORE = ${JSON.stringify(CORE).replace(/</g, "\\u003c")};
+const urls = {};
+function load(file){
+  if(!urls[file]){
+    // Every relative import and re-export: a line whose statement ends in from "./x.js".
+    const src=CORE[file]
+      .replace(/^([^\\n"]*\\sfrom\\s*)"\\.\\/([^"]+)"/gm,(m,head,dep)=>head+JSON.stringify(load(dep)))
+      .replace(/^import\\s*"\\.\\/([^"]+)"/gm,(m,dep)=>"import "+JSON.stringify(load(dep)));
+    urls[file]=URL.createObjectURL(new Blob([src],{type:"text/javascript"}));
+  }
+  return urls[file];
+}
+const core = await import(load("index.js"));
+const META = core.META;
 const GROUPS = ${JSON.stringify(groups)};
-const STROKE_AT_24 = 1.5, EXP = 0.45;
-let size = 24, variant = "D", query = "";
-
-function insetFor(s){ if(s<=12) return 0.9; if(s<=16) return 0.9+((s-12)/4)*0.5; if(s<=20) return 1.4+((s-16)/4)*0.4; return 1.8; }
-function onScreen(s){ return STROKE_AT_24*Math.pow(s/24,EXP); }
-function dashFor(gaps){ const g=[...gaps].sort((a,b)=>a[0]-b[0]); const out=[]; let pos=0;
-  for(const [s,w] of g){ out.push(Math.max(s-pos,0.01),w); pos=s+w; } out.push(Math.max(100-pos,0.01)); return out.join(" "); }
+let size = 24, variant = "D", query = "", drawn = 0;
 
 const NS="http://www.w3.org/2000/svg";
+function node(spec){
+  const el=document.createElementNS(NS,spec.tag);
+  for(const [k,v] of Object.entries(spec.attrs)) el.setAttribute(k,String(v));
+  return el;
+}
 function draw(name,s,v){
-  const def=ICONS[name]||[], inset=insetFor(s), visible=24-2*inset, sc=onScreen(s), sw=sc*visible/s;
+  // A suffix per drawing keeps mask ids apart when one glyph is on the page twice.
+  const spec=core.renderSpec(name,{ size:s, variant:v, idSuffix:"g"+(drawn++) });
   const svg=document.createElementNS(NS,"svg");
-  svg.setAttribute("viewBox",inset+" "+inset+" "+visible+" "+visible);
-  svg.setAttribute("width",s); svg.setAttribute("height",s); svg.setAttribute("fill","none");
-  const holes=def.filter(p=>p&&p.t==="hole");
-  let maskId=null;
-  if(holes.length){
-    maskId="m-"+name;
+  for(const [k,val] of Object.entries(spec.svgAttrs)) svg.setAttribute(k,String(val));
+  if(spec.mask){
     const mask=document.createElementNS(NS,"mask");
-    mask.setAttribute("id",maskId); mask.setAttribute("maskUnits","userSpaceOnUse");
-    mask.setAttribute("x","0"); mask.setAttribute("y","0"); mask.setAttribute("width","24"); mask.setAttribute("height","24");
-    const bg=document.createElementNS(NS,"rect");
-    bg.setAttribute("x","0"); bg.setAttribute("y","0"); bg.setAttribute("width","24"); bg.setAttribute("height","24"); bg.setAttribute("fill","#fff");
-    mask.appendChild(bg);
-    for(const h of holes){
-      let el;
-      if(h.d){ el=document.createElementNS(NS,"path"); el.setAttribute("d",h.d); el.setAttribute("fill","none");
-               el.setAttribute("stroke","#000"); el.setAttribute("stroke-width",String(h.sw??2.2));
-               el.setAttribute("stroke-linecap","round"); el.setAttribute("stroke-linejoin","round"); }
-      else { el=document.createElementNS(NS,"circle"); el.setAttribute("cx",h.cx); el.setAttribute("cy",h.cy); el.setAttribute("r",h.r); el.setAttribute("fill","#000"); }
-      mask.appendChild(el);
-    }
+    mask.setAttribute("id",spec.mask.id);
+    for(const [k,val] of Object.entries(spec.mask.attrs)) mask.setAttribute(k,String(val));
+    for(const child of spec.mask.children) mask.appendChild(node(child));
     svg.appendChild(mask);
   }
-  for(const part of def){
-    if(!part||part.t==="hole") continue;
-    const accentOn=(v==="C"||v==="D")&&part.accent;
-    const color=part.col?part.col:(accentOn?"var(--tacet-accent)":"currentColor");
-    let el;
-    if(part.t==="circle"){ el=document.createElementNS(NS,"circle"); el.setAttribute("cx",part.cx); el.setAttribute("cy",part.cy); el.setAttribute("r",part.r); }
-    else if(part.t==="rect"){ el=document.createElementNS(NS,"rect"); el.setAttribute("x",part.x); el.setAttribute("y",part.y);
-                              el.setAttribute("width",part.w); el.setAttribute("height",part.h); el.setAttribute("rx",part.rx); }
-    else { el=document.createElementNS(NS,"path"); el.setAttribute("d",part.d); }
-    let nonScaling=false;
-    if(part.tf){ el.setAttribute("transform",part.tf); if(!part.scaleStroke){ el.setAttribute("vector-effect","non-scaling-stroke"); nonScaling=true; } }
-    if(part.masked&&maskId) el.setAttribute("mask","url(#"+maskId+")");
-    if(part.fill||part.activeFill){ el.setAttribute("fill",color); }
-    else {
-      let dash="100 0";
-      if(part.dashArray) dash=part.dashArray;
-      else if(part.gaps&&part.gaps.length) dash=dashFor(v==="B"||v==="D"?part.gaps:part.gaps.slice(0,1));
-      el.setAttribute("fill","none"); el.setAttribute("stroke",color);
-      el.setAttribute("stroke-width",nonScaling?sc:sw);
-      el.setAttribute("stroke-linecap","round"); el.setAttribute("stroke-linejoin","round");
-      el.setAttribute("pathLength","100"); el.setAttribute("stroke-dasharray",dash);
-    }
-    svg.appendChild(el);
-  }
+  for(const part of spec.parts) svg.appendChild(node(part));
   return svg;
 }
 
