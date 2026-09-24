@@ -1,6 +1,6 @@
 # tacet-react
 
-React component for the Tacet icon set — 381 outline glyphs where the **cut is
+React component for the Tacet icon set — 454 outline glyphs where the **cut is
 data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -156,6 +156,39 @@ import { Digits } from "tacet-react";
 The component renders the still number as markup, on the server too, and hands
 the DOM to the controller from `tacet-core` once mounted. New values go through
 the controller, not through a re-render.
+
+## Text
+
+```jsx
+import { Text } from "tacet-react";
+
+<Text value="Сохранено" size={24} />
+<Text value={status} transition="append" title="Status" />
+```
+
+| Prop | What it does |
+|---|---|
+| `value` | the text; set in capitals, what the set cannot draw is dropped with a warning |
+| `size` | height in pixels, as for `Icon`; defaults to 24 |
+| `transition` | `erase` (default), `append` or `rewrite` |
+| `variant`, `solid`, `accentColor`, `strokeWidth`, `absoluteStroke` | as for `Icon` |
+| `title` | label for screen readers; defaults to the value as written |
+
+Like `Digits`, the component renders the still line as markup and hands the DOM
+to the controller once mounted. Words wrap like text.
+
+## TextField
+
+```jsx
+import { TextField } from "tacet-react";
+
+<TextField value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
+```
+
+Every prop an `<input>` takes goes to the input inside, and so does the `ref`;
+`className` and `style` go to the field around it. `size`, `variant`, `solid`,
+`accentColor`, `strokeWidth`, `absoluteStroke` and `transition` set how the
+letters look. Until the script runs the field is a plain input.
 
 ## Also exported
 
