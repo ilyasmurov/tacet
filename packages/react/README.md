@@ -190,6 +190,18 @@ Every prop an `<input>` takes goes to the input inside, and so does the `ref`;
 `accentColor`, `strokeWidth`, `absoluteStroke` and `transition` set how the
 letters look. Until the script runs the field is a plain input.
 
+## DigitsField
+
+```jsx
+import { DigitsField } from "tacet-react";
+
+<DigitsField value={qty} onChange={(e) => setQty(e.target.value)} inputMode="numeric" />
+```
+
+`TextField` for numbers, with the same props; `transition` is that of `Digits`:
+`morph`, `relay` or `erase`. The input keeps the digits and the colon only, so
+`onChange` gets what the field kept of what was typed.
+
 ## Also exported
 
 ```js

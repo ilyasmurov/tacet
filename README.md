@@ -87,10 +87,10 @@ Synonyms are bilingual, so search finds `trash` by both "delete" and «удал�
 
 | Package | What for |
 |---|---|
-| [`tacet-react`](packages/react) | React components, `Icon` and `Digits`. React stays a peer dependency |
+| [`tacet-react`](packages/react) | React components: `Icon`, `Digits`, `Text`, `TextField` and `DigitsField`. React stays a peer dependency |
 | [`tacet-native`](packages/native) | React Native component, drawn with react-native-svg |
 | [`tacet-core`](packages/core) | Data and engine. No dependencies at all |
-| [`tacet-element`](packages/element) | `<tacet-icon>`, `<tacet-digits>`, `<tacet-text>` and `<tacet-text-field>` custom elements |
+| [`tacet-element`](packages/element) | `<tacet-icon>`, `<tacet-digits>`, `<tacet-text>`, `<tacet-text-field>` and `<tacet-digits-field>` custom elements |
 
 The wrappers are thin: they call `renderSpec()` from the core and know nothing
 about geometry. A test compares the DOM the web ones produce across all 454
@@ -148,14 +148,16 @@ move, the ones place first; a number that grows draws its new digits in, one
 that shrinks erases the old ones and gives the room back.
 
 ```jsx
-import { Digits } from "tacet-react";
+import { Digits, DigitsField } from "tacet-react";
 
 <Digits value={unread} size={16} />
 <Digits value="12:30" transition="relay" />
+<DigitsField defaultValue="1" inputMode="numeric" />
 ```
 
 ```html
 <tacet-digits value="1248" size="40"></tacet-digits>
+<tacet-digits-field name="qty" inputmode="numeric"></tacet-digits-field>
 ```
 
 Three transitions: `morph`, the default, flows one contour into the other;
@@ -163,11 +165,18 @@ Three transitions: `morph`, the default, flows one contour into the other;
 old digit and writes the new one. A number shows 0–9 and `:`, and its digits sit
 on a tabular grid, so a counter does not jiggle as it ticks.
 
+`DigitsField` is the letters' `TextField` with digits: the same real `<input>`
+inside, the same caret and selection. The input keeps the digits and the colon
+only, and whatever else is typed or pasted is taken out at once. A digit that
+gives way to a digit turns into it by the field's transition; a digit that goes
+erases where it stands, and only then the rest moves up. For a phone keypad set
+`inputmode="numeric"` — it has no colon, so a time needs the full keyboard.
+
 The accent of a digit is a stretch of its contour — `accentSpans`, the same
 `[start%, width%]` pairs as cuts — painted in variants C and D.
 
-React Native has the digit glyphs, accent included. The animated number is web
-only for now.
+React Native has the digit glyphs, accent included. The animated number and the
+field are web only for now.
 
 ## Letters
 
@@ -207,7 +216,9 @@ digits a colon stands centred, the way a clock has it.
 `TextField` draws what is typed in the same letters. A real `<input>` sits
 inside and keeps the focus, the caret, the selection, copy and paste and its
 place in a form; without scripts the field is a plain input. The caret is a
-stroke in the accent colour, a selection is a plate of the accent.
+stroke in the accent colour, a selection is a plate of the accent. What was
+deleted erases where it stands, then the rest of the line moves up, then the new
+letters write themselves in.
 
 React Native has the letter glyphs; the line and the field are web only for now.
 

@@ -139,6 +139,17 @@ A real `<input>` lives inside, in the light DOM: it takes part in forms, and its
 attributes are those of `<tacet-text>`. The `value` property reads and writes
 the input. For another tag call `defineTacetTextField("my-field")`.
 
+## `<tacet-digits-field>`
+
+```html
+<tacet-digits-field name="qty" inputmode="numeric" size="30"></tacet-digits-field>
+```
+
+`<tacet-text-field>` for numbers, with the same attributes; `transition` is that
+of `<tacet-digits>`. The input keeps the digits and the colon only, and its
+`input` event bubbles out with what the field kept. For another tag call
+`defineTacetDigitsField("my-count")`.
+
 ## In code
 
 ```js
