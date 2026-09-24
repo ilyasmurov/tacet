@@ -383,15 +383,14 @@ const spec = renderSpec("rocket", { size: 24 });
       </div>
       <div class="card digits-demo">
         <span class="label">quantity</span>
-        <label class="field">
-          <span class="field-digits" id="d-field-digits"></span><span class="field-caret"></span>
-          <input id="d-field" type="text" inputmode="numeric" maxlength="6" aria-label="Quantity">
-        </label>
+        <tacet-digits-field id="d-field" class="digits-field" size="30" value="24" inputmode="numeric" maxlength="6" label="Quantity"></tacet-digits-field>
       </div>
     </div>
     <pre class="digits-code"><code>${highlight(`<Digits value={unread} size={16} />
 <Digits value="12:30" transition="relay" />
-<tacet-digits value="1248" size="40"></tacet-digits>`, "html")}</code></pre>
+<DigitsField defaultValue="1" inputMode="numeric" />
+<tacet-digits value="1248" size="40"></tacet-digits>
+<tacet-digits-field name="qty" inputmode="numeric"></tacet-digits-field>`, "html")}</code></pre>
   </div>
 </section>
 
@@ -708,7 +707,7 @@ function dress(el) {
   el.setAttribute("variant", digitsLook === "solid" ? "D" : digitsLook);
   el.toggleAttribute("solid", digitsLook === "solid");
 }
-const dressAll = () => document.querySelectorAll("#digits tacet-digits").forEach(dress);
+const dressAll = () => document.querySelectorAll("#digits tacet-digits, #digits tacet-digits-field").forEach(dress);
 chips("digits-transition", ["morph", "relay", "erase"], () => digitsTransition, (v) => { digitsTransition = v; }, null, dressAll);
 chips("digits-variant", ["A", "B", "C", "D", "solid"], () => digitsLook, (v) => { digitsLook = v; }, null, dressAll);
 dressAll();
@@ -811,37 +810,6 @@ otp.addEventListener("input", () => {
 });
 otp.addEventListener("focus", () => { otpBox.classList.add("focus"); markCell(); });
 otp.addEventListener("blur", () => otpBox.classList.remove("focus"));
-
-// The quantity field: every typed digit is a number of its own, appended on the
-// right — a counter grows on the left, a field grows where the caret is.
-const field = document.getElementById("d-field");
-const fieldBox = field.closest(".field");
-const fieldDigits = document.getElementById("d-field-digits");
-let typed = "";
-field.addEventListener("input", () => {
-  const value = field.value.replace(/\D/g, "").slice(0, 6);
-  field.value = value;
-  let same = 0;
-  while (same < typed.length && same < value.length && typed[same] === value[same]) same++;
-  const staying = [...fieldDigits.children].filter((el) => !el.dataset.leaving);
-  staying.slice(same).reverse().forEach((el) => {
-    el.dataset.leaving = "1";
-    el.setAttribute("value", "");
-    setTimeout(() => el.remove(), 600);
-  });
-  [...value.slice(same)].forEach((digit, i) => {
-    const el = document.createElement("tacet-digits");
-    el.setAttribute("size", "30");
-    dress(el);
-    fieldDigits.appendChild(el);
-    setTimeout(() => el.setAttribute("value", digit), 60 * i);
-  });
-  typed = value;
-});
-const toEnd = () => field.setSelectionRange(field.value.length, field.value.length);
-["click", "keyup", "select"].forEach((type) => field.addEventListener(type, toEnd));
-field.addEventListener("focus", () => { fieldBox.classList.add("focus"); toEnd(); });
-field.addEventListener("blur", () => fieldBox.classList.remove("focus"));
 
 // ── digit wall ──
 // The background of the digits section: faint digits under the heading, the
