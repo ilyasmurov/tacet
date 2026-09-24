@@ -41,6 +41,10 @@ export abstract class TacetFieldElement<O> extends HTMLElement {
   protected abstract create(field: HTMLElement, opts: O): Controller<O>;
   /** Every option, present or not: a removed attribute gives the option back. */
   protected abstract options(): O;
+  /** What the input gets for a mirrored attribute the element does not have. */
+  protected inputDefaults(): Record<string, string> {
+    return {};
+  }
 
   connectedCallback(): void {
     if (!this.#input) {
@@ -102,7 +106,7 @@ export abstract class TacetFieldElement<O> extends HTMLElement {
   }
 
   #mirror(name: string): void {
-    const value = this.getAttribute(name);
+    const value = this.getAttribute(name) ?? this.inputDefaults()[name];
     if (value == null) this.#input!.removeAttribute(name);
     else this.#input!.setAttribute(name, value);
   }

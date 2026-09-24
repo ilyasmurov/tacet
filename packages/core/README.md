@@ -163,7 +163,9 @@ a selection over it. Call `refresh()` after setting `input.value` from code.
 `createDigitsField(field, opts)` is the same field with digits, and takes the
 options of `createDigits`. The input keeps the digits and the colon only: what
 else gets in is taken out at once, written the way typing writes it, so a
-framework watching the input sees the cleaned value.
+framework watching the input sees the cleaned value. The core leaves the input's
+attributes to you; `DigitsField` and `<tacet-digits-field>` default `inputmode`
+to `numeric`.
 
 ```js
 import { createDigitsField } from "tacet-core";

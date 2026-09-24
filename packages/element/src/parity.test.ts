@@ -283,6 +283,18 @@ describe("<tacet-digits-field>", () => {
     expect(drawn(el)).toBe("12:30");
   });
 
+  it("asks a phone for the numeric keypad unless its own inputmode says otherwise", () => {
+    const el = fieldOf({ value: "1" });
+    expect(el.input.getAttribute("inputmode")).toBe("numeric");
+    el.setAttribute("inputmode", "text");
+    expect(el.input.getAttribute("inputmode")).toBe("text");
+    el.removeAttribute("inputmode");
+    expect(el.input.getAttribute("inputmode")).toBe("numeric");
+    const text = document.createElement("tacet-text-field");
+    document.body.appendChild(text);
+    expect(text.querySelector("input")!.hasAttribute("inputmode")).toBe(false);
+  });
+
   it("the input keeps the digits and the colon, and the event bubbles out with them", () => {
     const el = fieldOf({ value: "" });
     let heard = "";
