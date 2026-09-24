@@ -379,19 +379,13 @@ h2 .anchor { color: inherit; text-decoration: none; }
 .otp-cells { display: flex; gap: 8px; }
 .otp-cell { width: 42px; height: 54px; border-radius: 10px; background: var(--sunken); display: grid; place-items: center; }
 .otp.focus .otp-cell.on { box-shadow: 0 0 0 2px var(--accent); }
-.otp input, .field input {
+.otp input {
   position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0;
   font-size: 16px; border: 0; padding: 0; cursor: text;
 }
-.field {
-  position: relative; display: flex; align-items: center; height: 54px; max-width: 260px;
-  padding: 0 16px; border-radius: 10px; background: var(--sunken);
-}
-.field.focus { box-shadow: 0 0 0 2px var(--accent); }
-.field-digits { display: flex; align-items: center; }
-.field-caret { width: 1.5px; height: 24px; margin-left: 2px; background: var(--ink); visibility: hidden; animation: caret 1s steps(1) infinite; }
-.field.focus .field-caret { visibility: visible; }
-@keyframes caret { 50% { opacity: 0; } }
+/* The field draws its own digits, caret and selection; the box is ours. */
+.digits-field { display: block; height: 54px; max-width: 260px; border-radius: 10px; background: var(--sunken); }
+.digits-field[data-focused] { box-shadow: 0 0 0 2px var(--accent); }
 .digits-code {
   margin-top: 18px; background: var(--sunken); border-radius: 10px; padding: 13px 15px;
   white-space: pre-wrap; word-break: break-word;
