@@ -27,3 +27,9 @@ export type { DigitsRenderOpts, DigitsTransition, SlotSpec } from "./digitsLayou
 
 export { createDigits, DIGIT_TIMING } from "./digits.js";
 export type { DigitsController, DigitsOptions } from "./digits.js";
+
+export {
+  normaliseText, textLayout, textMarkup, SPACE_ADVANCE, GLYPH_CLASS, WORD_CLASS, SPACE_CLASS,
+} from "./textLayout.js";
+export type { TextRenderOpts, TextTransition, TextGlyph, TextLayoutResult } from "./textLayout.js";
+export { glyphForChar } from "./textChars.js";
