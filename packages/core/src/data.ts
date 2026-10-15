@@ -505,6 +505,15 @@ export const ICONS = {
     "move": [p("M12 3.5v17", [[44, 12]]), p("M3.5 12h17", [[44, 12]]), p("M9.5 6 12 3.5 14.5 6M9.5 18 12 20.5 14.5 18", null, { accent: true }), p("M6 9.5 3.5 12 6 14.5M18 9.5 20.5 12 18 14.5", null, { accent: true })],
     "unlock": [rc(4, 11, 16, 10, 2, [[16, 11], [64, 11]]), p("M8 11V7a4 4 0 0 1 7.5-1.9", [[42, 14]]), dot(12, 16, 1.4, { accent: true })],
     "scissors": [p("M8.2 15.8 18.5 4", [[42, 14]]), p("M15.8 15.8 5.5 4", [[42, 14]]), c(6.5, 18, 2.8, [[20, 16]], { accent: true }), c(17.5, 18, 2.8, [[20, 16]], { accent: true })],
+    // ── AI generation (TACET-73) ──
+    // The clapper's arm is the accent: it is what tells a film studio from a
+    // camera in a call (`video`). Hinged at the body's top-left corner, so the
+    // draw-in reads as the clap.
+    "clapperboard": [p("M3 10h18v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18z", [[13, 9], [62, 9]]), p("M3 10 20 6.5l-.65-3.13-17 3.5z", null, { accent: true }), p("m7.76 9.02.73-3.41", null, { accent: true }), p("m12.86 7.97.73-3.41", null, { accent: true })],
+    // Filled like the bars of `pause` and of the same area (2 × 4×14 ≈ 10.5²),
+    // with their corner radius, so the pair reads as one transport.
+    "stop": [rc(6.75, 6.75, 10.5, 10.5, 1.3, null, { activeFill: true })],
+
     "translate": [p("M3.5 6h9", [[50, 14]]), p("M8 4v2"), p("M10.5 6c0 4.5-2.5 7.5-6 9.5", [[42, 14]]), p("M5.5 11c1.2 2.2 3 3.8 5.5 4.8"), p("M13.7 20.5L16.53 11.59C16.68 11.12 17.32 11.12 17.47 11.59L20.3 20.5", null, { accent: true }), p("M14.99 17.14H19.01", null, { accent: true })],
 
     // ── digits (TACET-28) ──
@@ -652,6 +661,8 @@ export const ANIM: Record<string, AnimCfg> = {
     "circle-x": { mode: "draw" },
     "x-circle": { mode: "draw" },
     "octagon-x": { mode: "draw" },
+    clapperboard: { mode: "draw", stagger: 140 },
+    stop: { mode: "pop" },
 };
 
 export type IconName = keyof typeof ICONS;
@@ -671,5 +682,7 @@ export const SOLID_BY_DEFAULT: string[] = [
   "speaker", "receiver", "bluetooth",
   "phone-hang-up", "switch-camera", "volume-off", "volume-low",
   "signal", "signal-off", "skip-back", "skip-forward",
+  // TACET-73
+  "stop",
 ];
 
