@@ -215,7 +215,7 @@ export const UI_META_2: Record<string, IconMeta> = {
   },
   "video": {
     use: "Camera on in a call, video mode.",
-    avoid: "For a video file use `file-video`; for a broadcast use `livestream`.",
+    avoid: "For a video file use `file-video`; for a broadcast use `livestream`; for video as a made thing — a clip, generation — use `clapperboard`.",
     synonyms: ["camera on", "video call", "видео", "камера включена", "видеозвонок"],
     related: ["video-off", "camera", "livestream"],
   },
@@ -269,8 +269,9 @@ export const UI_META_2: Record<string, IconMeta> = {
   },
   "pause": {
     use: "Pausing playback.",
+    avoid: "To stop for good — a generation, a recording — use `stop`.",
     synonyms: ["pause", "stop for now", "пауза", "приостановить"],
-    related: ["play", "play-active"],
+    related: ["play", "play-active", "stop"],
   },
   "play-active": {
     use: "Playback is on: filled triangle.",
@@ -624,7 +625,7 @@ export const UI_META_2: Record<string, IconMeta> = {
   },
   "square": {
     use: "Empty checkbox or a placeholder shape.",
-    avoid: "For a partial state use `minus`; for a checked one use `check`.",
+    avoid: "For a partial state use `minus`; for a checked one use `check`; for a stop button use `stop`.",
     synonyms: ["checkbox", "empty", "placeholder", "чекбокс", "пусто", "квадрат"],
     related: ["check", "minus", "circle"],
   },

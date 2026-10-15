@@ -323,4 +323,18 @@ export const UI_META_3: Record<string, IconMeta> = {
     synonyms: ["translate", "translation", "language pair", "перевод", "перевести", "на другой язык"],
     related: ["globe", "type", "composition"],
   },
+
+  // ── AI generation (TACET-73) ──
+  "clapperboard": {
+    use: "Video as something made: a film, a clip, the video generation section.",
+    avoid: "For the camera in a call use `video`; for a video file use `file-video`; for the person filming use `videographer`.",
+    synonyms: ["clapperboard", "film", "movie", "clip", "video generation", "studio", "хлопушка", "кино", "ролик", "видео", "генерация видео"],
+    related: ["video", "file-video", "videographer", "image"],
+  },
+  "stop": {
+    use: "Stopping a running process for good: the model's answer, a generation, a recording.",
+    avoid: "To resume later use `pause`; for an empty checkbox use `square`; for a forbidden action use `octagon-x`.",
+    synonyms: ["stop", "halt", "abort", "stop generating", "стоп", "остановить", "прервать", "остановить генерацию"],
+    related: ["pause", "play", "octagon-x", "loading"],
+  },
 };
