@@ -1,6 +1,6 @@
 # tacet-core
 
-Data and engine of the Tacet icon set — 454 outline glyphs where the **cut is
+Data and engine of the Tacet icon set — 456 outline glyphs where the **cut is
 data, not geometry**. **No dependencies at all**, not even a peer one.
 
 Use it to build your own wrapper, to generate files, or to reach the glyph data
@@ -181,7 +181,7 @@ field.destroy();                    // gives the input its own look back
 ```js
 import { ICONS, ANIM, SOLID_BY_DEFAULT, META, iconNames, hasIcon, searchIcons } from "tacet-core";
 
-iconNames().length;                   // 454
+iconNames().length;                   // 456
 ICONS["bell"];                        // parts, with cuts as [start%, width%]
 ANIM["loading"];                      // the glyph's animation preset
 META["trash"].use;                    // "Permanent deletion, the item is gone."

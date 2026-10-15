@@ -1,6 +1,6 @@
 # tacet-react
 
-React component for the Tacet icon set — 454 outline glyphs where the **cut is
+React component for the Tacet icon set — 456 outline glyphs where the **cut is
 data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**

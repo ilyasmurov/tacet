@@ -1,6 +1,6 @@
 # tacet-element
 
-`<tacet-icon>` — the Tacet icon set for projects without React. 454 outline
+`<tacet-icon>` — the Tacet icon set for projects without React. 456 outline
 glyphs where the **cut is data, not geometry**.
 
 Gallery and docs: **[tacet.smurov.com](https://tacet.smurov.com)**
@@ -93,7 +93,7 @@ Without the variable the icon is monochrome. Per icon: `accent-color="#c94a17"`.
 ## Styling from outside
 
 The element draws into **light DOM**, so the markup matches what the React
-wrapper produces — an equivalence covered by a test across all 454 glyphs — and
+wrapper produces — an equivalence covered by a test across all 456 glyphs — and
 the icon can be styled with ordinary CSS:
 
 ```css
